@@ -3,10 +3,10 @@ import { Building2 } from 'lucide-react';
 import './Footer.css';
 
 const footerLinks = {
-  Workplace: ['Campus Floors', 'Room Directory', 'Slot Availability', 'Smart Suggestions'],
-  Facilities: ['Room Hardware', 'Maintenance Logs', 'Booking Policies', 'Ops Desk'],
+  Workplace: ['How It Works', 'Campus Floors', 'Slot Availability', 'Smart Suggestions'],
+  Facilities: ['Room Directory', 'Maintenance Logs', 'Booking Policies', 'Ops Desk'],
   Administration: ['Building Settings', 'Department Allocations', 'Duration Limits', 'Audit Logs'],
-  Support: ['Facility Helpdesk', 'Report Hardware Issue', 'Room Etiquette', 'System Status'],
+  'Client & Support': ['Deploy For Your Company', 'Client Inquiries', 'Facility Helpdesk', 'System Status'],
 };
 
 function Footer() {
@@ -32,7 +32,17 @@ function Footer() {
               <ul>
                 {links.map((link) => (
                   <li key={link}>
-                    <a href="#">{link}</a>
+                    <a
+                      href={
+                        link === 'How It Works'
+                          ? '#how-it-works'
+                          : link.includes('Company') || link.includes('Inquiries')
+                          ? '#contact'
+                          : '#'
+                      }
+                    >
+                      {link}
+                    </a>
                   </li>
                 ))}
               </ul>

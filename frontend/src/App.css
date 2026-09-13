@@ -98,3 +98,23 @@
   max-width: 560px;
   margin: 0 auto;
 }
+
+@media (max-width: 640px) {
+  .section-header {
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-size: 1.65rem;
+    line-height: 1.25;
+  }
+
+  .section-subtitle {
+    font-size: 0.925rem;
+  }
+
+  .btn--lg {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+  }
+}

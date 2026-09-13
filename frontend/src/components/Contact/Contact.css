@@ -63,6 +63,34 @@
   font-weight: 500;
 }
 
+.contact__guarantee-box {
+  margin-top: 32px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.contact__guarantee-box h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.contact__guarantee-box ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact__guarantee-box li {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+}
+
 .contact__form {
   background: var(--bg-card);
   padding: 36px;
@@ -93,6 +121,7 @@
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
   width: 100%;
   padding: 11px 14px;
@@ -112,6 +141,7 @@
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
   border-color: var(--primary-500);
   background: var(--bg-card);
@@ -150,13 +180,78 @@
   max-width: 300px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .contact {
+    padding: 60px 0;
+  }
+
   .contact__wrapper {
     grid-template-columns: 1fr;
     gap: 40px;
   }
+}
+
+@media (max-width: 768px) {
+  /* Contact form is NOT displayed by default in mobile version; opens as popup from menu */
+  .contact {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact {
+    padding: 44px 0;
+  }
+
+  .contact__title {
+    font-size: 1.65rem;
+    line-height: 1.25;
+  }
+
+  .contact__subtitle {
+    font-size: 0.925rem;
+    margin-bottom: 24px;
+  }
+
+  .contact__form {
+    padding: 24px 18px;
+    border-radius: var(--radius-lg);
+  }
 
   .form-row {
     grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .contact__guarantee-box {
+    margin-top: 24px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact {
+    padding: 36px 0;
+  }
+
+  .contact__title {
+    font-size: 1.45rem;
+  }
+
+  .contact__form {
+    padding: 18px 14px;
+  }
+
+  .contact__detail {
+    gap: 10px;
+  }
+
+  .contact__detail-label {
+    font-size: 0.725rem;
+  }
+
+  .contact__detail-value {
+    font-size: 0.875rem;
+    word-break: break-word;
   }
 }

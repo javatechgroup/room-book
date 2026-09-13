@@ -10,6 +10,7 @@ import {
   User,
   Shield,
   Building,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Header.css';
@@ -17,16 +18,13 @@ import './Header.css';
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAuthenticated, logout, openLogin } = useAuth();
+  const { user, isAuthenticated, logout, openLogin, openConnect } = useAuth();
 
   const navLinks = isAuthenticated
-    ? [
-        { label: 'Book a Slot', href: '#availability' },
-        { label: 'Facility Helpdesk', href: '#facility-support' },
-      ]
+    ? []
     : [
-        { label: 'Campus Floors', href: '#floor-overview' },
-        { label: 'Facility Helpdesk', href: '#facility-support' },
+        { label: 'How It Works', href: '#how-it-works' },
+        { label: 'Sign In', href: '#login-gateway' },
       ];
 
   const [theme, setTheme] = useState(() => {
@@ -72,6 +70,26 @@ function Header() {
     }
   };
 
+  const handleNavLinkClick = (e, link) => {
+    setMobileOpen(false);
+    if (link.label === 'Sign In') {
+      const emailInput = document.getElementById('corp-email');
+      // If embedded form is visible on desktop, scroll to it and focus
+      if (emailInput && emailInput.offsetParent !== null) {
+        e.preventDefault();
+        emailInput.focus();
+        emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        // Mobile or when form is hidden: open modal popup
+        e.preventDefault();
+        openLogin();
+      }
+    } else if (link.label === 'Connect With Us') {
+      e.preventDefault();
+      openConnect();
+    }
+  };
+
   return (
     <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
       <div className="container header__inner">
@@ -89,7 +107,7 @@ function Header() {
               key={link.label}
               href={link.href}
               className="header__link"
-              onClick={() => setMobileOpen(false)}
+              onClick={(e) => handleNavLinkClick(e, link)}
             >
               {link.label}
             </a>
@@ -120,15 +138,34 @@ function Header() {
                 type="button"
                 className="btn btn--primary btn--sm btn--full"
                 onClick={() => {
-                  openLogin();
                   setMobileOpen(false);
+                  openLogin();
                 }}
               >
                 <LogIn size={15} /> Sign In to Portal
               </button>
+              <button
+                type="button"
+                className="btn btn--outline btn--sm btn--full"
+                onClick={() => {
+                  setMobileOpen(false);
+                  openConnect();
+                }}
+              >
+                <Mail size={15} /> Connect With Us
+              </button>
             </div>
           )}
         </nav>
+
+        {/* Mobile Nav Backdrop */}
+        {mobileOpen && (
+          <div
+            className="header__backdrop"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+        )}
 
         <div className="header__actions">
           {/* Desktop Auth State */}
@@ -159,10 +196,10 @@ function Header() {
             <button
               type="button"
               className="btn btn--primary btn--sm header__signin-btn"
-              onClick={openLogin}
+              onClick={openConnect}
             >
-              <LogIn size={15} />
-              <span>Sign In</span>
+              <Mail size={15} />
+              <span>Connect With Us</span>
             </button>
           )}
 

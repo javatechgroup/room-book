@@ -69,8 +69,13 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const [isConnectOpen, setIsConnectOpen] = useState(false);
+
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
+
+  const openConnect = () => setIsConnectOpen(true);
+  const closeConnect = () => setIsConnectOpen(false);
 
   const value = {
     user,
@@ -80,6 +85,9 @@ export function AuthProvider({ children }) {
     isLoginOpen,
     openLogin,
     closeLogin,
+    isConnectOpen,
+    openConnect,
+    closeConnect,
     login,
     logout,
   };
