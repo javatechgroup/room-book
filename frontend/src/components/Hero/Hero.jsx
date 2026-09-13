@@ -1,8 +1,11 @@
 import React from 'react';
-import { Star, ArrowRight } from 'lucide-react';
+import { Star, ArrowRight, Calendar } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './Hero.css';
 
 function Hero() {
+  const { isAuthenticated, openLogin } = useAuth();
+
   return (
     <section className="hero">
       <div className="hero__bg" />
@@ -20,9 +23,19 @@ function Hero() {
           instantly, invite participants, and get automatic reminders — all from one dashboard.
         </p>
         <div className="hero__actions">
-          <a href="#contact" className="btn btn--primary btn--lg">
-            Start Free Trial <ArrowRight size={18} />
-          </a>
+          {isAuthenticated ? (
+            <a href="#features" className="btn btn--primary btn--lg">
+              <Calendar size={18} /> Book a Meeting Room
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="btn btn--primary btn--lg"
+              onClick={openLogin}
+            >
+              Start Free Trial <ArrowRight size={18} />
+            </button>
+          )}
           <a href="#features" className="btn btn--outline btn--lg">
             Explore Features
           </a>

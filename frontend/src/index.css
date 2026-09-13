@@ -38,6 +38,31 @@
   --amber-500: #f59e0b;
   --red-500: #ef4444;
 
+  /* Semantic Colors */
+  --bg-body: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: var(--gray-50);
+  --bg-card: #ffffff;
+  --bg-input: var(--gray-50);
+  --border-card: var(--gray-200);
+  --border-input: var(--gray-200);
+  --text-heading: var(--gray-900);
+  --text-body: var(--gray-800);
+  --text-muted: var(--gray-500);
+  --text-faint: var(--gray-400);
+
+  /* Header */
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --header-shadow: var(--shadow-sm);
+
+  /* Footer */
+  --footer-bg: var(--gray-900);
+  --footer-text: var(--gray-400);
+  --footer-heading: #ffffff;
+  --footer-link: var(--gray-500);
+  --footer-social-bg: var(--gray-800);
+  --footer-border: var(--gray-800);
+
   /* Typography */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
@@ -58,17 +83,69 @@
   --transition: all 0.2s ease;
 }
 
+/* ===== Dark Theme ===== */
+[data-theme="dark"] {
+  /* Neutral Colors — inverted */
+  --gray-50: #1a1a2e;
+  --gray-100: #1e1e32;
+  --gray-200: #2a2a3e;
+  --gray-300: #3a3a4e;
+  --gray-400: #6b7280;
+  --gray-500: #9ca3af;
+  --gray-600: #c9cdd5;
+  --gray-700: #d1d5db;
+  --gray-800: #e5e7eb;
+  --gray-900: #f3f4f6;
+
+  /* Brand — slightly brighter for dark bg */
+  --primary-50: rgba(37, 99, 235, 0.1);
+  --primary-100: rgba(37, 99, 235, 0.15);
+  --primary-200: rgba(59, 130, 246, 0.25);
+  --primary-700: #60a5fa;
+
+  /* Semantic Colors */
+  --bg-body: #0f0f1a;
+  --bg-surface: #16162a;
+  --bg-surface-alt: #1a1a2e;
+  --bg-card: #1e1e32;
+  --bg-input: #1a1a2e;
+  --border-card: #2a2a3e;
+  --border-input: #2a2a3e;
+  --text-heading: #f3f4f6;
+  --text-body: #e5e7eb;
+  --text-muted: #9ca3af;
+  --text-faint: #6b7280;
+
+  /* Header */
+  --header-bg: rgba(15, 15, 26, 0.92);
+
+  /* Footer */
+  --footer-bg: #0a0a14;
+  --footer-text: #6b7280;
+  --footer-heading: #e5e7eb;
+  --footer-link: #6b7280;
+  --footer-social-bg: #1a1a2e;
+  --footer-border: #1e1e32;
+
+  /* Shadows — more visible on dark */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-family);
-  color: var(--gray-800);
-  background-color: #ffffff;
+  color: var(--text-body);
+  background-color: var(--bg-body);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {

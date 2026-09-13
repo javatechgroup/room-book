@@ -1,6 +1,6 @@
 .features {
   padding: 100px 0;
-  background: #ffffff;
+  background: var(--bg-body);
 }
 
 .features__grid {
@@ -11,9 +11,9 @@
 
 .feature-card {
   padding: 32px;
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-xl);
-  background: #ffffff;
+  background: var(--bg-card);
   transition: var(--transition);
 }
 
@@ -36,13 +36,13 @@
 .feature-card__title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--gray-900);
+  color: var(--text-heading);
   margin-bottom: 8px;
 }
 
 .feature-card__desc {
   font-size: 0.925rem;
-  color: var(--gray-500);
+  color: var(--text-muted);
   line-height: 1.65;
 }
 

@@ -1,0 +1,121 @@
+/* ================================================================
+   MeetSpace — User Banner Styles (Authenticated State)
+   ================================================================ */
+
+.user-banner {
+  position: relative;
+  z-index: 900;
+  margin-top: 72px; /* Clears sticky header */
+  background: var(--bg-surface-alt);
+  border-bottom: 1px solid var(--border-card);
+  padding: 12px 0;
+  animation: slideDown 0.25s ease-out;
+}
+
+.user-banner__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.user-banner__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-banner__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-banner__details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-banner__greeting {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.user-banner__name {
+  font-size: 0.95rem;
+  color: var(--text-heading);
+}
+
+.user-banner__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.user-banner__desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.user-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-banner__btn {
+  background: var(--bg-card);
+}
+
+.user-banner__logout-btn {
+  background: transparent;
+  color: var(--red-500);
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+}
+
+.user-banner__logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--red-500);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .user-banner {
+    margin-top: 68px;
+    padding: 14px 0;
+  }
+
+  .user-banner__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-banner__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

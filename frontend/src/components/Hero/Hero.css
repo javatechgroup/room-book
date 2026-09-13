@@ -13,7 +13,7 @@
   background:
     radial-gradient(ellipse 80% 60% at 50% 0%, var(--primary-100) 0%, transparent 60%),
     radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
-    linear-gradient(180deg, #ffffff 0%, var(--gray-50) 100%);
+    linear-gradient(180deg, var(--bg-body) 0%, var(--bg-surface-alt) 100%);
   z-index: 0;
 }
 
@@ -44,7 +44,7 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.03em;
-  color: var(--gray-900);
+  color: var(--text-heading);
   margin-bottom: 20px;
 }
 
@@ -57,7 +57,7 @@
 
 .hero__subtitle {
   font-size: 1.2rem;
-  color: var(--gray-500);
+  color: var(--text-muted);
   max-width: 600px;
   margin: 0 auto 36px;
   line-height: 1.7;
@@ -86,19 +86,19 @@
 .hero__stat-value {
   font-size: 1.75rem;
   font-weight: 800;
-  color: var(--gray-900);
+  color: var(--text-heading);
 }
 
 .hero__stat-label {
   font-size: 0.85rem;
-  color: var(--gray-500);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .hero__stat-divider {
   width: 1px;
   height: 40px;
-  background: var(--gray-200);
+  background: var(--border-card);
 }
 
 @media (max-width: 768px) {

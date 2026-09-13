@@ -1,6 +1,6 @@
 .how-it-works {
   padding: 100px 0;
-  background: var(--gray-50);
+  background: var(--bg-surface-alt);
 }
 
 .steps {
@@ -33,13 +33,13 @@
 .step__title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--gray-900);
+  color: var(--text-heading);
   margin-bottom: 8px;
 }
 
 .step__desc {
   font-size: 0.9rem;
-  color: var(--gray-500);
+  color: var(--text-muted);
   line-height: 1.6;
 }
 

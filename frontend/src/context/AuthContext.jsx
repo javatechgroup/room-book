@@ -1,0 +1,96 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authApi } from '../api/authApi';
+
+const AuthContext = createContext(null);
+
+const STORAGE_KEYS = {
+  TOKEN: 'meetspace_token',
+  USER: 'meetspace_user',
+};
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  // Restore session on mount
+  useEffect(() => {
+    try {
+      const savedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+      const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
+
+      if (savedToken && savedUser) {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (e) {
+      console.error('Failed to restore session from storage', e);
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const login = async (email, password) => {
+    const result = await authApi.login(email, password);
+
+    if (result.success && result.data) {
+      const { accessToken, ...userData } = result.data;
+      setToken(accessToken);
+      setUser(userData);
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.TOKEN, accessToken);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+      } catch (e) {
+        console.error('Failed to persist session to storage', e);
+      }
+
+      setIsLoginOpen(false);
+      return { success: true, user: userData };
+    }
+
+    return {
+      success: false,
+      error: result.error || 'Authentication failed',
+    };
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    try {
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+    } catch (e) {
+      console.error('Failed to clear session storage', e);
+    }
+  };
+
+  const openLogin = () => setIsLoginOpen(true);
+  const closeLogin = () => setIsLoginOpen(false);
+
+  const value = {
+    user,
+    token,
+    isAuthenticated: !!user,
+    loading,
+    isLoginOpen,
+    openLogin,
+    closeLogin,
+    login,
+    logout,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

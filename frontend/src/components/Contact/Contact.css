@@ -64,10 +64,11 @@
 }
 
 .contact__form {
-  background: #ffffff;
+  background: var(--bg-card);
   padding: 36px;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-card);
   min-height: 420px;
   display: flex;
   flex-direction: column;
@@ -87,7 +88,7 @@
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--gray-700);
+  color: var(--text-body);
   margin-bottom: 6px;
 }
 
@@ -97,9 +98,9 @@
   padding: 11px 14px;
   font-family: var(--font-family);
   font-size: 0.925rem;
-  color: var(--gray-800);
-  background: var(--gray-50);
-  border: 1.5px solid var(--gray-200);
+  color: var(--text-body);
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-input);
   border-radius: var(--radius-md);
   transition: var(--transition);
   outline: none;
@@ -107,13 +108,13 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: var(--gray-400);
+  color: var(--text-faint);
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   border-color: var(--primary-500);
-  background: #ffffff;
+  background: var(--bg-card);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
@@ -140,12 +141,12 @@
 .contact__success h3 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--gray-900);
+  color: var(--text-heading);
 }
 
 .contact__success p {
   font-size: 0.95rem;
-  color: var(--gray-500);
+  color: var(--text-muted);
   max-width: 300px;
 }
 

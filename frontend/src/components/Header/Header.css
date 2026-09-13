@@ -10,9 +10,9 @@
 }
 
 .header--scrolled {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--header-bg);
   backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--header-shadow);
   padding: 12px 0;
 }
 
@@ -44,7 +44,7 @@
 .header__link {
   font-size: 0.925rem;
   font-weight: 500;
-  color: var(--gray-600);
+  color: var(--text-muted);
   transition: var(--transition);
   position: relative;
 }
@@ -68,30 +68,163 @@
   width: 100%;
 }
 
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header__signin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+/* User Pill (Desktop) */
+.header__user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 4px 5px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-card);
+  border-radius: 999px;
+  transition: var(--transition);
+}
+
+.header__user-pill:hover {
+  border-color: var(--primary-300);
+}
+
+.header__user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-600), #8b5cf6);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header__user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.header__user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.header__user-role-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary-700);
+}
+
+.header__logout-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.header__logout-btn:hover {
+  color: var(--red-500);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ───── Theme Toggle ───── */
+.theme-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-card);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary-400);
+  background: var(--primary-50);
+  transform: rotate(15deg);
+}
+
+.theme-toggle__icon {
+  position: absolute;
+  transition: all 0.35s ease;
+  opacity: 0;
+  transform: scale(0.5) rotate(-90deg);
+  color: var(--text-muted);
+}
+
+.theme-toggle__icon--active {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  color: var(--primary-600);
+}
+
 .header__toggle {
   display: none;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--gray-700);
+  color: var(--text-body);
 }
 
+.header__nav-auth {
+  display: none;
+}
+
+.header__user-mobile {
+  display: none;
+}
+
+/* Mobile Nav */
 @media (max-width: 768px) {
   .header__toggle {
     display: block;
+  }
+
+  .header__signin-btn {
+    display: none;
+  }
+
+  .header__user-pill {
+    display: none;
   }
 
   .header__nav {
     position: fixed;
     top: 0;
     right: -100%;
-    width: 280px;
+    width: 290px;
     height: 100vh;
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    padding: 80px 32px 32px;
-    background: #ffffff;
+    padding: 80px 24px 32px;
+    background: var(--bg-surface);
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
     transition: right 0.3s ease;
   }
@@ -104,16 +237,49 @@
     width: 100%;
     padding: 14px 0;
     font-size: 1.05rem;
-    border-bottom: 1px solid var(--gray-100);
+    border-bottom: 1px solid var(--border-card);
   }
 
   .header__link::after {
     display: none;
   }
 
-  .header__nav .btn {
+  .header__nav-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     width: 100%;
-    margin-top: 16px;
+    margin-top: 24px;
+  }
+
+  .header__nav-auth .btn {
+    width: 100%;
     justify-content: center;
+  }
+
+  .header__user-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+  }
+
+  .header__user-mobile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .btn--logout-mobile {
+    width: 100%;
+    justify-content: center;
+    color: var(--red-500);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: transparent;
   }
 }
