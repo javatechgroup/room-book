@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  LayoutGrid,
+  Building2,
   Menu,
   X,
   Sun,
@@ -14,17 +14,20 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import './Header.css';
 
-const navLinks = [
-  { label: 'Features', href: '#features' },
-  { label: 'How It Works', href: '#how-it-works' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'Contact', href: '#contact' },
-];
-
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAuthenticated, logout, openLogin } = useAuth();
+
+  const navLinks = isAuthenticated
+    ? [
+        { label: 'Book a Slot', href: '#availability' },
+        { label: 'Facility Helpdesk', href: '#facility-support' },
+      ]
+    : [
+        { label: 'Campus Floors', href: '#floor-overview' },
+        { label: 'Facility Helpdesk', href: '#facility-support' },
+      ];
 
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('meetspace-theme');
@@ -63,7 +66,7 @@ function Header() {
       case 'SUPER_ADMIN':
         return 'Super Admin';
       case 'COMPANY_ADMIN':
-        return 'Admin';
+        return 'Facility Admin';
       default:
         return 'Employee';
     }
@@ -73,8 +76,11 @@ function Header() {
     <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
       <div className="container header__inner">
         <a href="#" className="header__logo">
-          <LayoutGrid size={28} className="header__logo-icon" />
-          <span className="header__logo-text">MeetSpace</span>
+          <Building2 size={26} className="header__logo-icon" />
+          <div className="header__brand-text">
+            <span className="header__logo-text">Workplace Portal</span>
+            <span className="header__logo-sub">Building A • Room Manager</span>
+          </div>
         </a>
 
         <nav className={`header__nav ${mobileOpen ? 'header__nav--open' : ''}`}>
@@ -112,21 +118,14 @@ function Header() {
             <div className="header__nav-auth">
               <button
                 type="button"
-                className="btn btn--outline btn--sm"
+                className="btn btn--primary btn--sm btn--full"
                 onClick={() => {
                   openLogin();
                   setMobileOpen(false);
                 }}
               >
-                <LogIn size={15} /> Sign In
+                <LogIn size={15} /> Sign In to Portal
               </button>
-              <a
-                href="#contact"
-                className="btn btn--primary btn--sm"
-                onClick={() => setMobileOpen(false)}
-              >
-                Get Started
-              </a>
             </div>
           )}
         </nav>

@@ -1,12 +1,12 @@
 import React from 'react';
-import { LayoutGrid } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import './Footer.css';
 
 const footerLinks = {
-  Product: ['Features', 'Pricing', 'Integrations', 'Changelog'],
-  Company: ['About Us', 'Careers', 'Blog', 'Press'],
-  Resources: ['Documentation', 'Help Center', 'API Reference', 'Status'],
-  Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'GDPR'],
+  Workplace: ['Campus Floors', 'Room Directory', 'Slot Availability', 'Smart Suggestions'],
+  Facilities: ['Room Hardware', 'Maintenance Logs', 'Booking Policies', 'Ops Desk'],
+  Administration: ['Building Settings', 'Department Allocations', 'Duration Limits', 'Audit Logs'],
+  Support: ['Facility Helpdesk', 'Report Hardware Issue', 'Room Etiquette', 'System Status'],
 };
 
 function Footer() {
@@ -18,17 +18,13 @@ function Footer() {
         <div className="footer__top">
           <div className="footer__brand">
             <a href="#" className="footer__logo">
-              <LayoutGrid size={24} />
-              <span>MeetSpace</span>
+              <Building2 size={24} />
+              <span>Workplace Portal</span>
             </a>
             <p className="footer__tagline">
-              The smart way to manage meeting rooms. Book conference rooms, invite participants, and keep your team organized.
+              Managing physical meeting rooms across company offices. Instant slot availability checks,
+              conflict-free reservations, and smart room suggestions when slots are occupied.
             </p>
-            <div className="footer__social">
-              <a href="#" className="footer__social-link" aria-label="Twitter">𝕏</a>
-              <a href="#" className="footer__social-link" aria-label="LinkedIn">in</a>
-              <a href="#" className="footer__social-link" aria-label="GitHub">GH</a>
-            </div>
           </div>
           {Object.entries(footerLinks).map(([heading, links]) => (
             <div className="footer__column" key={heading}>
@@ -44,9 +40,9 @@ function Footer() {
           ))}
         </div>
         <div className="footer__bottom">
-          <p>&copy; {currentYear} MeetSpace. All rights reserved.</p>
+          <p>&copy; {currentYear} Corporate Workplace Operations • Building A Campus. All rights reserved.</p>
           <p>
-            Made with ❤️ for productive meetings
+            Internal Physical Room & Slot Management
           </p>
         </div>
       </div>

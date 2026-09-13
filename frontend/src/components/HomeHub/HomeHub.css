@@ -1,0 +1,329 @@
+/* ================================================================
+   HomeHub — Internal Corporate Room & Floor Portal Styles
+   ================================================================ */
+
+.home-hub {
+  background: var(--bg-body);
+}
+
+/* Hub Hero */
+.hub-hero {
+  padding: 100px 0 60px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, var(--primary-100) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg-body) 0%, var(--bg-surface-alt) 100%);
+  text-align: center;
+}
+
+.hub-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--primary-50);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-200);
+  border-radius: 999px;
+  font-size: 0.825rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+[data-theme='dark'] .hub-hero__badge {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--primary-300);
+}
+
+.hub-hero__title {
+  font-size: 3.25rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--text-heading);
+  margin-bottom: 18px;
+}
+
+.hub-hero__title--accent {
+  background: linear-gradient(135deg, var(--primary-600), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hub-hero__subtitle {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  max-width: 650px;
+  margin: 0 auto 40px;
+  line-height: 1.65;
+}
+
+/* Quick Access Card */
+.hub-access-card {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+
+.hub-access-card__info h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.hub-access-card__info p {
+  font-size: 0.925rem;
+  color: var(--text-muted);
+}
+
+.hub-access-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-card);
+}
+
+.hub-quick-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hub-quick-chips__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-surface-alt);
+  color: var(--text-body);
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.quick-chip:hover {
+  border-color: var(--primary-400);
+  background: var(--primary-50);
+  color: var(--primary-700);
+}
+
+.quick-chip--admin:hover {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+/* Campus Status / Floors Grid */
+.hub-snapshot {
+  padding: 80px 0;
+  background: var(--bg-surface-alt);
+}
+
+.floors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.floor-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.floor-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-card);
+}
+
+.floor-card__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 2px;
+}
+
+.floor-card__wing {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+.floor-card__icon {
+  color: var(--primary-500);
+}
+
+.floor-card__rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-card);
+  font-size: 0.85rem;
+}
+
+.room-pill__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-pill__code {
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--gray-200);
+  color: var(--text-muted);
+}
+
+[data-theme='dark'] .room-pill__code {
+  background: var(--gray-700);
+  color: var(--gray-300);
+}
+
+.room-pill__name {
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.room-pill__cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.room-pill__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.room-status-badge {
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.room-status-badge--avail {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.room-status-badge--occ {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+
+.room-next-time {
+  font-size: 0.725rem;
+  color: var(--text-faint);
+}
+
+/* Guidelines */
+.hub-guidelines {
+  padding: 80px 0;
+  background: var(--bg-body);
+}
+
+.guidelines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.guideline-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  box-shadow: var(--shadow-sm);
+}
+
+.guideline-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--primary-50);
+  color: var(--primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+[data-theme='dark'] .guideline-card__icon {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary-400);
+}
+
+.guideline-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.guideline-card__desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .hub-hero__title {
+    font-size: 2.25rem;
+  }
+
+  .hub-access-card__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hub-access-card__actions .btn {
+    width: 100%;
+  }
+}

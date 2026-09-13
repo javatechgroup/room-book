@@ -95,12 +95,12 @@ function LoginModal() {
         {/* Modal Header */}
         <div className="login-modal__header">
           <div className="login-modal__logo">
-            <LayoutGrid size={28} />
-            <span>MeetSpace</span>
+            <Building size={28} />
+            <span>Workplace Room Portal</span>
           </div>
-          <h2 className="login-modal__title">Sign in to your account</h2>
+          <h2 className="login-modal__title">Sign in to Workplace Portal</h2>
           <p className="login-modal__subtitle">
-            Access your meeting rooms, bookings, and team schedules
+            Access company physical meeting rooms, slot availability, and facility management
           </p>
         </div>
 

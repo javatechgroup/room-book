@@ -20,11 +20,11 @@ function UserBanner() {
         };
       case 'COMPANY_ADMIN':
         return {
-          label: 'Company Admin',
+          label: 'Facility Admin',
           icon: Building,
           color: '#3b82f6',
           bg: 'rgba(59, 130, 246, 0.12)',
-          desc: 'Company management • Rooms, Departments & Policies',
+          desc: 'Workplace management • Physical rooms, floors & slot duration rules',
         };
       case 'EMPLOYEE':
       default:
@@ -33,7 +33,7 @@ function UserBanner() {
           icon: User,
           color: '#10b981',
           bg: 'rgba(16, 185, 129, 0.12)',
-          desc: 'Meeting scheduling • Room search & calendar invites',
+          desc: 'Physical room booking • Slot availability check & smart room suggestions',
         };
     }
   };
@@ -76,9 +76,9 @@ function UserBanner() {
         </div>
 
         <div className="user-banner__actions">
-          <a href="#features" className="btn btn--outline btn--sm user-banner__btn">
+          <a href="#availability" className="btn btn--outline btn--sm user-banner__btn">
             <Calendar size={14} />
-            Explore Dashboard
+            Check Availability
           </a>
           <button
             type="button"

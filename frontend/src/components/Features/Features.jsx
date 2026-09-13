@@ -1,48 +1,55 @@
 import React from 'react';
-import { CalendarCheck, Building2, Users, Shield, Clock, Bell } from 'lucide-react';
+import {
+  CalendarCheck,
+  Building2,
+  Sparkles,
+  Shield,
+  Clock,
+  Monitor,
+} from 'lucide-react';
 import './Features.css';
 
 const features = [
   {
     icon: CalendarCheck,
-    title: 'Instant Room Booking',
+    title: 'Real-Time Physical Slot Check',
     description:
-      'See which meeting rooms are free right now. Reserve a conference room in one click — no double-bookings, ever.',
+      'Verify live availability for any company conference room, boardroom, or focus pod before reserving.',
     color: '#3b82f6',
   },
   {
-    icon: Building2,
-    title: 'Multi-Company Ready',
+    icon: Sparkles,
+    title: 'Smart Alternative Room Finder',
     description:
-      'Perfect for co-working spaces or enterprises with multiple offices. Each organization gets its own isolated workspace.',
+      'When your preferred room is occupied, get instant suggestions for matching available rooms across your company floors.',
     color: '#8b5cf6',
   },
   {
-    icon: Users,
-    title: 'Invite Participants',
+    icon: Clock,
+    title: 'Next-Available Slot Suggestions',
     description:
-      'Add colleagues to your meeting invite. Everyone gets notified with room details, time, and agenda automatically.',
+      'Avoid endless calendar searching. The system automatically computes and suggests the earliest next open slot for the busy room.',
     color: '#10b981',
   },
   {
-    icon: Shield,
-    title: 'Role-Based Access',
+    icon: Monitor,
+    title: 'Room Equipment & Capacity',
     description:
-      'Admins manage rooms and policies. Employees book and view availability. Every action secured with JWT authentication.',
+      'Browse physical rooms equipped with video bars, displays, whiteboards, and exact seating capacities.',
     color: '#f59e0b',
   },
   {
-    icon: Clock,
-    title: 'Custom Booking Policies',
+    icon: Shield,
+    title: 'Strict Anti-Overlap Enforcement',
     description:
-      'Set max meeting duration, advance booking limits, and cancellation windows to match how your organization works.',
+      'Prevents double-bookings and scheduling collisions with slot validation and company-defined duration limits.',
     color: '#ef4444',
   },
   {
-    icon: Bell,
-    title: 'Smart Notifications',
+    icon: Building2,
+    title: 'Multi-Floor Office Administration',
     description:
-      'Automatic email alerts when meetings are booked, rescheduled, or cancelled. No one misses a meeting again.',
+      'Facility managers and admins can manage physical rooms, schedule maintenance, and enforce booking policies.',
     color: '#06b6d4',
   },
 ];
@@ -52,10 +59,10 @@ function Features() {
     <section className="features" id="features">
       <div className="container">
         <div className="section-header">
-          <span className="section-tag">Features</span>
-          <h2 className="section-title">Everything You Need to Manage Meeting Rooms</h2>
+          <span className="section-tag">Room Management</span>
+          <h2 className="section-title">Built for Company Physical Meeting Rooms</h2>
           <p className="section-subtitle">
-            End scheduling chaos. One platform to find, book, and manage every conference room across your organization.
+            Eliminate room collisions, optimize physical office spaces, and find open slots or alternatives in seconds.
           </p>
         </div>
         <div className="features__grid">

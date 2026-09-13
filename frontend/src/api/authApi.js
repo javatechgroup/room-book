@@ -21,17 +21,17 @@ export const DEMO_ACCOUNTS = [
     fullName: 'System Super Admin',
     companyId: null,
     icon: '👑',
-    description: 'Manage companies, admins & system policies',
+    description: 'Manage companies, facility admins & system policies',
   },
   {
     role: 'COMPANY_ADMIN',
-    roleLabel: 'Company Admin',
+    roleLabel: 'Facility Admin',
     email: 'admin@acme.com',
     password: 'password123',
     fullName: 'Acme Administrator',
     companyId: 1,
     icon: '🏢',
-    description: 'Manage rooms, departments & company policies',
+    description: 'Manage physical rooms, floors & slot duration rules',
   },
   {
     role: 'EMPLOYEE',
@@ -41,7 +41,7 @@ export const DEMO_ACCOUNTS = [
     fullName: 'John Doe',
     companyId: 1,
     icon: '👤',
-    description: 'Search & book meeting rooms, invite colleagues',
+    description: 'Check slot availability, book rooms & get smart recommendations',
   },
 ];
 
