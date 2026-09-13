@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg)" />
+  
+  <!-- Door / Room Icon -->
+  <rect x="156" y="112" width="200" height="288" rx="24" fill="#ffffff" />
+  <!-- Glass panel in door -->
+  <rect x="188" y="148" width="136" height="120" rx="12" fill="#dbeafe" />
+  <!-- Door handle -->
+  <circle cx="316" cy="316" r="16" fill="#1e40af" />
+  <rect x="300" y="312" width="32" height="8" rx="4" fill="#1e40af" />
+  
+  <!-- Available Badge (Green circle with checkmark) -->
+  <circle cx="360" cy="140" r="44" fill="#22c55e" stroke="#ffffff" stroke-width="10" />
+  <path d="M342 140 L354 152 L378 128" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+</svg>
