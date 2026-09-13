@@ -1,0 +1,23 @@
+# Target compilation output
+target/
+*.class
+
+# Frontend dependencies and build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/node/
+frontend/.vite/
+
+# Database files
+*.db
+*.mv.db
+*.trace.db
+D:/booking-db/
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.log
