@@ -155,22 +155,29 @@
   flex-direction: column;
 }
 
-.input-with-icon {
+.input-with-icon,
+.login-modal__form .input-with-icon {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.input-icon {
+.input-icon,
+.login-modal__form .input-icon {
   position: absolute;
   left: 14px;
   color: var(--text-faint);
   pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.input-with-icon input {
+.input-with-icon input,
+.login-modal__form .input-with-icon input {
   width: 100%;
-  padding: 11px 40px 11px 42px;
+  padding: 12px 42px 12px 42px !important;
   font-family: var(--font-family);
   font-size: 0.925rem;
   color: var(--text-body);

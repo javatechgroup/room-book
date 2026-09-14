@@ -263,22 +263,29 @@
   color: var(--text-heading);
 }
 
-.input-wrap {
+.input-wrap,
+.gateway-form .input-wrap {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.input-wrap .input-icon {
+.input-wrap .input-icon,
+.gateway-form .input-wrap .input-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   color: var(--text-faint);
   pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.input-wrap input {
+.input-wrap input,
+.gateway-form .input-wrap input {
   width: 100%;
-  padding: 11px 40px 11px 38px;
+  padding: 12px 42px 12px 42px !important;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--bg-input);
@@ -288,7 +295,8 @@
   transition: var(--transition);
 }
 
-.input-wrap input:focus {
+.input-wrap input:focus,
+.gateway-form .input-wrap input:focus {
   outline: none;
   border-color: var(--primary-500);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
@@ -303,6 +311,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  z-index: 2;
 }
 
 .password-toggle:hover {
@@ -512,8 +521,9 @@
     font-size: 1.2rem;
   }
 
-  .gateway-input-wrapper input {
-    padding: 10px 12px 10px 38px;
+  .input-wrap input,
+  .gateway-form .input-wrap input {
+    padding: 10px 38px 10px 38px !important;
     font-size: 0.875rem;
   }
 

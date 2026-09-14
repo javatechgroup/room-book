@@ -1,10 +1,10 @@
 import React from 'react';
-import { Shield, Building, User, LogOut, Calendar, CheckCircle2 } from 'lucide-react';
+import { Shield, Building, User, Calendar, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './UserBanner.css';
 
 function UserBanner() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   if (!isAuthenticated || !user) return null;
 
@@ -80,14 +80,6 @@ function UserBanner() {
             <Calendar size={14} />
             Check Availability
           </a>
-          <button
-            type="button"
-            className="btn btn--sm user-banner__logout-btn"
-            onClick={logout}
-          >
-            <LogOut size={14} />
-            Sign Out
-          </button>
         </div>
       </div>
     </aside>

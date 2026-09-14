@@ -6,7 +6,10 @@ import {
   Send,
   CheckCircle2,
   Building2,
-  Users,
+  User,
+  MessageSquare,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './ContactModal.css';
@@ -18,8 +21,6 @@ export default function ContactModal() {
     email: '',
     company: '',
     phone: '',
-    inquiryType: 'Deploy Room Management',
-    roomCount: '6 - 15 Rooms',
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
@@ -51,8 +52,6 @@ export default function ContactModal() {
         email: '',
         company: '',
         phone: '',
-        inquiryType: 'Deploy Room Management',
-        roomCount: '6 - 15 Rooms',
         message: '',
       });
       closeConnect();
@@ -73,145 +72,134 @@ export default function ContactModal() {
           onClick={closeConnect}
           aria-label="Close dialog"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Modal Header */}
         <div className="contact-modal__header">
-          <div className="contact-modal__top-bar">
-            <div className="contact-modal__logo">
-              <Building2 size={20} />
-              <span>Workplace Solutions</span>
-            </div>
-            <div className="contact-modal__channels">
-              <a href="mailto:inquiries@roombook.io" className="modal-channel-item">
-                <Mail size={13} />
-                <span>inquiries@roombook.io</span>
-              </a>
-              <span className="channel-sep">•</span>
-              <a href="tel:+15552345678" className="modal-channel-item">
-                <Phone size={13} />
-                <span>+1 (555) 234-5678</span>
-              </a>
-            </div>
+          <div className="contact-modal__badge">
+            <Sparkles size={13} />
+            <span>Workplace Solutions</span>
           </div>
           <h3 className="contact-modal__title">Connect With Our Workplace Team</h3>
           <p className="contact-modal__subtitle">
-            Schedule an enterprise walkthrough or discuss physical room setup for your company.
+            Interested in deploying our meeting room system for your company? We'd love to assist.
           </p>
+
+          <div className="contact-modal__channels">
+            <a href="mailto:inquiries@roombook.io" className="modal-channel-item">
+              <Mail size={13} />
+              <span>inquiries@roombook.io</span>
+            </a>
+            <span className="channel-sep">•</span>
+            <a href="tel:+15552345678" className="modal-channel-item">
+              <Phone size={13} />
+              <span>+1 (555) 234-5678</span>
+            </a>
+          </div>
         </div>
 
         {/* Form Body */}
         {submitted ? (
           <div className="contact-modal__success">
-            <CheckCircle2 size={48} />
+            <CheckCircle2 size={44} />
             <h4>Thank You for Connecting!</h4>
             <p>Our corporate workplace specialist will reach out to you within 24 hours.</p>
           </div>
         ) : (
           <form className="contact-modal__form" onSubmit={handleSubmit}>
-            <div className="contact-modal__row">
-              <div className="contact-modal__group">
-                <label htmlFor="modal-name">Your Full Name *</label>
-                <input
-                  id="modal-name"
-                  name="name"
-                  type="text"
-                  placeholder="Jane Smith"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
+            <div className="contact-modal__grid">
+              <div className="contact-modal__field">
+                <label htmlFor="modal-name">
+                  Full Name <span className="req">*</span>
+                </label>
+                <div className="modal-input-wrap">
+                  <User size={15} className="modal-input-icon" />
+                  <input
+                    id="modal-name"
+                    name="name"
+                    type="text"
+                    placeholder="Jane Doe"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
-              <div className="contact-modal__group">
-                <label htmlFor="modal-email">Work Email *</label>
-                <input
-                  id="modal-email"
-                  name="email"
-                  type="email"
-                  placeholder="jane@company.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
+
+              <div className="contact-modal__field">
+                <label htmlFor="modal-email">
+                  Work Email <span className="req">*</span>
+                </label>
+                <div className="modal-input-wrap">
+                  <Mail size={15} className="modal-input-icon" />
+                  <input
+                    id="modal-email"
+                    name="email"
+                    type="email"
+                    placeholder="jane@company.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="contact-modal__field">
+                <label htmlFor="modal-company">Company / Organization</label>
+                <div className="modal-input-wrap">
+                  <Building2 size={15} className="modal-input-icon" />
+                  <input
+                    id="modal-company"
+                    name="company"
+                    type="text"
+                    placeholder="Acme Corporation"
+                    value={formData.company}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="contact-modal__field">
+                <label htmlFor="modal-phone">Mobile / Phone Number</label>
+                <div className="modal-input-wrap">
+                  <Phone size={15} className="modal-input-icon" />
+                  <input
+                    id="modal-phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="+1 (555) 000-0000"
+                    value={formData.phone}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="contact-modal__row">
-              <div className="contact-modal__group">
-                <label htmlFor="modal-company">Company / Organization *</label>
-                <input
-                  id="modal-company"
-                  name="company"
-                  type="text"
-                  placeholder="Acme Corp"
-                  value={formData.company}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="contact-modal__group">
-                <label htmlFor="modal-phone">Phone Number</label>
-                <input
-                  id="modal-phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
-                  value={formData.phone}
+            <div className="contact-modal__field contact-modal__field--full">
+              <label htmlFor="modal-message">How Can We Help?</label>
+              <div className="modal-input-wrap">
+                <MessageSquare size={15} className="modal-input-icon modal-input-icon--textarea" />
+                <textarea
+                  id="modal-message"
+                  name="message"
+                  rows="2"
+                  placeholder="Tell us about your physical office spaces, requirements, or any questions..."
+                  value={formData.message}
                   onChange={handleChange}
                 />
               </div>
-            </div>
-
-            <div className="contact-modal__row">
-              <div className="contact-modal__group">
-                <label htmlFor="modal-inquiryType">Inquiry Type</label>
-                <select
-                  id="modal-inquiryType"
-                  name="inquiryType"
-                  value={formData.inquiryType}
-                  onChange={handleChange}
-                >
-                  <option value="Deploy Room Management">Deploy System for My Company</option>
-                  <option value="Schedule Demo">Schedule a Live System Walkthrough</option>
-                  <option value="Custom Setup">Custom Room Setup & Configuration</option>
-                  <option value="Client Support">Existing Client Technical Support</option>
-                  <option value="General Inquiry">General Inquiry</option>
-                </select>
-              </div>
-              <div className="contact-modal__group">
-                <label htmlFor="modal-roomCount">Approximate Physical Rooms</label>
-                <select
-                  id="modal-roomCount"
-                  name="roomCount"
-                  value={formData.roomCount}
-                  onChange={handleChange}
-                >
-                  <option value="1 - 5 Rooms">1 - 5 Rooms (Single Floor)</option>
-                  <option value="6 - 15 Rooms">6 - 15 Rooms (Standard Office)</option>
-                  <option value="16 - 50 Rooms">16 - 50 Rooms (Multi-Floor Campus)</option>
-                  <option value="50+ Rooms">50+ Rooms (Enterprise)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="contact-modal__group">
-              <label htmlFor="modal-message">Your Requirements or Questions *</label>
-              <textarea
-                id="modal-message"
-                name="message"
-                rows="3"
-                placeholder="Tell us about your physical office rooms, scheduling challenges, or questions..."
-                value={formData.message}
-                onChange={handleChange}
-                required
-              />
             </div>
 
             <button type="submit" className="btn btn--primary btn--full modal-submit-btn">
-              <Send size={16} />
-              Send Inquiry to Our Team
+              <Send size={15} />
+              <span>Send Inquiry to Our Team</span>
             </button>
+
+            <div className="contact-modal__reassurance">
+              <ShieldCheck size={13} />
+              <span>Your information is protected. We typically respond within 24 hours.</span>
+            </div>
           </form>
         )}
       </div>

@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle, Building, Users } from 'lucide-react';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Send,
+  CheckCircle2,
+  Building2,
+  User,
+  MessageSquare,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
 import './Contact.css';
 
 function Contact() {
@@ -8,8 +19,6 @@ function Contact() {
     email: '',
     company: '',
     phone: '',
-    inquiryType: 'Deploy Room Management',
-    roomCount: '6 - 15 Rooms',
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
@@ -20,7 +29,6 @@ function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Client inquiry submitted:', formData);
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
@@ -29,11 +37,9 @@ function Contact() {
         email: '',
         company: '',
         phone: '',
-        inquiryType: 'Deploy Room Management',
-        roomCount: '6 - 15 Rooms',
         message: '',
       });
-    }, 5000);
+    }, 4000);
   };
 
   return (
@@ -86,119 +92,119 @@ function Contact() {
             </div>
           </div>
 
-          {/* Right Side: Client Inquiry Form */}
+          {/* Right Side: Client Inquiry Form (matches ContactModal component) */}
           <form className="contact__form" onSubmit={handleSubmit}>
             {submitted ? (
               <div className="contact__success">
-                <CheckCircle size={48} />
+                <CheckCircle2 size={44} />
                 <h3>Thank You for Connecting!</h3>
-                <p>We've received your message. Our solutions specialist will reach out to you within 24 hours.</p>
+                <p>Our corporate workplace specialist will reach out to you within 24 hours.</p>
               </div>
             ) : (
               <>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="name">Full Name *</label>
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder="Jane Doe"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                    />
+                <div className="contact__form-header">
+                  <div className="contact__form-badge">
+                    <Sparkles size={13} />
+                    <span>Direct Solutions Inquiry</span>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="email">Work Email *</label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="jane@company.com"
-                      value={formData.email}
+                  <h3 className="contact__form-title">Send Us a Message</h3>
+                  <p className="contact__form-subtitle">
+                    Fill out the form below and our team will get back to you promptly.
+                  </p>
+                </div>
+
+                <div className="contact__form-grid">
+                  <div className="contact__field">
+                    <label htmlFor="name">
+                      Full Name <span className="req">*</span>
+                    </label>
+                    <div className="contact__input-wrap">
+                      <User size={15} className="contact__input-icon" />
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        placeholder="Jane Doe"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="contact__field">
+                    <label htmlFor="email">
+                      Work Email <span className="req">*</span>
+                    </label>
+                    <div className="contact__input-wrap">
+                      <Mail size={15} className="contact__input-icon" />
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="jane@company.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="contact__field">
+                    <label htmlFor="company">Company / Organization</label>
+                    <div className="contact__input-wrap">
+                      <Building2 size={15} className="contact__input-icon" />
+                      <input
+                        id="company"
+                        name="company"
+                        type="text"
+                        placeholder="Acme Corporation"
+                        value={formData.company}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="contact__field">
+                    <label htmlFor="phone">Mobile / Phone Number</label>
+                    <div className="contact__input-wrap">
+                      <Phone size={15} className="contact__input-icon" />
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="+1 (555) 000-0000"
+                        value={formData.phone}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="contact__field contact__field--full">
+                  <label htmlFor="message">How Can We Help?</label>
+                  <div className="contact__input-wrap">
+                    <MessageSquare size={15} className="contact__input-icon contact__input-icon--textarea" />
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows="3"
+                      placeholder="Tell us about your physical office spaces, requirements, or any questions..."
+                      value={formData.message}
                       onChange={handleChange}
-                      required
                     />
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="company">Company / Organization *</label>
-                    <input
-                      id="company"
-                      name="company"
-                      type="text"
-                      placeholder="Acme Corporation"
-                      value={formData.company}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+1 (555) 000-0000"
-                      value={formData.phone}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="inquiryType">How Can We Help? *</label>
-                    <select
-                      id="inquiryType"
-                      name="inquiryType"
-                      value={formData.inquiryType}
-                      onChange={handleChange}
-                    >
-                      <option value="Deploy Room Management">Deploy System for My Company</option>
-                      <option value="Schedule Demo">Schedule a Live System Walkthrough</option>
-                      <option value="Custom Setup">Custom Room Setup & Configuration</option>
-                      <option value="Client Support">Existing Client Technical Support</option>
-                      <option value="General Inquiry">General Inquiry</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="roomCount">Approximate Physical Rooms</label>
-                    <select
-                      id="roomCount"
-                      name="roomCount"
-                      value={formData.roomCount}
-                      onChange={handleChange}
-                    >
-                      <option value="1 - 5 Rooms">1 - 5 Rooms</option>
-                      <option value="6 - 15 Rooms">6 - 15 Rooms</option>
-                      <option value="16 - 50 Rooms">16 - 50 Rooms</option>
-                      <option value="50+ Rooms">50+ Rooms (Multi-Floor/Multi-Office)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="message">Your Requirements or Questions *</label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows="4"
-                    placeholder="Tell us about your company's physical office rooms, scheduling challenges, or any questions..."
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn btn--primary btn--full">
-                  <Send size={18} />
-                  Send Inquiry to Our Team
+                <button type="submit" className="btn btn--primary btn--full contact__submit-btn">
+                  <Send size={15} />
+                  <span>Send Inquiry to Our Team</span>
                 </button>
+
+                <div className="contact__reassurance">
+                  <ShieldCheck size={13} />
+                  <span>Your information is protected. We typically respond within 24 hours.</span>
+                </div>
               </>
             )}
           </form>

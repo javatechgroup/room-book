@@ -81,17 +81,6 @@
   background: var(--bg-card);
 }
 
-.user-banner__logout-btn {
-  background: transparent;
-  color: var(--red-500);
-  border: 1.5px solid rgba(239, 68, 68, 0.3);
-}
-
-.user-banner__logout-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: var(--red-500);
-}
-
 @keyframes slideDown {
   from {
     opacity: 0;
