@@ -131,11 +131,15 @@ public class CompanyIntegrationTest {
     }
 
     @Test
-    public void testGetAllCompanies() throws Exception {
-        mockMvc.perform(get("/api/admin/companies")
+    public void testGetAllCompaniesPaginated() throws Exception {
+        mockMvc.perform(get("/api/admin/companies?page=1&size=5&status=ALL")
                 .header("Authorization", "Bearer " + superAdminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").isArray());
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.page").value(1))
+                .andExpect(jsonPath("$.data.size").value(5))
+                .andExpect(jsonPath("$.data.totalElements").isNumber())
+                .andExpect(jsonPath("$.data.totalPages").isNumber());
     }
 }

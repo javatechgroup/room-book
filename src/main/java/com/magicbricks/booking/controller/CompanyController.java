@@ -1,6 +1,7 @@
 package com.magicbricks.booking.controller;
 
 import com.magicbricks.booking.common.ApiResponse;
+import com.magicbricks.booking.common.PageResponse;
 import com.magicbricks.booking.dto.CompanyRegistrationRequest;
 import com.magicbricks.booking.dto.CompanyResponse;
 import com.magicbricks.booking.security.UserPrincipal;
@@ -11,8 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/companies")
@@ -35,9 +34,15 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CompanyResponse>>> getAllCompanies() {
-        List<CompanyResponse> list = companyService.getAllCompanies();
-        return ResponseEntity.ok(ApiResponse.success(list, "Companies fetched successfully"));
+    public ResponseEntity<ApiResponse<PageResponse<CompanyResponse>>> getCompanies(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        PageResponse<CompanyResponse> pageResponse = companyService.getCompaniesPaginated(page, size, search, status, sortBy, sortDir);
+        return ResponseEntity.ok(ApiResponse.success(pageResponse, "Companies fetched successfully"));
     }
 
     @GetMapping("/{id}")

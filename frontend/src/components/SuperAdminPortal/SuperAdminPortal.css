@@ -285,6 +285,40 @@
   flex-wrap: wrap;
 }
 
+.superadmin-search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 280px;
+  max-width: 560px;
+}
+
+.superadmin-search-form .superadmin-search-box {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+}
+
+.search-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  height: 38px;
+  white-space: nowrap;
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
 .superadmin-search-box {
   position: relative;
   flex: 1;

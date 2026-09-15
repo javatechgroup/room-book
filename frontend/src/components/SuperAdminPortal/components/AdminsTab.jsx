@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   Search,
@@ -23,6 +23,7 @@ export default function AdminsTab({
   totalFilteredCount = 0,
   search = '',
   onSearchChange,
+  onSearchSubmit,
   companyFilter = 'ALL',
   onCompanyFilterChange,
   statusFilter = 'ALL',
@@ -36,30 +37,60 @@ export default function AdminsTab({
   onPageChange,
   onPageSizeChange,
 }) {
+  const [localSearch, setLocalSearch] = useState(search);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (onSearchSubmit) {
+      onSearchSubmit(localSearch);
+    } else if (onSearchChange) {
+      onSearchChange(localSearch);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearch('');
+    if (onSearchSubmit) {
+      onSearchSubmit('');
+    } else if (onSearchChange) {
+      onSearchChange('');
+    }
+  };
+
   return (
     <div className="superadmin-panel">
-      {/* Toolbar: Search, Company Filter, and Status Filter */}
+      {/* Toolbar: Search Form with Submit Button, Company Filter, and Status Filter */}
       <div className="superadmin-toolbar">
-        <div className="superadmin-search-box">
-          <Search size={16} className="search-box-icon" />
-          <input
-            type="text"
-            placeholder="Search by administrator name, email, or company..."
-            value={search}
-            onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-            className="superadmin-search-input"
-          />
-          {search && (
-            <button
-              type="button"
-              className="search-clear-btn"
-              onClick={() => onSearchChange && onSearchChange('')}
-              aria-label="Clear search"
-            >
-              &times;
-            </button>
-          )}
-        </div>
+        <form onSubmit={handleSearchSubmit} className="superadmin-search-form">
+          <div className="superadmin-search-box">
+            <Search size={16} className="search-box-icon" />
+            <input
+              type="text"
+              placeholder="Search by administrator name, email, or company..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="superadmin-search-input"
+            />
+            {localSearch && (
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={handleClearSearch}
+                aria-label="Clear search"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+          <button type="submit" className="btn btn--primary btn--sm search-submit-btn">
+            <Search size={14} />
+            <span>Search</span>
+          </button>
+        </form>
 
         {/* Company Filter Dropdown */}
         <div className={`superadmin-dropdown-wrap ${companyFilter !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>

@@ -2,21 +2,64 @@ import apiClient from './authApi';
 
 export const companyApi = {
   /**
-   * Fetch all registered tenant companies
+   * Fetch registered tenant companies with pagination and filters
    * Calls GET /book/api/admin/companies
    */
-  async getCompanies() {
+  async getCompanies(params = {}) {
     try {
-      const response = await apiClient.get('/admin/companies');
+      const {
+        page = 1,
+        size = 10,
+        search = '',
+        status = 'ALL',
+        sortBy = 'name',
+        sortDir = 'asc',
+      } = params;
+
+      const response = await apiClient.get('/admin/companies', {
+        params: {
+          page,
+          size,
+          search: search ? search.trim() : undefined,
+          status: status && status !== 'ALL' ? status : undefined,
+          sortBy,
+          sortDir,
+        },
+      });
+
+      const pageData = response.data?.data;
+      if (pageData && Array.isArray(pageData.content)) {
+        return {
+          success: true,
+          data: pageData.content,
+          page: pageData.page,
+          size: pageData.size,
+          totalElements: pageData.totalElements,
+          totalPages: pageData.totalPages,
+          last: pageData.last,
+        };
+      } else if (Array.isArray(pageData)) {
+        return {
+          success: true,
+          data: pageData,
+          totalElements: pageData.length,
+          totalPages: 1,
+        };
+      }
+
       return {
         success: true,
-        data: response.data?.data || [],
+        data: [],
+        totalElements: 0,
+        totalPages: 0,
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data?.message || 'Failed to load companies from server',
         data: [],
+        totalElements: 0,
+        totalPages: 0,
       };
     }
   },

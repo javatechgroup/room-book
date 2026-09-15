@@ -1,11 +1,16 @@
 package com.magicbricks.booking.service;
 
 import com.magicbricks.booking.common.BookingConflictException;
+import com.magicbricks.booking.common.PageResponse;
 import com.magicbricks.booking.common.ResourceNotFoundException;
 import com.magicbricks.booking.domain.*;
 import com.magicbricks.booking.dto.CompanyRegistrationRequest;
 import com.magicbricks.booking.dto.CompanyResponse;
 import com.magicbricks.booking.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,6 +86,54 @@ public class CompanyService {
         auditLogRepository.save(log);
 
         return mapToResponse(savedCompany);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<CompanyResponse> getCompaniesPaginated(int page, int size, String search, String status, String sortBy, String sortDir) {
+        int pageIndex = page > 0 ? page - 1 : 0; // 1-indexed to 0-indexed conversion
+        int pageSize = size > 0 ? size : 10;
+
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        String sortProperty = "name";
+        if ("companyCode".equalsIgnoreCase(sortBy)) sortProperty = "companyCode";
+        else if ("status".equalsIgnoreCase(sortBy)) sortProperty = "status";
+        else if ("id".equalsIgnoreCase(sortBy)) sortProperty = "id";
+        else if ("createdAt".equalsIgnoreCase(sortBy)) sortProperty = "createdAt";
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize, Sort.by(direction, sortProperty));
+
+        Page<Company> companyPage;
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        boolean hasStatus = status != null && !"ALL".equalsIgnoreCase(status.trim());
+
+        if (!hasSearch && !hasStatus) {
+            // 1. Direct indexed table scan with sorting
+            companyPage = companyRepository.findAll(pageable);
+        } else if (!hasSearch && hasStatus) {
+            // 2. Direct indexed lookup on status (uses idx_companies_status_name)
+            companyPage = companyRepository.findByStatus(status.trim().toUpperCase(), pageable);
+        } else {
+            // 3. Filtered keyword search
+            companyPage = companyRepository.searchCompanies(
+                    search.trim(),
+                    hasStatus ? status.trim().toUpperCase() : "ALL",
+                    pageable
+            );
+        }
+
+        List<CompanyResponse> content = companyPage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                content,
+                pageIndex + 1,
+                companyPage.getSize(),
+                companyPage.getTotalElements(),
+                companyPage.getTotalPages(),
+                companyPage.isFirst(),
+                companyPage.isLast()
+        );
     }
 
     @Transactional(readOnly = true)

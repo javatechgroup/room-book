@@ -30,6 +30,7 @@ export default function SuperAdminPortal() {
   const [companySort, setCompanySort] = useState({ field: 'name', direction: 'asc' });
   const [companyPage, setCompanyPage] = useState(1);
   const [companyPageSize, setCompanyPageSize] = useState(10);
+  const [totalCompaniesCount, setTotalCompaniesCount] = useState(0);
   const [selectedCompanyIds, setSelectedCompanyIds] = useState([]);
 
   // Facility Admins Tab State
@@ -126,9 +127,12 @@ export default function SuperAdminPortal() {
   }, [companies, companySearch, companyStatusFilter, companySort]);
 
   const paginatedCompanies = useMemo(() => {
+    if (totalCompaniesCount > 0) {
+      return companies;
+    }
     const start = (companyPage - 1) * companyPageSize;
     return filteredAndSortedCompanies.slice(start, start + companyPageSize);
-  }, [filteredAndSortedCompanies, companyPage, companyPageSize]);
+  }, [companies, filteredAndSortedCompanies, companyPage, companyPageSize, totalCompaniesCount]);
 
   // Filtered & Sorted Admins
   const filteredAndSortedAdmins = useMemo(() => {
@@ -267,20 +271,30 @@ export default function SuperAdminPortal() {
     setIsCompanyModalOpen(true);
   };
 
-  // Initial data loading from backend
+  // Data loading with database pagination & filtering
   useEffect(() => {
     let isMounted = true;
     const fetchLiveCompanies = async () => {
-      const res = await companyApi.getCompanies();
-      if (isMounted && res.success && Array.isArray(res.data) && res.data.length > 0) {
+      const res = await companyApi.getCompanies({
+        page: companyPage,
+        size: companyPageSize,
+        search: companySearch,
+        status: companyStatusFilter,
+        sortBy: companySort.field,
+        sortDir: companySort.direction,
+      });
+      if (isMounted && res.success && Array.isArray(res.data)) {
         setCompanies(res.data);
+        if (typeof res.totalElements === 'number') {
+          setTotalCompaniesCount(res.totalElements);
+        }
       }
     };
     fetchLiveCompanies();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [companyPage, companyPageSize, companySearch, companyStatusFilter, companySort]);
 
   const handleOpenEditCompany = (comp) => {
     setEditingCompany(comp);
@@ -517,7 +531,7 @@ export default function SuperAdminPortal() {
             setActiveTab(tab);
             if (tab === 'companies') setSelectedCompanyIds([]);
           }}
-          companiesCount={companies.length}
+          companiesCount={totalCompaniesCount > 0 ? totalCompaniesCount : companies.length}
           adminsCount={admins.length}
           auditLogsCount={auditLogs.length}
           onOpenCreateCompany={handleOpenCreateCompany}
@@ -530,9 +544,9 @@ export default function SuperAdminPortal() {
             companies={companies}
             activeCompaniesCount={activeCompaniesCount}
             paginatedCompanies={paginatedCompanies}
-            totalFilteredCount={filteredAndSortedCompanies.length}
+            totalFilteredCount={totalCompaniesCount > 0 ? totalCompaniesCount : filteredAndSortedCompanies.length}
             search={companySearch}
-            onSearchChange={(val) => {
+            onSearchSubmit={(val) => {
               setCompanySearch(val);
               setCompanyPage(1);
             }}
@@ -576,7 +590,7 @@ export default function SuperAdminPortal() {
             paginatedAdmins={paginatedAdmins}
             totalFilteredCount={filteredAndSortedAdmins.length}
             search={adminSearch}
-            onSearchChange={(val) => {
+            onSearchSubmit={(val) => {
               setAdminSearch(val);
               setAdminPage(1);
             }}
