@@ -4,8 +4,16 @@
 
 .contact {
   padding: 100px 0;
-  background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 50%, #0f172a 100%);
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #0f172a 100%);
   color: #ffffff;
+  position: relative;
+}
+
+[data-theme='dark'] .contact {
+  background: linear-gradient(180deg, #0b0f19 0%, #111a2e 50%, #0b0f19 100%);
+  border-top: 1px solid var(--border-card);
+  border-bottom: 1px solid var(--border-card);
+  color: var(--text-body);
 }
 
 .contact__wrapper {
@@ -20,6 +28,11 @@
   font-weight: 800;
   line-height: 1.2;
   margin: 16px 0 12px;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .contact__title {
+  color: var(--text-heading);
 }
 
 .contact__subtitle {
@@ -27,6 +40,10 @@
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.7;
   margin-bottom: 36px;
+}
+
+[data-theme='dark'] .contact__subtitle {
+  color: var(--text-muted);
 }
 
 .contact__details {
@@ -42,10 +59,18 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
+[data-theme='dark'] .contact__detail {
+  color: var(--text-body);
+}
+
 .contact__detail svg {
   margin-top: 2px;
   color: var(--primary-300);
   flex-shrink: 0;
+}
+
+[data-theme='dark'] .contact__detail svg {
+  color: var(--primary-400);
 }
 
 .contact__detail div {
@@ -62,9 +87,18 @@
   margin-bottom: 2px;
 }
 
+[data-theme='dark'] .contact__detail-label {
+  color: var(--text-faint);
+}
+
 .contact__detail-value {
   font-size: 0.95rem;
   font-weight: 500;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .contact__detail-value {
+  color: var(--text-heading);
 }
 
 .contact__guarantee-box {
@@ -75,11 +109,21 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+[data-theme='dark'] .contact__guarantee-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-sm);
+}
+
 .contact__guarantee-box h4 {
   font-size: 0.95rem;
   font-weight: 700;
   margin-bottom: 10px;
   color: #ffffff;
+}
+
+[data-theme='dark'] .contact__guarantee-box h4 {
+  color: var(--text-heading);
 }
 
 .contact__guarantee-box ul {
@@ -93,6 +137,10 @@
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.4;
+}
+
+[data-theme='dark'] .contact__guarantee-box li {
+  color: var(--text-muted);
 }
 
 /* Right Side: Professional Client Inquiry Form (matches ContactModal design) */

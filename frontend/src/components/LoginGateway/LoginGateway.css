@@ -231,6 +231,18 @@
   color: var(--primary-700);
 }
 
+[data-theme='dark'] .demo-pill:hover {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .demo-pill--selected {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.22);
+  color: #93c5fd;
+}
+
 /* Error Alert */
 .gateway-error {
   display: flex;

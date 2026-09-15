@@ -84,6 +84,12 @@
   border-color: rgba(255, 255, 255, 0.25);
 }
 
+[data-theme='dark'] .section-tag--light {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary-400);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
 .section-title {
   font-size: 2.25rem;
   font-weight: 800;
