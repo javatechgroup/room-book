@@ -941,21 +941,61 @@
 .rooms-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .rooms-table {
+  border-color: #25334d;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4);
 }
 
 .rooms-table th,
 .rooms-table td {
-  padding: 12px 14px;
+  padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid var(--border-card);
 }
 
 .rooms-table th {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
+  font-weight: 800;
   text-transform: uppercase;
-  color: var(--text-muted);
-  background: var(--bg-surface-alt);
+  letter-spacing: 0.07em;
+  color: var(--text-faint, #64748b);
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+[data-theme='dark'] .rooms-table th {
+  background: linear-gradient(180deg, #182337 0%, #111a2a 100%);
+  color: #94a3b8;
+  border-bottom-color: #25334d;
+}
+
+.rooms-table tbody tr {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rooms-table tbody tr:nth-child(even) {
+  background: rgba(248, 250, 252, 0.4);
+}
+
+[data-theme='dark'] .rooms-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.rooms-table tbody tr:hover {
+  background: #f5f8ff !important;
+  box-shadow: inset 4px 0 0 0 #3b82f6;
+}
+
+[data-theme='dark'] .rooms-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.12) !important;
+  box-shadow: inset 4px 0 0 0 #60a5fa;
 }
 
 .sub-txt {
@@ -964,10 +1004,13 @@
 }
 
 .status-pill {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .status-pill--ok {
@@ -975,9 +1018,26 @@
   color: #10b981;
 }
 
+.status-pill--ok::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
 .status-pill--maint {
   background: rgba(239, 68, 68, 0.12);
   color: #ef4444;
+}
+
+.status-pill--maint::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
 }
 
 .btn--warn {
@@ -989,6 +1049,7 @@
 .btn--warn:hover {
   background: rgba(245, 158, 11, 0.1);
   border-color: #f59e0b;
+  transform: translateY(-1px);
 }
 
 /* ───────────────── TAB 5: HELPDESK ───────────────── */
