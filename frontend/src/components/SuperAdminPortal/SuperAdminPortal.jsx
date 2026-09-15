@@ -1095,179 +1095,305 @@ export default function SuperAdminPortal() {
               </div>
             )}
 
-            {/* High-Volume Scalable Data Table */}
-            <div className="table-responsive">
-              <table className="superadmin-table">
-                <thead>
-                  <tr>
-                    <th className="th-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={isAllCompaniesPageSelected}
-                        onChange={handleSelectAllCompaniesOnPage}
-                        aria-label="Select all on this page"
-                      />
-                    </th>
-                    <th className="th-sortable" onClick={() => handleSortCompanies('companyCode')}>
-                      <div className="th-content">
-                        <span>Code</span>
-                        {companySort.field === 'companyCode' ? (
-                          companySort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
-                        ) : (
-                          <ArrowUpDown size={13} className="sort-idle" />
-                        )}
-                      </div>
-                    </th>
-                    <th className="th-sortable" onClick={() => handleSortCompanies('name')}>
-                      <div className="th-content">
-                        <span>Tenant Company</span>
-                        {companySort.field === 'name' ? (
-                          companySort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
-                        ) : (
-                          <ArrowUpDown size={13} className="sort-idle" />
-                        )}
-                      </div>
-                    </th>
-                    <th>Contact Info</th>
-                    <th>Location / Campus</th>
-                    <th>Facility Admins</th>
-                    <th className="th-sortable" onClick={() => handleSortCompanies('status')}>
-                      <div className="th-content">
-                        <span>Status</span>
-                        {companySort.field === 'status' ? (
-                          companySort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
-                        ) : (
-                          <ArrowUpDown size={13} className="sort-idle" />
-                        )}
-                      </div>
-                    </th>
-                    <th className="th-actions">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedCompanies.length === 0 ? (
+            {/* Desktop Data Table */}
+            <div className="desktop-table-wrap">
+              <div className="table-responsive">
+                <table className="superadmin-table">
+                  <thead>
                     <tr>
-                      <td colSpan="8" className="td-empty">
-                        <Building2 size={32} className="empty-icon" />
-                        <p>No companies match your current search or filter.</p>
+                      <th className="th-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={isAllCompaniesPageSelected}
+                          onChange={handleSelectAllCompaniesOnPage}
+                          aria-label="Select all on this page"
+                        />
+                      </th>
+                      <th className="th-sortable" onClick={() => handleSortCompanies('companyCode')}>
+                        <div className="th-content">
+                          <span>Code</span>
+                          {companySort.field === 'companyCode' ? (
+                            companySort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
+                          ) : (
+                            <ArrowUpDown size={13} className="sort-idle" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="th-sortable" onClick={() => handleSortCompanies('name')}>
+                        <div className="th-content">
+                          <span>Tenant Company</span>
+                          {companySort.field === 'name' ? (
+                            companySort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
+                          ) : (
+                            <ArrowUpDown size={13} className="sort-idle" />
+                          )}
+                        </div>
+                      </th>
+                      <th>Contact Info</th>
+                      <th>Location / Campus</th>
+                      <th>Facility Admins</th>
+                      <th className="th-sortable" onClick={() => handleSortCompanies('status')}>
+                        <div className="th-content">
+                          <span>Status</span>
+                          {companySort.field === 'status' ? (
+                            companySort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
+                          ) : (
+                            <ArrowUpDown size={13} className="sort-idle" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="th-actions">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedCompanies.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="td-empty">
+                          <Building2 size={32} className="empty-icon" />
+                          <p>No companies match your current search or filter.</p>
+                          <button
+                            type="button"
+                            className="btn btn--outline btn--sm"
+                            onClick={() => {
+                              setCompanySearch('');
+                              setCompanyStatusFilter('ALL');
+                            }}
+                          >
+                            Reset Filters
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedCompanies.map((c) => {
+                        const compAdmins = admins.filter((a) => a.companyId === c.id);
+                        const isSelected = selectedCompanyIds.includes(c.id);
+                        return (
+                          <tr
+                            key={c.id}
+                            className={`${isSelected ? 'tr--selected' : ''}`}
+                            onClick={() => setDrawerCompany(c)}
+                          >
+                            <td className="td-checkbox" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleSelectCompany(c.id)}
+                              />
+                            </td>
+                            <td>
+                              <span className="code-pill">{c.companyCode}</span>
+                            </td>
+                            <td className="td-strong">
+                              <div className="company-title-cell">
+                                <span className="company-name">{c.name}</span>
+                                <span className="company-created">Est. {c.createdAt}</span>
+                              </div>
+                            </td>
+                            <td onClick={(e) => e.stopPropagation()}>
+                              <div className="contact-cell">
+                                <span className="contact-item">
+                                  <Mail size={13} />
+                                  <a
+                                    href={`mailto:${c.contactInformation}`}
+                                    title={`Send email to ${c.contactInformation}`}
+                                  >
+                                    {c.contactInformation || 'Not configured'}
+                                  </a>
+                                </span>
+                                {c.phone && (
+                                  <span className="contact-item contact-item--phone">
+                                    <Phone size={12} />
+                                    <span>{c.phone}</span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <span className="address-snippet" title={c.address}>
+                                <MapPin size={12} />
+                                {c.address || 'Not specified'}
+                              </span>
+                            </td>
+                            <td onClick={(e) => e.stopPropagation()}>
+                              <button
+                                type="button"
+                                className="admin-count-pill"
+                                onClick={() => handleViewCompanyAdmins(c.id)}
+                                title={`View ${compAdmins.length} admins assigned to ${c.name}`}
+                              >
+                                <Users size={12} />
+                                <span>{compAdmins.length} Admin{compAdmins.length === 1 ? '' : 's'}</span>
+                                <ChevronRight size={12} />
+                              </button>
+                            </td>
+                            <td>
+                              <span
+                                className={`status-pill ${
+                                  c.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'
+                                }`}
+                              >
+                                {c.status}
+                              </span>
+                            </td>
+                            <td className="td-actions" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                type="button"
+                                className="action-btn action-btn--inspect"
+                                onClick={() => setDrawerCompany(c)}
+                                title="Inspect Details"
+                              >
+                                <Eye size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                className="action-btn action-btn--edit"
+                                onClick={() => handleOpenEditCompany(c)}
+                                title="Edit Company Details"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                className={`action-btn ${
+                                  c.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
+                                }`}
+                                onClick={() => handleToggleCompanyStatus(c.id)}
+                                title={c.status === 'ACTIVE' ? 'Suspend Company' : 'Activate Company'}
+                              >
+                                {c.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Card List (Visible on mobile/tablet < 768px) */}
+            <div className="mobile-card-list">
+              {paginatedCompanies.length === 0 ? (
+                <div className="mobile-empty-state">
+                  <Building2 size={32} className="empty-icon" />
+                  <p>No companies match your current search or filter.</p>
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--sm"
+                    onClick={() => {
+                      setCompanySearch('');
+                      setCompanyStatusFilter('ALL');
+                    }}
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              ) : (
+                paginatedCompanies.map((c) => {
+                  const compAdmins = admins.filter((a) => a.companyId === c.id);
+                  const isSelected = selectedCompanyIds.includes(c.id);
+                  return (
+                    <div
+                      key={c.id}
+                      className={`mobile-card ${isSelected ? 'mobile-card--selected' : ''}`}
+                      onClick={() => setDrawerCompany(c)}
+                    >
+                      <div className="mobile-card__header">
+                        <div className="mobile-card__header-left" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelectCompany(c.id)}
+                            className="mobile-card-checkbox"
+                            aria-label={`Select ${c.name}`}
+                          />
+                          <span className="code-pill">{c.companyCode}</span>
+                        </div>
+                        <span
+                          className={`status-pill ${
+                            c.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'
+                          }`}
+                        >
+                          {c.status}
+                        </span>
+                      </div>
+
+                      <div className="mobile-card__title-row">
+                        <h4 className="mobile-card__title">{c.name}</h4>
+                        <span className="mobile-card__subtitle">Est. {c.createdAt}</span>
+                      </div>
+
+                      <div className="mobile-card__details">
+                        <div className="mobile-card__info-row" onClick={(e) => e.stopPropagation()}>
+                          <Mail size={14} className="mobile-card__icon" />
+                          <a href={`mailto:${c.contactInformation}`} className="mobile-card__link">
+                            {c.contactInformation || 'No email registered'}
+                          </a>
+                        </div>
+                        {c.phone && (
+                          <div className="mobile-card__info-row" onClick={(e) => e.stopPropagation()}>
+                            <Phone size={14} className="mobile-card__icon" />
+                            <a href={`tel:${c.phone}`} className="mobile-card__link">
+                              {c.phone}
+                            </a>
+                          </div>
+                        )}
+                        {c.address && (
+                          <div className="mobile-card__info-row">
+                            <MapPin size={14} className="mobile-card__icon" />
+                            <span className="mobile-card__text">{c.address}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mobile-card__footer">
                         <button
                           type="button"
-                          className="btn btn--outline btn--sm"
-                          onClick={() => {
-                            setCompanySearch('');
-                            setCompanyStatusFilter('ALL');
+                          className="admin-count-pill"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewCompanyAdmins(c.id);
                           }}
                         >
-                          Reset Filters
+                          <Users size={12} />
+                          <span>{compAdmins.length} Admin{compAdmins.length === 1 ? '' : 's'}</span>
+                          <ChevronRight size={12} />
                         </button>
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedCompanies.map((c) => {
-                      const compAdmins = admins.filter((a) => a.companyId === c.id);
-                      const isSelected = selectedCompanyIds.includes(c.id);
-                      return (
-                        <tr
-                          key={c.id}
-                          className={`${isSelected ? 'tr--selected' : ''}`}
-                          onClick={() => setDrawerCompany(c)}
-                        >
-                          <td className="td-checkbox" onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleToggleSelectCompany(c.id)}
-                            />
-                          </td>
-                          <td>
-                            <span className="code-pill">{c.companyCode}</span>
-                          </td>
-                          <td className="td-strong">
-                            <div className="company-title-cell">
-                              <span className="company-name">{c.name}</span>
-                              <span className="company-created">Est. {c.createdAt}</span>
-                            </div>
-                          </td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className="contact-cell">
-                              <span className="contact-item">
-                                <Mail size={13} />
-                                <a
-                                  href={`mailto:${c.contactInformation}`}
-                                  title={`Send email to ${c.contactInformation}`}
-                                >
-                                  {c.contactInformation || 'Not configured'}
-                                </a>
-                              </span>
-                              {c.phone && (
-                                <span className="contact-item contact-item--phone">
-                                  <Phone size={12} />
-                                  <span>{c.phone}</span>
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td>
-                            <span className="address-snippet" title={c.address}>
-                              <MapPin size={12} />
-                              {c.address || 'Not specified'}
-                            </span>
-                          </td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              className="admin-count-pill"
-                              onClick={() => handleViewCompanyAdmins(c.id)}
-                              title={`View ${compAdmins.length} admins assigned to ${c.name}`}
-                            >
-                              <Users size={12} />
-                              <span>{compAdmins.length} Admin{compAdmins.length === 1 ? '' : 's'}</span>
-                              <ChevronRight size={12} />
-                            </button>
-                          </td>
-                          <td>
-                            <span
-                              className={`status-pill ${
-                                c.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'
-                              }`}
-                            >
-                              {c.status}
-                            </span>
-                          </td>
-                          <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              className="action-btn action-btn--inspect"
-                              onClick={() => setDrawerCompany(c)}
-                              title="Inspect Details"
-                            >
-                              <Eye size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              className="action-btn action-btn--edit"
-                              onClick={() => handleOpenEditCompany(c)}
-                              title="Edit Company Details"
-                            >
-                              <Edit2 size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              className={`action-btn ${
-                                c.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
-                              }`}
-                              onClick={() => handleToggleCompanyStatus(c.id)}
-                              title={c.status === 'ACTIVE' ? 'Suspend Company' : 'Activate Company'}
-                            >
-                              {c.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+
+                        <div className="mobile-card__actions" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            className="action-btn action-btn--inspect"
+                            onClick={() => setDrawerCompany(c)}
+                            title="Inspect Details"
+                          >
+                            <Eye size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="action-btn action-btn--edit"
+                            onClick={() => handleOpenEditCompany(c)}
+                            title="Edit Company Details"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`action-btn ${
+                              c.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
+                            }`}
+                            onClick={() => handleToggleCompanyStatus(c.id)}
+                            title={c.status === 'ACTIVE' ? 'Suspend Company' : 'Activate Company'}
+                          >
+                            {c.status === 'ACTIVE' ? <XCircle size={15} /> : <CheckCircle2 size={15} />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             {/* Pagination Footer */}
@@ -1452,130 +1578,217 @@ export default function SuperAdminPortal() {
               </div>
             </div>
 
-            {/* Admins Table */}
-            <div className="table-responsive">
-              <table className="superadmin-table">
-                <thead>
-                  <tr>
-                    <th className="th-sortable" onClick={() => handleSortAdmins('fullName')}>
-                      <div className="th-content">
-                        <span>Administrator Name</span>
-                        {adminSort.field === 'fullName' ? (
-                          adminSort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
-                        ) : (
-                          <ArrowUpDown size={13} className="sort-idle" />
-                        )}
-                      </div>
-                    </th>
-                    <th>Corporate Email</th>
-                    <th className="th-sortable" onClick={() => handleSortAdmins('companyName')}>
-                      <div className="th-content">
-                        <span>Assigned Company</span>
-                        {adminSort.field === 'companyName' ? (
-                          adminSort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
-                        ) : (
-                          <ArrowUpDown size={13} className="sort-idle" />
-                        )}
-                      </div>
-                    </th>
-                    <th>Role Scope</th>
-                    <th>Last Active</th>
-                    <th className="th-sortable" onClick={() => handleSortAdmins('status')}>
-                      <div className="th-content">
-                        <span>Status</span>
-                        {adminSort.field === 'status' ? (
-                          adminSort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
-                        ) : (
-                          <ArrowUpDown size={13} className="sort-idle" />
-                        )}
-                      </div>
-                    </th>
-                    <th className="th-actions">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedAdmins.length === 0 ? (
+            {/* Desktop Admins Table */}
+            <div className="desktop-table-wrap">
+              <div className="table-responsive">
+                <table className="superadmin-table">
+                  <thead>
                     <tr>
-                      <td colSpan="7" className="td-empty">
-                        <Users size={32} className="empty-icon" />
-                        <p>No Facility Administrators match your search criteria.</p>
-                        <button
-                          type="button"
-                          className="btn btn--outline btn--sm"
-                          onClick={() => {
-                            setAdminSearch('');
-                            setAdminCompanyFilter('ALL');
-                            setAdminStatusFilter('ALL');
-                          }}
-                        >
-                          Reset Filters
-                        </button>
-                      </td>
+                      <th className="th-sortable" onClick={() => handleSortAdmins('fullName')}>
+                        <div className="th-content">
+                          <span>Administrator Name</span>
+                          {adminSort.field === 'fullName' ? (
+                            adminSort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
+                          ) : (
+                            <ArrowUpDown size={13} className="sort-idle" />
+                          )}
+                        </div>
+                      </th>
+                      <th>Corporate Email</th>
+                      <th className="th-sortable" onClick={() => handleSortAdmins('companyName')}>
+                        <div className="th-content">
+                          <span>Assigned Company</span>
+                          {adminSort.field === 'companyName' ? (
+                            adminSort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
+                          ) : (
+                            <ArrowUpDown size={13} className="sort-idle" />
+                          )}
+                        </div>
+                      </th>
+                      <th>Role Scope</th>
+                      <th>Last Active</th>
+                      <th className="th-sortable" onClick={() => handleSortAdmins('status')}>
+                        <div className="th-content">
+                          <span>Status</span>
+                          {adminSort.field === 'status' ? (
+                            adminSort.direction === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />
+                          ) : (
+                            <ArrowUpDown size={13} className="sort-idle" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="th-actions">Actions</th>
                     </tr>
-                  ) : (
-                    paginatedAdmins.map((a) => (
-                      <tr key={a.id}>
-                        <td className="td-strong">
-                          <div className="admin-user-cell">
-                            <div className="admin-avatar">
-                              {a.fullName.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <span className="admin-name">{a.fullName}</span>
-                              <span className="admin-id">User #{a.id}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="contact-chip">
-                            <Mail size={12} />
-                            <a href={`mailto:${a.email}`}>{a.email}</a>
-                          </span>
-                        </td>
-                        <td>
-                          <span className="company-badge">
-                            <Building2 size={12} />
-                            {a.companyName}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="role-tag">COMPANY_ADMIN</span>
-                        </td>
-                        <td className="td-subtle">{a.lastLogin || 'Recent'}</td>
-                        <td>
-                          <span
-                            className={`status-pill ${
-                              a.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'
-                            }`}
-                          >
-                            {a.status}
-                          </span>
-                        </td>
-                        <td className="td-actions">
+                  </thead>
+                  <tbody>
+                    {paginatedAdmins.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="td-empty">
+                          <Users size={32} className="empty-icon" />
+                          <p>No Facility Administrators match your search criteria.</p>
                           <button
                             type="button"
-                            className="action-btn action-btn--edit"
-                            onClick={() => handleOpenEditAdmin(a)}
-                            title="Edit Administrator"
+                            className="btn btn--outline btn--sm"
+                            onClick={() => {
+                              setAdminSearch('');
+                              setAdminCompanyFilter('ALL');
+                              setAdminStatusFilter('ALL');
+                            }}
                           >
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            className={`action-btn ${
-                              a.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
-                            }`}
-                            onClick={() => handleToggleAdminStatus(a.id)}
-                            title={a.status === 'ACTIVE' ? 'Suspend Admin' : 'Activate Admin'}
-                          >
-                            {a.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+                            Reset Filters
                           </button>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      paginatedAdmins.map((a) => (
+                        <tr key={a.id}>
+                          <td className="td-strong">
+                            <div className="admin-user-cell">
+                              <div className="admin-avatar">
+                                {a.fullName.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <span className="admin-name">{a.fullName}</span>
+                                <span className="admin-id">User #{a.id}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="contact-chip">
+                              <Mail size={12} />
+                              <a href={`mailto:${a.email}`}>{a.email}</a>
+                            </span>
+                          </td>
+                          <td>
+                            <span className="company-badge">
+                              <Building2 size={12} />
+                              {a.companyName}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="role-tag">COMPANY_ADMIN</span>
+                          </td>
+                          <td className="td-subtle">{a.lastLogin || 'Recent'}</td>
+                          <td>
+                            <span
+                              className={`status-pill ${
+                                a.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'
+                              }`}
+                            >
+                              {a.status}
+                            </span>
+                          </td>
+                          <td className="td-actions">
+                            <button
+                              type="button"
+                              className="action-btn action-btn--edit"
+                              onClick={() => handleOpenEditAdmin(a)}
+                              title="Edit Administrator"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className={`action-btn ${
+                                a.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
+                              }`}
+                              onClick={() => handleToggleAdminStatus(a.id)}
+                              title={a.status === 'ACTIVE' ? 'Suspend Admin' : 'Activate Admin'}
+                            >
+                              {a.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Card List for Admins (Visible on mobile/tablet < 768px) */}
+            <div className="mobile-card-list">
+              {paginatedAdmins.length === 0 ? (
+                <div className="mobile-empty-state">
+                  <Users size={32} className="empty-icon" />
+                  <p>No Facility Administrators match your search criteria.</p>
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--sm"
+                    onClick={() => {
+                      setAdminSearch('');
+                      setAdminCompanyFilter('ALL');
+                      setAdminStatusFilter('ALL');
+                    }}
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              ) : (
+                paginatedAdmins.map((a) => (
+                  <div key={a.id} className="mobile-card">
+                    <div className="mobile-card__header">
+                      <div className="admin-user-cell">
+                        <div className="admin-avatar">
+                          {a.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <span className="admin-name">{a.fullName}</span>
+                          <span className="admin-id">User #{a.id}</span>
+                        </div>
+                      </div>
+                      <span
+                        className={`status-pill ${
+                          a.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'
+                        }`}
+                      >
+                        {a.status}
+                      </span>
+                    </div>
+
+                    <div className="mobile-card__details">
+                      <div className="mobile-card__info-row">
+                        <Mail size={14} className="mobile-card__icon" />
+                        <a href={`mailto:${a.email}`} className="mobile-card__link">
+                          {a.email}
+                        </a>
+                      </div>
+                      <div className="mobile-card__info-row">
+                        <Building2 size={14} className="mobile-card__icon" />
+                        <span className="company-badge">{a.companyName}</span>
+                      </div>
+                      <div className="mobile-card__info-row">
+                        <Clock size={14} className="mobile-card__icon" />
+                        <span className="mobile-card__text">Last active: {a.lastLogin || 'Recent'}</span>
+                      </div>
+                    </div>
+
+                    <div className="mobile-card__footer">
+                      <span className="role-tag">COMPANY_ADMIN</span>
+                      <div className="mobile-card__actions">
+                        <button
+                          type="button"
+                          className="action-btn action-btn--edit"
+                          onClick={() => handleOpenEditAdmin(a)}
+                          title="Edit Administrator"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`action-btn ${
+                            a.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
+                          }`}
+                          onClick={() => handleToggleAdminStatus(a.id)}
+                          title={a.status === 'ACTIVE' ? 'Suspend Admin' : 'Activate Admin'}
+                        >
+                          {a.status === 'ACTIVE' ? <XCircle size={15} /> : <CheckCircle2 size={15} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* Pagination Footer */}
@@ -1666,38 +1879,73 @@ export default function SuperAdminPortal() {
               <span className="audit-note">Immutable record of tenant provisioning and credential assignments</span>
             </div>
 
-            <div className="table-responsive">
-              <table className="superadmin-table">
-                <thead>
-                  <tr>
-                    <th>Timestamp</th>
-                    <th>Action</th>
-                    <th>Entity Type</th>
-                    <th>Target Resource</th>
-                    <th>Performed By</th>
-                    <th>Audit Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {auditLogs.map((log) => (
-                    <tr key={log.id}>
-                      <td className="td-subtle">
-                        <Clock size={12} className="inline-icon" />
-                        {log.timestamp}
-                      </td>
-                      <td>
-                        <span className="action-tag">{log.action}</span>
-                      </td>
-                      <td>
-                        <span className="entity-tag">{log.entityType}</span>
-                      </td>
-                      <td className="td-strong">{log.entityName}</td>
-                      <td>{log.performedBy}</td>
-                      <td className="td-details">{log.details}</td>
+            {/* Desktop Audit Logs Table */}
+            <div className="desktop-table-wrap">
+              <div className="table-responsive">
+                <table className="superadmin-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Action</th>
+                      <th>Entity Type</th>
+                      <th>Target Resource</th>
+                      <th>Performed By</th>
+                      <th>Audit Details</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map((log) => (
+                      <tr key={log.id}>
+                        <td className="td-subtle">
+                          <Clock size={12} className="inline-icon" />
+                          {log.timestamp}
+                        </td>
+                        <td>
+                          <span className="action-tag">{log.action}</span>
+                        </td>
+                        <td>
+                          <span className="entity-tag">{log.entityType}</span>
+                        </td>
+                        <td className="td-strong">{log.entityName}</td>
+                        <td>{log.performedBy}</td>
+                        <td className="td-details">{log.details}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Card List for Audit Logs (Visible on mobile/tablet < 768px) */}
+            <div className="mobile-card-list">
+              {auditLogs.map((log) => (
+                <div key={log.id} className="mobile-card">
+                  <div className="mobile-card__header">
+                    <span className="action-tag">{log.action}</span>
+                    <span className="td-subtle">
+                      <Clock size={12} className="inline-icon" />
+                      {log.timestamp}
+                    </span>
+                  </div>
+
+                  <div className="mobile-card__title-row">
+                    <h4 className="mobile-card__title">{log.entityName}</h4>
+                    <span className="entity-tag">{log.entityType}</span>
+                  </div>
+
+                  <div className="mobile-card__details">
+                    <div className="mobile-card__info-row">
+                      <span className="mobile-card__text">{log.details}</span>
+                    </div>
+                  </div>
+
+                  <div className="mobile-card__footer">
+                    <span className="td-subtle" style={{ fontSize: '0.78rem' }}>
+                      Logged by: {log.performedBy}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
