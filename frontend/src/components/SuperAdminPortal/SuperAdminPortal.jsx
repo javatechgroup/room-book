@@ -1191,13 +1191,18 @@ export default function SuperAdminPortal() {
                           <td onClick={(e) => e.stopPropagation()}>
                             <div className="contact-cell">
                               <span className="contact-item">
-                                <Mail size={12} />
-                                <a href={`mailto:${c.contactInformation}`}>{c.contactInformation || 'N/A'}</a>
+                                <Mail size={13} />
+                                <a
+                                  href={`mailto:${c.contactInformation}`}
+                                  title={`Send email to ${c.contactInformation}`}
+                                >
+                                  {c.contactInformation || 'Not configured'}
+                                </a>
                               </span>
                               {c.phone && (
-                                <span className="contact-item text-muted">
+                                <span className="contact-item contact-item--phone">
                                   <Phone size={12} />
-                                  {c.phone}
+                                  <span>{c.phone}</span>
                                 </span>
                               )}
                             </div>
