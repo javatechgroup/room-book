@@ -11,9 +11,11 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 import './Contact.css';
 
 function Contact() {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -30,6 +32,10 @@ function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
+    toast.success(
+      'Inquiry Received!',
+      `Thank you, ${formData.name || 'valued customer'}. Our team will contact you at ${formData.email} within 24 hours.`
+    );
     setTimeout(() => {
       setSubmitted(false);
       setFormData({

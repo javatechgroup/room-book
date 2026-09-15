@@ -28,6 +28,7 @@ import {
   Presentation,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import './WorkplacePortal.css';
 
 const INITIAL_ROOMS = [
@@ -230,7 +231,7 @@ function WorkplacePortal() {
       department: 'Executive Team',
     },
   ]);
-  const [toastMessage, setToastMessage] = useState(null);
+  const { toast } = useToast();
 
   // Current active room for slot finder
   const filteredRooms = rooms.filter(
@@ -281,13 +282,11 @@ function WorkplacePortal() {
 
     setMyBookings((prev) => [newBooking, ...prev]);
 
-    setToastMessage({
-      type: 'success',
-      title: 'Slot Successfully Booked!',
-      body: `${roomName} reserved for ${slotTime} on ${selectedDate} ("${newBooking.purpose}"). Door tablet updated.`,
-    });
-
-    setTimeout(() => setToastMessage(null), 5000);
+    toast.success(
+      'Slot Successfully Booked!',
+      `${roomName} reserved for ${slotTime} on ${selectedDate} ("${newBooking.purpose}"). Door tablet updated.`,
+      5000
+    );
   };
 
   const handleCancelBooking = (booking) => {
@@ -308,31 +307,33 @@ function WorkplacePortal() {
 
     setMyBookings((prev) => prev.filter((b) => b.id !== booking.id));
 
-    setToastMessage({
-      type: 'info',
-      title: 'Slot Released',
-      body: `Reservation for ${booking.roomName} (${booking.slot}) has been cancelled and is now vacant for colleagues.`,
-    });
-
-    setTimeout(() => setToastMessage(null), 4000);
+    toast.info(
+      'Slot Released',
+      `Reservation for ${booking.roomName} (${booking.slot}) has been cancelled and is now vacant for colleagues.`
+    );
   };
 
   const handleToggleMaintenance = (roomId) => {
+    const targetRoom = rooms.find((r) => r.id === roomId);
+    if (!targetRoom) return;
+
+    const nextVal = !targetRoom.isUnderMaintenance;
+
     setRooms((prev) =>
-      prev.map((r) => {
-        if (r.id === roomId) {
-          const nextVal = !r.isUnderMaintenance;
-          setToastMessage({
-            type: nextVal ? 'warning' : 'info',
-            title: nextVal ? 'Room Set to Maintenance' : 'Room Maintenance Cleared',
-            body: `${r.name} is now ${nextVal ? 'temporarily offline for maintenance' : 'available for booking'}.`,
-          });
-          setTimeout(() => setToastMessage(null), 4000);
-          return { ...r, isUnderMaintenance: nextVal };
-        }
-        return r;
-      })
+      prev.map((r) => (r.id === roomId ? { ...r, isUnderMaintenance: nextVal } : r))
     );
+
+    if (nextVal) {
+      toast.warning(
+        'Room Set to Maintenance',
+        `${targetRoom.name} is now temporarily offline for maintenance.`
+      );
+    } else {
+      toast.info(
+        'Room Maintenance Cleared',
+        `${targetRoom.name} is now available for booking.`
+      );
+    }
   };
 
   const handleHelpdeskSubmit = (e) => {
@@ -410,26 +411,6 @@ function WorkplacePortal() {
             </button>
           </nav>
         </div>
-
-        {/* Toast Feedback */}
-        {toastMessage && (
-          <div className={`portal-toast portal-toast--${toastMessage.type}`}>
-            <div className="portal-toast__icon">
-              <CheckCircle size={22} />
-            </div>
-            <div className="portal-toast__text">
-              <h4>{toastMessage.title}</h4>
-              <p>{toastMessage.body}</p>
-            </div>
-            <button
-              type="button"
-              className="portal-toast__close"
-              onClick={() => setToastMessage(null)}
-            >
-              &times;
-            </button>
-          </div>
-        )}
 
         {/* ════════════════════ TAB 1: BOOK A SLOT ════════════════════ */}
         {activeTab === 'slot-finder' && (

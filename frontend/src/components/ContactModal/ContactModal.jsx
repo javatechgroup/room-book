@@ -12,10 +12,12 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import './ContactModal.css';
 
 export default function ContactModal() {
   const { isConnectOpen, closeConnect } = useAuth();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -45,6 +47,10 @@ export default function ContactModal() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
+    toast.success(
+      'Inquiry Submitted!',
+      `Thank you, ${formData.name || 'valued customer'}. Our corporate specialist will reach out shortly.`
+    );
     setTimeout(() => {
       setSubmitted(false);
       setFormData({
@@ -55,7 +61,7 @@ export default function ContactModal() {
         message: '',
       });
       closeConnect();
-    }, 2500);
+    }, 2000);
   };
 
   return (

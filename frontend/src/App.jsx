@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Header from './components/Header/Header';
 import LoginGateway from './components/LoginGateway/LoginGateway';
 import WorkplacePortal from './components/WorkplacePortal/WorkplacePortal';
@@ -9,6 +10,7 @@ import Contact from './components/Contact/Contact';
 import Footer from './components/Footer/Footer';
 import LoginModal from './components/LoginModal/LoginModal';
 import ContactModal from './components/ContactModal/ContactModal';
+import ToastContainer from './components/common/Toast/Toast';
 import './App.css';
 
 function AppContent() {
@@ -50,9 +52,10 @@ function AppContent() {
         </>
       )}
 
-      {/* Global Modals */}
+      {/* Global Modals & Notifications */}
       <LoginModal />
       <ContactModal />
+      <ToastContainer />
     </div>
   );
 }
@@ -60,7 +63,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AuthProvider>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { INITIAL_COMPANIES, INITIAL_ADMINS, INITIAL_AUDIT_LOGS } from './data/superAdminData';
 import SuperAdminMetrics from './components/SuperAdminMetrics';
 import SuperAdminTabs from './components/SuperAdminTabs';
@@ -9,7 +10,6 @@ import AuditLogsTab from './components/AuditLogsTab';
 import CompanyInspectorDrawer from './components/CompanyInspectorDrawer';
 import CompanyModal from './components/CompanyModal';
 import AdminModal from './components/AdminModal';
-import ToastNotification from './components/ToastNotification';
 import './SuperAdminPortal.css';
 
 export default function SuperAdminPortal() {
@@ -65,11 +65,13 @@ export default function SuperAdminPortal() {
     status: 'ACTIVE',
   });
 
-  // Toast Notification State
-  const [toast, setToast] = useState(null);
+  // Global Toast Hook
+  const { toast } = useToast();
   const showToast = (title, message, type = 'success') => {
-    setToast({ title, message, type });
-    setTimeout(() => setToast(null), 4000);
+    if (type === 'error') toast.error(title, message);
+    else if (type === 'warning') toast.warning(title, message);
+    else if (type === 'info') toast.info(title, message);
+    else toast.success(title, message);
   };
 
   // ════════════════════ SORTING & FILTERING ════════════════════
@@ -317,23 +319,32 @@ export default function SuperAdminPortal() {
   };
 
   const handleToggleCompanyStatus = (companyId) => {
+    const targetComp = companies.find((c) => c.id === companyId);
+    if (!targetComp) return;
+
+    const nextStatus = targetComp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
     setCompanies((prev) =>
-      prev.map((c) => {
-        if (c.id === companyId) {
-          const nextStatus = c.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-          showToast(
-            'Tenant Status Changed',
-            `Tenant "${c.name}" is now ${nextStatus.toLowerCase()}.`,
-            nextStatus === 'ACTIVE' ? 'success' : 'warning'
-          );
-          if (drawerCompany && drawerCompany.id === companyId) {
-            setDrawerCompany((prevComp) => ({ ...prevComp, status: nextStatus }));
-          }
-          return { ...c, status: nextStatus };
-        }
-        return c;
-      })
+      prev.map((c) => (c.id === companyId ? { ...c, status: nextStatus } : c))
     );
+
+    if (drawerCompany && drawerCompany.id === companyId) {
+      setDrawerCompany((prev) => (prev ? { ...prev, status: nextStatus } : null));
+    }
+
+    if (nextStatus === 'ACTIVE') {
+      showToast(
+        'Tenant Activated',
+        `Tenant "${targetComp.name}" has been successfully activated.`,
+        'success'
+      );
+    } else {
+      showToast(
+        'Tenant Suspended',
+        `Tenant "${targetComp.name}" has been suspended and marked inactive.`,
+        'warning'
+      );
+    }
   };
 
   // ════════════════════ ADMIN CRUD ════════════════════
@@ -417,20 +428,28 @@ export default function SuperAdminPortal() {
   };
 
   const handleToggleAdminStatus = (adminId) => {
+    const targetAdmin = admins.find((a) => a.id === adminId);
+    if (!targetAdmin) return;
+
+    const nextStatus = targetAdmin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
     setAdmins((prev) =>
-      prev.map((a) => {
-        if (a.id === adminId) {
-          const nextStatus = a.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-          showToast(
-            'Admin Status Changed',
-            `${a.fullName} access is now ${nextStatus.toLowerCase()}.`,
-            nextStatus === 'ACTIVE' ? 'success' : 'warning'
-          );
-          return { ...a, status: nextStatus };
-        }
-        return a;
-      })
+      prev.map((a) => (a.id === adminId ? { ...a, status: nextStatus } : a))
     );
+
+    if (nextStatus === 'ACTIVE') {
+      showToast(
+        'Admin Access Activated',
+        `Administrator "${targetAdmin.fullName}" access is now active.`,
+        'success'
+      );
+    } else {
+      showToast(
+        'Admin Access Suspended',
+        `Administrator "${targetAdmin.fullName}" access has been suspended.`,
+        'warning'
+      );
+    }
   };
 
   const activeCompaniesCount = companies.filter((c) => c.status === 'ACTIVE').length;
@@ -455,9 +474,6 @@ export default function SuperAdminPortal() {
           onOpenCreateCompany={handleOpenCreateCompany}
           onOpenCreateAdmin={handleOpenCreateAdmin}
         />
-
-        {/* Feedback Toast */}
-        <ToastNotification toast={toast} onClose={() => setToast(null)} />
 
         {/* Tab 1: Tenant Companies */}
         {activeTab === 'companies' && (

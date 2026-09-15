@@ -14,11 +14,13 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { DEMO_ACCOUNTS } from '../../api/authApi';
 import './LoginModal.css';
 
 function LoginModal() {
   const { isLoginOpen, closeLogin, login } = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -72,6 +74,9 @@ function LoginModal() {
 
     if (!result.success) {
       setError(result.error);
+      toast.error('Authentication Failed', result.error || 'Invalid email or password.');
+    } else {
+      toast.success('Signed In Successfully', `Welcome back, ${result.user?.name || 'User'}!`);
     }
   };
 

@@ -13,12 +13,14 @@ import {
   Mail,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import './Header.css';
 
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAuthenticated, logout, openLogin, openConnect } = useAuth();
+  const { toast } = useToast();
 
   const navLinks = isAuthenticated
     ? []
@@ -90,6 +92,11 @@ function Header() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    toast.info('Signed Out', 'You have been safely signed out.');
+  };
+
   return (
     <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
       <div className="container header__inner">
@@ -125,7 +132,7 @@ function Header() {
                 type="button"
                 className="btn btn--sm btn--logout-mobile"
                 onClick={() => {
-                  logout();
+                  handleLogout();
                   setMobileOpen(false);
                 }}
               >
@@ -138,18 +145,8 @@ function Header() {
                 type="button"
                 className="btn btn--primary btn--sm btn--full"
                 onClick={() => {
-                  setMobileOpen(false);
-                  openLogin();
-                }}
-              >
-                <LogIn size={15} /> Sign In to Portal
-              </button>
-              <button
-                type="button"
-                className="btn btn--outline btn--sm btn--full"
-                onClick={() => {
-                  setMobileOpen(false);
                   openConnect();
+                  setMobileOpen(false);
                 }}
               >
                 <Mail size={15} /> Connect With Us
@@ -167,16 +164,17 @@ function Header() {
           />
         )}
 
+        {/* Right Side: Auth State or Sign In Button */}
         <div className="header__actions">
           {/* Desktop Auth State */}
           {isAuthenticated ? (
             <div className="header__user-pill">
-              <div className="header__user-avatar" title={user.fullName || user.email}>
-                {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
+              <div className="header__user-avatar">
+                {React.createElement(getRoleIcon(user.role), { size: 16 })}
               </div>
               <div className="header__user-info">
                 <span className="header__user-name">
-                  {user.fullName ? user.fullName.split(' ')[0] : 'User'}
+                  {user.fullName || user.email?.split('@')[0]}
                 </span>
                 <span className="header__user-role-badge">
                   {getRoleShortLabel(user.role)}
@@ -185,7 +183,7 @@ function Header() {
               <button
                 type="button"
                 className="header__logout-btn"
-                onClick={logout}
+                onClick={handleLogout}
                 title="Sign Out"
                 aria-label="Sign Out"
               >
