@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { companyApi } from '../../api/companyApi';
 import { INITIAL_COMPANIES, INITIAL_ADMINS, INITIAL_AUDIT_LOGS } from './data/superAdminData';
 import SuperAdminMetrics from './components/SuperAdminMetrics';
 import SuperAdminTabs from './components/SuperAdminTabs';
@@ -266,6 +267,21 @@ export default function SuperAdminPortal() {
     setIsCompanyModalOpen(true);
   };
 
+  // Initial data loading from backend
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveCompanies = async () => {
+      const res = await companyApi.getCompanies();
+      if (isMounted && res.success && Array.isArray(res.data) && res.data.length > 0) {
+        setCompanies(res.data);
+      }
+    };
+    fetchLiveCompanies();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleOpenEditCompany = (comp) => {
     setEditingCompany(comp);
     setCompanyForm({
@@ -279,60 +295,93 @@ export default function SuperAdminPortal() {
     setIsCompanyModalOpen(true);
   };
 
-  const handleSaveCompany = (e) => {
+  const handleSaveCompany = async (e) => {
     e.preventDefault();
     if (editingCompany) {
-      setCompanies((prev) =>
-        prev.map((c) => (c.id === editingCompany.id ? { ...c, ...companyForm } : c))
-      );
-      if (drawerCompany && drawerCompany.id === editingCompany.id) {
-        setDrawerCompany((prev) => ({ ...prev, ...companyForm }));
+      const res = await companyApi.updateCompany(editingCompany.id, companyForm);
+      if (res.success && res.data) {
+        setCompanies((prev) =>
+          prev.map((c) => (c.id === editingCompany.id ? { ...c, ...res.data } : c))
+        );
+        if (drawerCompany && drawerCompany.id === editingCompany.id) {
+          setDrawerCompany((prev) => ({ ...prev, ...res.data }));
+        }
+        showToast('Tenant Updated', `Company details for "${companyForm.name}" updated successfully.`);
+        setIsCompanyModalOpen(false);
+      } else {
+        if (user?.isDemoSession || !res.error) {
+          setCompanies((prev) =>
+            prev.map((c) => (c.id === editingCompany.id ? { ...c, ...companyForm } : c))
+          );
+          if (drawerCompany && drawerCompany.id === editingCompany.id) {
+            setDrawerCompany((prev) => ({ ...prev, ...companyForm }));
+          }
+          showToast('Tenant Updated', `Company details for "${companyForm.name}" updated.`);
+          setIsCompanyModalOpen(false);
+        } else {
+          showToast('Update Failed', res.error, 'error');
+        }
       }
-      showToast('Tenant Updated', `Company details for "${companyForm.name}" updated successfully.`);
     } else {
-      const newId = Math.max(...companies.map((c) => c.id), 0) + 1;
-      const newComp = {
-        ...companyForm,
-        id: newId,
-        createdAt: new Date().toISOString().split('T')[0],
-        departmentsCount: 1,
-        roomsCount: 2,
-      };
-      setCompanies((prev) => [newComp, ...prev]);
+      const res = await companyApi.createCompany(companyForm);
+      if (res.success && res.data) {
+        const newComp = res.data;
+        setCompanies((prev) => [newComp, ...prev]);
 
-      setAuditLogs((prev) => [
-        {
-          id: Date.now(),
-          action: 'REGISTER_TENANT',
-          entityType: 'COMPANY',
-          entityName: newComp.name,
-          performedBy: user?.email || 'superadmin@system.com',
-          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-          details: `Provisioned new company code ${newComp.companyCode} with initial physical room quotas`,
-        },
-        ...prev,
-      ]);
+        setAuditLogs((prev) => [
+          {
+            id: Date.now(),
+            action: 'REGISTER_TENANT',
+            entityType: 'COMPANY',
+            entityName: newComp.name,
+            performedBy: user?.email || 'superadmin@system.com',
+            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+            details: `Provisioned new company code ${newComp.companyCode} with initial physical room quotas`,
+          },
+          ...prev,
+        ]);
 
-      showToast('Tenant Registered', `New organization "${companyForm.name}" has been provisioned.`);
+        showToast('Tenant Registered', `New organization "${companyForm.name}" has been registered.`);
+        setIsCompanyModalOpen(false);
+      } else {
+        if (user?.isDemoSession) {
+          const newId = Math.max(...companies.map((c) => c.id), 0) + 1;
+          const newComp = {
+            ...companyForm,
+            id: newId,
+            createdAt: new Date().toISOString().split('T')[0],
+            departmentsCount: 1,
+            roomsCount: 0,
+            adminsCount: 0,
+          };
+          setCompanies((prev) => [newComp, ...prev]);
+          showToast('Tenant Registered (Demo)', `New organization "${companyForm.name}" provisioned.`);
+          setIsCompanyModalOpen(false);
+        } else {
+          showToast('Registration Failed', res.error, 'error');
+        }
+      }
     }
-    setIsCompanyModalOpen(false);
   };
 
-  const handleToggleCompanyStatus = (companyId) => {
+  const handleToggleCompanyStatus = async (companyId) => {
     const targetComp = companies.find((c) => c.id === companyId);
     if (!targetComp) return;
 
     const nextStatus = targetComp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
+    const res = await companyApi.toggleCompanyStatus(companyId);
+    const resolvedStatus = res.success && res.data?.status ? res.data.status : nextStatus;
+
     setCompanies((prev) =>
-      prev.map((c) => (c.id === companyId ? { ...c, status: nextStatus } : c))
+      prev.map((c) => (c.id === companyId ? { ...c, status: resolvedStatus } : c))
     );
 
     if (drawerCompany && drawerCompany.id === companyId) {
-      setDrawerCompany((prev) => (prev ? { ...prev, status: nextStatus } : null));
+      setDrawerCompany((prev) => (prev ? { ...prev, status: resolvedStatus } : null));
     }
 
-    if (nextStatus === 'ACTIVE') {
+    if (resolvedStatus === 'ACTIVE') {
       showToast(
         'Tenant Activated',
         `Tenant "${targetComp.name}" has been successfully activated.`,

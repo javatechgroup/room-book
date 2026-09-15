@@ -31,150 +31,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import './WorkplacePortal.css';
 
-const INITIAL_ROOMS = [
-  {
-    id: 'room-1',
-    code: 'RM-401',
-    name: 'Boardroom Alpha',
-    building: 'Building A',
-    floor: 'Floor 4',
-    floorCategory: 'floor-4',
-    wing: 'East Wing • Room 401',
-    capacity: 18,
-    sizeCategory: 'large',
-    type: 'Executive Boardroom',
-    hardware: [
-      { name: 'Dual 4K Displays', icon: Monitor },
-      { name: 'Cisco VC Bar', icon: Video },
-      { name: 'Glass Whiteboard', icon: Presentation },
-    ],
-    occupiedSlots: ['10:00 AM - 11:00 AM', '02:00 PM - 03:00 PM'],
-    occupiedDetails: {
-      '10:00 AM - 11:00 AM': { team: 'Marketing & Growth', purpose: 'Q3 Product Campaign Strategy' },
-      '02:00 PM - 03:00 PM': { team: 'Executive Board', purpose: 'Quarterly Financial Review' },
-    },
-    nextAvailableSlot: '11:30 AM - 12:30 PM',
-    isUnderMaintenance: false,
-  },
-  {
-    id: 'room-2',
-    code: 'RM-201',
-    name: 'Conference Room 2A',
-    building: 'Building A',
-    floor: 'Floor 2',
-    floorCategory: 'floor-2',
-    wing: 'Central Hub • Room 201',
-    capacity: 10,
-    sizeCategory: 'medium',
-    type: 'Team Conference Room',
-    hardware: [
-      { name: 'Full HD Projector', icon: Monitor },
-      { name: 'Polycom Conference Mic', icon: Video },
-      { name: 'Magnetic Whiteboard', icon: Presentation },
-    ],
-    occupiedSlots: ['09:00 AM - 10:00 AM', '03:30 PM - 04:30 PM'],
-    occupiedDetails: {
-      '09:00 AM - 10:00 AM': { team: 'DevOps & SRE', purpose: 'Weekly Incident Retrospective' },
-      '03:30 PM - 04:30 PM': { team: 'People Ops', purpose: 'Department All-Hands Sync' },
-    },
-    nextAvailableSlot: '10:00 AM - 11:00 AM',
-    isUnderMaintenance: false,
-  },
-  {
-    id: 'room-3',
-    code: 'RM-302',
-    name: 'Innovation Lab',
-    building: 'Building A',
-    floor: 'Floor 3',
-    floorCategory: 'floor-3',
-    wing: 'North Wing • Room 302',
-    capacity: 12,
-    sizeCategory: 'large',
-    type: 'Creative Workshop Room',
-    hardware: [
-      { name: '75" Smart TV', icon: Monitor },
-      { name: 'Polycom VC Bar', icon: Video },
-      { name: 'Digital Whiteboard', icon: Presentation },
-    ],
-    occupiedSlots: ['11:30 AM - 12:30 PM', '02:00 PM - 03:00 PM'],
-    occupiedDetails: {
-      '11:30 AM - 12:30 PM': { team: 'UX Research', purpose: 'Customer Journey Mapping' },
-      '02:00 PM - 03:00 PM': { team: 'Mobile App Team', purpose: 'Sprint 24 Planning' },
-    },
-    nextAvailableSlot: '01:00 PM - 02:00 PM',
-    isUnderMaintenance: false,
-  },
-  {
-    id: 'room-4',
-    code: 'RM-308',
-    name: 'Design Sprint Studio',
-    building: 'Building A',
-    floor: 'Floor 3',
-    floorCategory: 'floor-3',
-    wing: 'South Wing • Room 308',
-    capacity: 8,
-    sizeCategory: 'medium',
-    type: 'Workshop Space',
-    hardware: [
-      { name: '65" 4K Display', icon: Monitor },
-      { name: 'Sticky-Note Wall', icon: Presentation },
-      { name: 'Mobile Whiteboard', icon: Presentation },
-    ],
-    occupiedSlots: ['10:00 AM - 11:00 AM'],
-    occupiedDetails: {
-      '10:00 AM - 11:00 AM': { team: 'Brand Identity Team', purpose: 'Visual Design Workshop' },
-    },
-    nextAvailableSlot: '11:30 AM - 12:30 PM',
-    isUnderMaintenance: false,
-  },
-  {
-    id: 'room-5',
-    code: 'POD-102',
-    name: 'Focus Pod Gamma',
-    building: 'Building A',
-    floor: 'Floor 1',
-    floorCategory: 'floor-1',
-    wing: 'Quiet Zone • Pod 102',
-    capacity: 4,
-    sizeCategory: 'small',
-    type: 'Acoustic Focus Pod',
-    hardware: [
-      { name: '27" Monitor', icon: Monitor },
-      { name: 'Logitech Brio Webcam', icon: Video },
-      { name: 'Acoustic Soundproofing', icon: Presentation },
-    ],
-    occupiedSlots: ['09:00 AM - 10:00 AM', '10:00 AM - 11:00 AM'],
-    occupiedDetails: {
-      '09:00 AM - 10:00 AM': { team: 'Finance', purpose: 'Audit Review Call' },
-      '10:00 AM - 11:00 AM': { team: 'Security', purpose: 'Compliance Check-in' },
-    },
-    nextAvailableSlot: '11:00 AM - 12:00 PM',
-    isUnderMaintenance: false,
-  },
-  {
-    id: 'room-6',
-    code: 'RM-405',
-    name: 'Executive Suite B',
-    building: 'Building A',
-    floor: 'Floor 4',
-    floorCategory: 'floor-4',
-    wing: 'West Wing • Room 405',
-    capacity: 14,
-    sizeCategory: 'large',
-    type: 'Meeting Room',
-    hardware: [
-      { name: 'Dual 4K Monitors', icon: Monitor },
-      { name: 'Jabra Speak 810', icon: Video },
-      { name: 'Tempered Glass Board', icon: Presentation },
-    ],
-    occupiedSlots: ['03:30 PM - 04:30 PM'],
-    occupiedDetails: {
-      '03:30 PM - 04:30 PM': { team: 'Legal Counsel', purpose: 'Contract Review' },
-    },
-    nextAvailableSlot: '04:30 PM - 05:30 PM',
-    isUnderMaintenance: false,
-  },
-];
+// Clean Initial Inventory Datasets
+const INITIAL_ROOMS = [];
 
 const TIME_SLOTS = [
   '09:00 AM - 10:00 AM',
@@ -194,11 +52,11 @@ function WorkplacePortal() {
   const [activeTab, setActiveTab] = useState('slot-finder'); // 'slot-finder' | 'directory' | 'my-bookings' | 'admin-console' | 'helpdesk'
   const [rooms, setRooms] = useState(INITIAL_ROOMS);
   const [selectedFloor, setSelectedFloor] = useState('All Floors');
-  const [selectedRoomId, setSelectedRoomId] = useState('room-1');
+  const [selectedRoomId, setSelectedRoomId] = useState('');
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM - 11:00 AM');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [bookingPurpose, setBookingPurpose] = useState('Sprint Planning');
-  const [department, setDepartment] = useState('Engineering');
+  const [bookingPurpose, setBookingPurpose] = useState('');
+  const [department, setDepartment] = useState('');
 
   // Directory filter state
   const [dirFloorFilter, setDirFloorFilter] = useState('all');
@@ -212,25 +70,14 @@ function WorkplacePortal() {
 
   // Helpdesk form state
   const [helpdeskForm, setHelpdeskForm] = useState({
-    roomName: 'Boardroom Alpha',
+    roomName: '',
     category: 'Hardware Issue',
     message: '',
   });
   const [helpdeskSubmitted, setHelpdeskSubmitted] = useState(false);
 
   // Active reservations
-  const [myBookings, setMyBookings] = useState([
-    {
-      id: 'b-init-1',
-      roomName: 'Boardroom Alpha',
-      roomId: 'room-1',
-      floor: 'Floor 4 • East Wing',
-      date: new Date().toISOString().split('T')[0],
-      slot: '02:00 PM - 03:00 PM',
-      purpose: 'Quarterly Financial Review',
-      department: 'Executive Team',
-    },
-  ]);
+  const [myBookings, setMyBookings] = useState([]);
   const { toast } = useToast();
 
   // Current active room for slot finder
@@ -238,19 +85,21 @@ function WorkplacePortal() {
     (r) => selectedFloor === 'All Floors' || r.floor === selectedFloor
   );
   const currentRoom =
-    rooms.find((r) => r.id === selectedRoomId) || filteredRooms[0] || rooms[0];
+    rooms.find((r) => r.id === selectedRoomId) || filteredRooms[0] || rooms[0] || null;
 
-  const isMaintenance = currentRoom.isUnderMaintenance;
-  const isOccupied = !isMaintenance && currentRoom.occupiedSlots.includes(selectedSlot);
-  const currentOccupant = currentRoom.occupiedDetails?.[selectedSlot];
+  const isMaintenance = currentRoom?.isUnderMaintenance || false;
+  const isOccupied = !isMaintenance && (currentRoom?.occupiedSlots || []).includes(selectedSlot);
+  const currentOccupant = currentRoom?.occupiedDetails?.[selectedSlot];
 
   // Alternative rooms free during this slot
-  const alternativeRooms = rooms.filter(
-    (r) =>
-      r.id !== currentRoom.id &&
-      !r.isUnderMaintenance &&
-      !r.occupiedSlots.includes(selectedSlot)
-  );
+  const alternativeRooms = currentRoom
+    ? rooms.filter(
+        (r) =>
+          r.id !== currentRoom.id &&
+          !r.isUnderMaintenance &&
+          !r.occupiedSlots.includes(selectedSlot)
+      )
+    : [];
 
   const handleBookRoom = (roomId, roomName, slotTime, floorName) => {
     const newBooking = {
@@ -414,53 +263,74 @@ function WorkplacePortal() {
 
         {/* ════════════════════ TAB 1: BOOK A SLOT ════════════════════ */}
         {activeTab === 'slot-finder' && (
-          <div className="portal-card">
-            {/* Controls Bar */}
-            <div className="finder-controls">
-              <div className="control-box">
-                <label htmlFor="slot-floor">
-                  <Building size={14} /> Office Floor
-                </label>
-                <select
-                  id="slot-floor"
-                  value={selectedFloor}
-                  onChange={(e) => {
-                    setSelectedFloor(e.target.value);
-                    const firstInFloor = rooms.find(
-                      (r) => e.target.value === 'All Floors' || r.floor === e.target.value
-                    );
-                    if (firstInFloor) setSelectedRoomId(firstInFloor.id);
-                  }}
+          !currentRoom ? (
+            <div className="portal-card" style={{ padding: '64px 20px', textAlign: 'center' }}>
+              <Building size={48} style={{ color: 'var(--text-faint)', margin: '0 auto 16px' }} />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '8px' }}>
+                No Physical Meeting Rooms Registered
+              </h3>
+              <p style={{ color: 'var(--text-muted)', maxWidth: '460px', margin: '0 auto 20px', fontSize: '0.9rem' }}>
+                There are currently no meeting rooms configured for this facility.
+                {isAdmin ? ' Use the Facilities Console tab to configure meeting rooms.' : ' Please contact your facility administrator to set up rooms.'}
+              </p>
+              {isAdmin && (
+                <button
+                  type="button"
+                  className="btn btn--primary btn--sm"
+                  onClick={() => setActiveTab('admin-console')}
                 >
-                  {FLOORS.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  Go to Facilities Console
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="portal-card">
+              {/* Controls Bar */}
+              <div className="finder-controls">
+                <div className="control-box">
+                  <label htmlFor="slot-floor">
+                    <Building size={14} /> Office Floor
+                  </label>
+                  <select
+                    id="slot-floor"
+                    value={selectedFloor}
+                    onChange={(e) => {
+                      setSelectedFloor(e.target.value);
+                      const firstInFloor = rooms.find(
+                        (r) => e.target.value === 'All Floors' || r.floor === e.target.value
+                      );
+                      if (firstInFloor) setSelectedRoomId(firstInFloor.id);
+                    }}
+                  >
+                    {FLOORS.map((f) => (
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="control-box">
-                <label htmlFor="slot-room">
-                  <MapPin size={14} /> Physical Room
-                </label>
-                <select
-                  id="slot-room"
-                  value={currentRoom.id}
-                  onChange={(e) => setSelectedRoomId(e.target.value)}
-                >
-                  {filteredRooms.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name} ({r.code} • {r.capacity} seats)
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="control-box">
+                  <label htmlFor="slot-room">
+                    <MapPin size={14} /> Physical Room
+                  </label>
+                  <select
+                    id="slot-room"
+                    value={currentRoom.id}
+                    onChange={(e) => setSelectedRoomId(e.target.value)}
+                  >
+                    {filteredRooms.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.name} ({r.code} • {r.capacity} seats)
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="control-box">
-                <label htmlFor="slot-date">
-                  <Calendar size={14} /> Date
-                </label>
+                <div className="control-box">
+                  <label htmlFor="slot-date">
+                    <Calendar size={14} /> Date
+                  </label>
                 <input
                   id="slot-date"
                   type="date"
@@ -728,7 +598,8 @@ function WorkplacePortal() {
               </div>
             </div>
           </div>
-        )}
+        )
+      )}
 
         {/* ════════════════════ TAB 2: CAMPUS ROOM DIRECTORY ════════════════════ */}
         {activeTab === 'directory' && (
@@ -788,7 +659,14 @@ function WorkplacePortal() {
             </div>
 
             <div className="directory-grid">
-              {filteredDirectoryRooms.map((r) => {
+              {filteredDirectoryRooms.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', padding: '48px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <Building size={36} style={{ color: 'var(--text-faint)', margin: '0 auto 12px' }} />
+                  <p style={{ fontWeight: 600, color: 'var(--text-heading)' }}>No rooms match the selected criteria.</p>
+                  <p style={{ fontSize: '0.85rem' }}>Try adjusting your floor or capacity filters or add rooms in the console.</p>
+                </div>
+              ) : (
+                filteredDirectoryRooms.map((r) => {
                 const isAvail = !r.isUnderMaintenance && !r.occupiedSlots.includes(selectedSlot);
                 return (
                   <div className="dir-room-card" key={r.id}>
@@ -836,7 +714,8 @@ function WorkplacePortal() {
                     </button>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
         )}
@@ -963,7 +842,14 @@ function WorkplacePortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rooms.map((rm) => (
+                    {rooms.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--text-muted)' }}>
+                          No physical rooms registered in this facility yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      rooms.map((rm) => (
                       <tr key={rm.id}>
                         <td>
                           <strong>{rm.name}</strong>
@@ -999,7 +885,7 @@ function WorkplacePortal() {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                    )))}
                   </tbody>
                 </table>
               </div>

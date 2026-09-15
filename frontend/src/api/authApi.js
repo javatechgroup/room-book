@@ -11,6 +11,15 @@ const apiClient = axios.create({
   timeout: 6000,
 });
 
+// Auto-attach JWT Bearer token to all outgoing requests
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('meetspace_token');
+  if (token && !token.startsWith('demo_token_')) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => Promise.reject(error));
+
 // Demo accounts for quick testing and fallback
 export const DEMO_ACCOUNTS = [
   {

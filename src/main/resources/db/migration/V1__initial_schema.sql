@@ -116,7 +116,7 @@ INSERT INTO companies (id, name, company_code, contact_information, address, sta
 VALUES (1, 'Acme Corporation', 'ACME', 'admin@acme.com', '100 Tech Park, Suite 400', 'ACTIVE');
 
 INSERT INTO departments (id, company_id, name, status)
-VALUES (1, 1, 'Engineering', 'ACTIVE');
+VALUES (1, 1, 'Admin', 'ACTIVE');
 
 -- Password for superadmin & companyadmin & employee is 'password123' hashed with BCrypt ($2a$10$e7v1g5YxVw8N... or standard hash)
 -- BCrypt for 'password123': $2a$10$8.UnVuG9HHg7ke3CD4048eT8bW9.2XbUjD1Hh6mU4aW3hE8t7Jz/e

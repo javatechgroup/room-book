@@ -26,23 +26,32 @@ export default function AuditLogsTab({ auditLogs = [] }) {
               </tr>
             </thead>
             <tbody>
-              {auditLogs.map((log) => (
-                <tr key={log.id}>
-                  <td className="td-subtle">
-                    <Clock size={12} className="inline-icon" />
-                    {log.timestamp}
+              {auditLogs.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="td-empty">
+                    <Clock size={32} className="empty-icon" />
+                    <p>No audit log events recorded yet.</p>
                   </td>
-                  <td>
-                    <span className="action-tag">{log.action}</span>
-                  </td>
-                  <td>
-                    <span className="entity-tag">{log.entityType}</span>
-                  </td>
-                  <td className="td-strong">{log.entityName}</td>
-                  <td>{log.performedBy}</td>
-                  <td className="td-details">{log.details}</td>
                 </tr>
-              ))}
+              ) : (
+                auditLogs.map((log) => (
+                  <tr key={log.id}>
+                    <td className="td-subtle">
+                      <Clock size={12} className="inline-icon" />
+                      {log.timestamp}
+                    </td>
+                    <td>
+                      <span className="action-tag">{log.action}</span>
+                    </td>
+                    <td>
+                      <span className="entity-tag">{log.entityType}</span>
+                    </td>
+                    <td className="td-strong">{log.entityName}</td>
+                    <td>{log.performedBy}</td>
+                    <td className="td-details">{log.details}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -50,34 +59,41 @@ export default function AuditLogsTab({ auditLogs = [] }) {
 
       {/* Mobile Card List for Audit Logs (Visible on mobile/tablet < 768px) */}
       <div className="mobile-card-list">
-        {auditLogs.map((log) => (
-          <div key={log.id} className="mobile-card">
-            <div className="mobile-card__header">
-              <span className="action-tag">{log.action}</span>
-              <span className="td-subtle">
-                <Clock size={12} className="inline-icon" />
-                {log.timestamp}
-              </span>
-            </div>
+        {auditLogs.length === 0 ? (
+          <div className="mobile-card" style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-muted)' }}>
+            <Clock size={32} style={{ margin: '0 auto 10px', opacity: 0.7 }} />
+            <p style={{ margin: 0, fontWeight: 500 }}>No audit log events recorded yet.</p>
+          </div>
+        ) : (
+          auditLogs.map((log) => (
+            <div key={log.id} className="mobile-card">
+              <div className="mobile-card__header">
+                <span className="action-tag">{log.action}</span>
+                <span className="td-subtle">
+                  <Clock size={12} className="inline-icon" />
+                  {log.timestamp}
+                </span>
+              </div>
 
-            <div className="mobile-card__title-row">
-              <h4 className="mobile-card__title">{log.entityName}</h4>
-              <span className="entity-tag">{log.entityType}</span>
-            </div>
+              <div className="mobile-card__title-row">
+                <h4 className="mobile-card__title">{log.entityName}</h4>
+                <span className="entity-tag">{log.entityType}</span>
+              </div>
 
-            <div className="mobile-card__details">
-              <div className="mobile-card__info-row">
-                <span className="mobile-card__text">{log.details}</span>
+              <div className="mobile-card__details">
+                <div className="mobile-card__info-row">
+                  <span className="mobile-card__text">{log.details}</span>
+                </div>
+              </div>
+
+              <div className="mobile-card__footer">
+                <span className="td-subtle" style={{ fontSize: '0.78rem' }}>
+                  Logged by: {log.performedBy}
+                </span>
               </div>
             </div>
-
-            <div className="mobile-card__footer">
-              <span className="td-subtle" style={{ fontSize: '0.78rem' }}>
-                Logged by: {log.performedBy}
-              </span>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

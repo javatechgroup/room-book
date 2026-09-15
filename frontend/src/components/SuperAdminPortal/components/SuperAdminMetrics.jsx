@@ -5,7 +5,8 @@ export default function SuperAdminMetrics({ companies = [], admins = [] }) {
   const activeCompaniesCount = companies.filter((c) => c.status === 'ACTIVE').length;
   const activeAdminsCount = admins.filter((a) => a.status === 'ACTIVE').length;
   const uniqueCoveredCompanies = new Set(admins.map((a) => a.companyId)).size;
-  const activePercentage = Math.round((activeCompaniesCount / (companies.length || 1)) * 100);
+  const activePercentage =
+    companies.length > 0 ? Math.round((activeCompaniesCount / companies.length) * 100) : 0;
 
   return (
     <div className="superadmin-metrics-grid">
