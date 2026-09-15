@@ -188,7 +188,7 @@ const FLOORS = ['All Floors', 'Floor 1', 'Floor 2', 'Floor 3', 'Floor 4'];
 
 function WorkplacePortal() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'COMPANY_ADMIN' || user?.role === 'SUPER_ADMIN';
+  const isAdmin = user?.role === 'COMPANY_ADMIN';
 
   const [activeTab, setActiveTab] = useState('slot-finder'); // 'slot-finder' | 'directory' | 'my-bookings' | 'admin-console' | 'helpdesk'
   const [rooms, setRooms] = useState(INITIAL_ROOMS);

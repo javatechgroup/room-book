@@ -3,7 +3,7 @@
    ================================================================ */
 
 .workplace-portal {
-  padding: 36px 0 80px;
+  padding: 96px 0 80px;
   background: var(--bg-surface-alt);
   min-height: calc(100vh - 120px);
 }

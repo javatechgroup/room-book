@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Building, User, Calendar, CheckCircle2 } from 'lucide-react';
+import { Shield, Building, User, Calendar, CheckCircle2, Layers } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './UserBanner.css';
 
@@ -16,7 +16,7 @@ function UserBanner() {
           icon: Shield,
           color: '#8b5cf6',
           bg: 'rgba(139, 92, 246, 0.12)',
-          desc: 'Full system privileges • Company & Admin management',
+          desc: 'Full system privileges • Multi-tenant company & Facility Admin management',
         };
       case 'COMPANY_ADMIN':
         return {
@@ -40,6 +40,7 @@ function UserBanner() {
 
   const roleInfo = getRoleBadge(user.role);
   const IconComponent = roleInfo.icon;
+  const isSuperAdmin = user.role === 'SUPER_ADMIN';
 
   return (
     <aside aria-label="Authenticated session" className="user-banner">
@@ -76,10 +77,12 @@ function UserBanner() {
         </div>
 
         <div className="user-banner__actions">
-          <a href="#availability" className="btn btn--outline btn--sm user-banner__btn">
-            <Calendar size={14} />
-            Check Availability
-          </a>
+          {!isSuperAdmin && (
+            <a href="#availability" className="btn btn--outline btn--sm user-banner__btn">
+              <Calendar size={14} />
+              Check Availability
+            </a>
+          )}
         </div>
       </div>
     </aside>

@@ -194,12 +194,6 @@ function LoginModal() {
             )}
           </button>
         </form>
-
-        {/* Modal Footer Note */}
-        <div className="login-modal__footer-note">
-          <ShieldCheck size={16} />
-          <span>Secured with Spring Security & JWT token authentication</span>
-        </div>
       </div>
     </div>
   );

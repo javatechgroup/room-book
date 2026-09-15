@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header/Header';
-import UserBanner from './components/UserBanner/UserBanner';
 import LoginGateway from './components/LoginGateway/LoginGateway';
 import WorkplacePortal from './components/WorkplacePortal/WorkplacePortal';
+import SuperAdminPortal from './components/SuperAdminPortal/SuperAdminPortal';
 import WalkthroughSection from './components/WalkthroughSection/WalkthroughSection';
 import Contact from './components/Contact/Contact';
 import Footer from './components/Footer/Footer';
@@ -12,7 +12,7 @@ import ContactModal from './components/ContactModal/ContactModal';
 import './App.css';
 
 function AppContent() {
-  const { isAuthenticated, openLogin, openConnect } = useAuth();
+  const { user, isAuthenticated, openLogin, openConnect } = useAuth();
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -20,15 +20,20 @@ function AppContent() {
     if (params.get('modal') === 'connect') openConnect();
   }, [openLogin, openConnect]);
 
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
   return (
     <div className="app">
       {isAuthenticated ? (
-        /* Authenticated: Workplace Portal with Full Capabilities */
+        /* Authenticated Session: Clean modern dashboard directly under Navbar */
         <>
           <Header />
-          <UserBanner />
           <main>
-            <WorkplacePortal />
+            {isSuperAdmin ? (
+              <SuperAdminPortal />
+            ) : (
+              <WorkplacePortal />
+            )}
           </main>
           <Footer />
         </>

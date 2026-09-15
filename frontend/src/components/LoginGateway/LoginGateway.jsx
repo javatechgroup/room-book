@@ -250,11 +250,6 @@ function LoginGateway() {
                 )}
               </button>
             </form>
-
-            <div className="gateway-footer-note">
-              <ShieldCheck size={14} />
-              <span>Protected by Spring Security & Corporate JWT Authentication</span>
-            </div>
           </div>
         </div>
       </div>

@@ -203,7 +203,7 @@ function Contact() {
 
                 <div className="contact__reassurance">
                   <ShieldCheck size={13} />
-                  <span>Your information is protected. We typically respond within 24 hours.</span>
+                  <span>Your information is protected.</span>
                 </div>
               </>
             )}
