@@ -7,6 +7,10 @@
   min-height: calc(100vh - 280px);
 }
 
+.superadmin-portal .container {
+  max-width: 1440px;
+}
+
 [data-theme='dark'] .superadmin-portal {
   background: var(--bg-body);
 }
@@ -957,14 +961,19 @@
 .company-title-cell {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .company-name {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: #0f172a;
   line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 [data-theme='dark'] .company-name {
@@ -975,6 +984,9 @@
   font-size: 0.74rem;
   color: #64748b;
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 [data-theme='dark'] .company-created {
@@ -985,17 +997,24 @@
 .contact-cell {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 190px;
+  gap: 3px;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .contact-item {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.835rem;
   color: var(--text-body);
-  line-height: 1.3;
+  line-height: 1.25;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-theme='dark'] .contact-item {
@@ -1017,7 +1036,9 @@
   text-decoration: none;
   font-weight: 500;
   transition: color 0.15s ease;
-  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contact-item a:hover {
@@ -1037,6 +1058,9 @@
   font-size: 0.78rem;
   color: #475569;
   font-weight: 450;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-theme='dark'] .contact-item--phone {
@@ -1067,7 +1091,12 @@
   align-items: center;
   gap: 6px;
   color: var(--text-body);
-  font-size: 0.85rem;
+  font-size: 0.835rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-theme='dark'] .contact-chip {
@@ -1076,6 +1105,7 @@
 
 .contact-chip svg {
   color: #4f46e5;
+  flex-shrink: 0;
 }
 
 [data-theme='dark'] .contact-chip svg {
@@ -1087,6 +1117,9 @@
   text-decoration: none;
   font-weight: 500;
   transition: color 0.15s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contact-chip a:hover {
@@ -1104,13 +1137,16 @@
 
 .address-snippet {
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
-  max-width: 220px;
+  max-width: 100%;
   color: #475569;
   font-size: 0.82rem;
   line-height: 1.35;
   font-weight: 450;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-theme='dark'] .address-snippet {
@@ -1119,7 +1155,6 @@
 
 .address-snippet svg {
   flex-shrink: 0;
-  margin-top: 2px;
   color: #64748b;
 }
 
@@ -1180,13 +1215,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 6px;
   background: #f5f3ff;
   color: #6d28d9;
   border: 1px solid #ddd6fe;
   font-weight: 550;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 [data-theme='dark'] .company-badge {
@@ -1205,6 +1244,7 @@
   color: #047857;
   border: 1px solid #a7f3d0;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 [data-theme='dark'] .role-tag {
@@ -1214,15 +1254,18 @@
 }
 
 .action-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-size: 0.74rem;
-  font-weight: 500;
+  font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
   background: #f1f5f9;
   color: #334155;
   border: 1px solid #cbd5e1;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1.25;
 }
 
 .action-tag--create {
@@ -1272,8 +1315,9 @@
   align-items: center;
   gap: 4px;
   font-size: 0.78rem;
-  font-weight: 450;
+  font-weight: 500;
   color: #64748b;
+  white-space: nowrap;
 }
 
 [data-theme='dark'] .entity-tag {
@@ -1361,26 +1405,34 @@
 .td-actions {
   text-align: right;
   white-space: nowrap;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 .th-actions {
   text-align: right;
+  overflow: visible !important;
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
   border: 1px solid #cbd5e1;
   background: #ffffff;
   color: #475569;
   cursor: pointer;
-  margin-left: 6px;
+  margin-left: 5px;
+  flex-shrink: 0;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-btn:first-child {
+  margin-left: 0;
 }
 
 [data-theme='dark'] .action-btn {
@@ -1448,12 +1500,14 @@
 .admin-user-cell {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .admin-avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
   color: #ffffff;
@@ -1461,7 +1515,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3);
   flex-shrink: 0;
 }
@@ -1471,6 +1525,9 @@
   color: var(--text-heading);
   display: block;
   line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-id {
@@ -2509,12 +2566,23 @@
 
 .audit-diff-value {
   font-size: 0.82rem;
-  color: var(--text-muted);
-  margin-top: 2px;
+  color: var(--text-body);
+  margin-top: 5px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 [data-theme='dark'] .audit-diff-value {
   color: var(--text-body);
+  background: var(--bg-card);
+  border-color: var(--border-card);
 }
 
 /* Segment Icon */

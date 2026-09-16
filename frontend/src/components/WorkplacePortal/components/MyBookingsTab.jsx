@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, MapPin, Clock, Tag, XCircle } from 'lucide-react';
+import { formatDate } from '../../../utils/dateUtils';
 
 export default function MyBookingsTab({
   myBookings,
@@ -42,7 +43,7 @@ export default function MyBookingsTab({
                     <MapPin size={13} /> {b.floor}
                   </span>
                   <span>
-                    <Calendar size={13} /> {b.date}
+                    <Calendar size={13} /> {formatDate(b.date)}
                   </span>
                   <span>
                     <Clock size={13} /> {b.slot}

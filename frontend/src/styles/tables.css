@@ -30,6 +30,12 @@
   text-align: left;
 }
 
+/* Strict Fixed Layout for Super Admin Tables */
+.superadmin-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
 /* High-Contrast Table Headers */
 .app-table thead th,
 .superadmin-table thead th,
@@ -40,8 +46,8 @@
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 14px 18px;
+  letter-spacing: 0.04em;
+  padding: 11px 14px;
   border-bottom: 2px solid var(--th-border);
   white-space: nowrap;
   position: sticky;
@@ -55,18 +61,21 @@
 /* Checkbox Column */
 .th-checkbox,
 .td-checkbox {
-  width: 48px;
+  width: 44px;
   text-align: center;
-  padding: 14px 12px !important;
+  padding: 11px 6px !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 .th-checkbox input[type="checkbox"],
 .td-checkbox input[type="checkbox"] {
   cursor: pointer;
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   accent-color: var(--primary-600);
   border-radius: 4px;
+  vertical-align: middle;
 }
 
 [data-theme='dark'] .th-checkbox input[type="checkbox"],
@@ -88,7 +97,8 @@
 .th-content {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .th-content svg {
@@ -151,7 +161,7 @@
 .app-table td,
 .superadmin-table td,
 .rooms-table td {
-  padding: 14px 18px;
+  padding: 10px 14px;
   color: var(--text-body);
   vertical-align: middle;
 }
@@ -172,14 +182,193 @@
   font-size: 0.83rem;
   font-weight: 400;
   color: var(--text-body);
-  max-width: 320px;
-  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
 }
 
+.td-nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Actions Column & Header - Never Truncate / Clip Buttons */
 .td-actions,
 .th-actions {
   text-align: right;
   white-space: nowrap;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  padding-left: 6px !important;
+  padding-right: 14px !important;
+}
+
+.td-actions {
+  vertical-align: middle;
+}
+
+.td-actions__group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   Proportional Column Allocations (100% Screen Fit without Overflow)
+   ================================================================ */
+
+/* 1. Tenant Companies Table (.companies-table) */
+.companies-table th:nth-child(1),
+.companies-table td:nth-child(1) {
+  width: 44px;
+  text-align: center;
+}
+
+.companies-table th:nth-child(2),
+.companies-table td:nth-child(2) {
+  width: 100px;
+}
+
+.companies-table th:nth-child(3),
+.companies-table td:nth-child(3) {
+  width: 20%;
+}
+
+.companies-table th:nth-child(4),
+.companies-table td:nth-child(4) {
+  width: 22%;
+}
+
+.companies-table th:nth-child(5),
+.companies-table td:nth-child(5) {
+  width: 18%;
+}
+
+.companies-table th:nth-child(6),
+.companies-table td:nth-child(6) {
+  width: 140px;
+  text-align: center;
+}
+
+.companies-table th:nth-child(7),
+.companies-table td:nth-child(7) {
+  width: 100px;
+  text-align: center;
+}
+
+.companies-table th:nth-child(8),
+.companies-table td:nth-child(8) {
+  width: 145px;
+  text-align: right;
+}
+
+/* 2. Facility Administrators Table (.admins-table) */
+.admins-table th:nth-child(1),
+.admins-table td:nth-child(1) {
+  width: 44px;
+  text-align: center;
+}
+
+.admins-table th:nth-child(2),
+.admins-table td:nth-child(2) {
+  width: 20%;
+}
+
+.admins-table th:nth-child(3),
+.admins-table td:nth-child(3) {
+  width: 22%;
+}
+
+.admins-table th:nth-child(4),
+.admins-table td:nth-child(4) {
+  width: 20%;
+}
+
+.admins-table th:nth-child(5),
+.admins-table td:nth-child(5) {
+  width: 135px;
+}
+
+.admins-table th:nth-child(6),
+.admins-table td:nth-child(6) {
+  width: 110px;
+}
+
+.admins-table th:nth-child(7),
+.admins-table td:nth-child(7) {
+  width: 100px;
+  text-align: center;
+}
+
+.admins-table th:nth-child(8),
+.admins-table td:nth-child(8) {
+  width: 115px;
+  text-align: right;
+}
+
+/* 3. System Audit Logs Table (.audit-logs-table) */
+.table--dense thead th,
+.superadmin-table--dense thead th,
+.audit-logs-table thead th {
+  padding: 10px 14px;
+  font-size: 0.74rem;
+}
+
+.table--dense td,
+.superadmin-table--dense td,
+.audit-logs-table td {
+  padding: 8px 14px;
+  font-size: 0.835rem;
+}
+
+.audit-logs-table th:nth-child(1),
+.audit-logs-table td:nth-child(1) {
+  width: 155px;
+}
+
+.audit-logs-table th:nth-child(2),
+.audit-logs-table td:nth-child(2) {
+  width: 175px;
+}
+
+.audit-logs-table th:nth-child(3),
+.audit-logs-table td:nth-child(3) {
+  width: 120px;
+}
+
+.audit-logs-table th:nth-child(4),
+.audit-logs-table td:nth-child(4) {
+  width: 18%;
+}
+
+.audit-logs-table th:nth-child(5),
+.audit-logs-table td:nth-child(5) {
+  width: 18%;
+}
+
+.audit-logs-table th:nth-child(6),
+.audit-logs-table td:nth-child(6) {
+  width: auto;
+}
+
+.audit-logs-table th:nth-child(7),
+.audit-logs-table td:nth-child(7) {
+  width: 75px;
+  text-align: center;
+}
+
+.table--dense .action-btn,
+.superadmin-table--dense .action-btn,
+.audit-logs-table .action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  margin-left: 0;
 }
 
 /* Empty Table State */

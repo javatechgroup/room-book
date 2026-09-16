@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, Phone, MapPin, ArrowRight, AlertCircle, Edit2 } from 'lucide-react';
+import { formatDate } from '../../../utils/dateUtils';
 
 export default function CompanyInspectorDrawer({
   company,
@@ -44,7 +45,7 @@ export default function CompanyInspectorDrawer({
             >
               {company.status}
             </span>
-            <span className="drawer-date">Registered on {company.createdAt}</span>
+            <span className="drawer-date">Registered on {formatDate(company.createdAt)}</span>
           </div>
 
           {/* Quick Summary Cards */}

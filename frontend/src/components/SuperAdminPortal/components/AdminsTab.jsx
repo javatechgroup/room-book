@@ -171,7 +171,7 @@ export default function AdminsTab({
       {/* Desktop Admins Table */}
       <div className="desktop-table-wrap">
         <div className="table-responsive">
-          <table className="superadmin-table">
+          <table className="superadmin-table admins-table">
             <thead>
               <tr>
                 <th className="th-checkbox">
@@ -285,25 +285,29 @@ export default function AdminsTab({
                         {a.status}
                       </span>
                     </td>
-                    <td className="td-actions">
-                      <button
-                        type="button"
-                        className="action-btn action-btn--edit"
-                        onClick={() => onEdit && onEdit(a)}
-                        title="Edit Administrator"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        className={`action-btn ${
-                          a.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
-                        }`}
-                        onClick={() => onToggleStatus && onToggleStatus(a.id)}
-                        title={a.status === 'ACTIVE' ? 'Suspend Admin' : 'Activate Admin'}
-                      >
-                        {a.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-                      </button>
+                    <td className="td-actions" onClick={(e) => e.stopPropagation()}>
+                      <div className="td-actions__group">
+                        <button
+                          type="button"
+                          className="action-btn action-btn--edit"
+                          onClick={() => onEdit && onEdit(a)}
+                          title="Edit Administrator"
+                          aria-label={`Edit ${a.fullName}`}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`action-btn ${
+                            a.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
+                          }`}
+                          onClick={() => onToggleStatus && onToggleStatus(a.id)}
+                          title={a.status === 'ACTIVE' ? 'Suspend Admin' : 'Activate Admin'}
+                          aria-label={a.status === 'ACTIVE' ? `Suspend ${a.fullName}` : `Activate ${a.fullName}`}
+                        >
+                          {a.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   );

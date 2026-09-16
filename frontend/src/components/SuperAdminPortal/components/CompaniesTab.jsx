@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
 import Pagination from '../../common/Pagination/Pagination';
+import { formatEstDate } from '../../../utils/dateUtils';
 
 export default function CompaniesTab({
   companies = [],
@@ -154,7 +155,7 @@ export default function CompaniesTab({
       {/* Desktop Data Table */}
       <div className="desktop-table-wrap">
         <div className="table-responsive">
-          <table className="superadmin-table">
+          <table className="superadmin-table companies-table">
             <thead>
               <tr>
                 <th className="th-checkbox">
@@ -242,7 +243,7 @@ export default function CompaniesTab({
                       <td className="td-strong">
                         <div className="company-title-cell">
                           <span className="company-name">{c.name}</span>
-                          <span className="company-created">Est. {c.createdAt}</span>
+                          <span className="company-created">{formatEstDate(c.createdAt)}</span>
                         </div>
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
@@ -292,32 +293,37 @@ export default function CompaniesTab({
                         </span>
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          className="action-btn action-btn--inspect"
-                          onClick={() => onInspect && onInspect(c)}
-                          title="Inspect Details"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          className="action-btn action-btn--edit"
-                          onClick={() => onEdit && onEdit(c)}
-                          title="Edit Company Details"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          className={`action-btn ${
-                            c.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
-                          }`}
-                          onClick={() => onToggleStatus && onToggleStatus(c.id)}
-                          title={c.status === 'ACTIVE' ? 'Suspend Company' : 'Activate Company'}
-                        >
-                          {c.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-                        </button>
+                        <div className="td-actions__group">
+                          <button
+                            type="button"
+                            className="action-btn action-btn--inspect"
+                            onClick={() => onInspect && onInspect(c)}
+                            title="Inspect Details"
+                            aria-label={`Inspect ${c.name}`}
+                          >
+                            <Eye size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className="action-btn action-btn--edit"
+                            onClick={() => onEdit && onEdit(c)}
+                            title="Edit Company Details"
+                            aria-label={`Edit ${c.name}`}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`action-btn ${
+                              c.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'
+                            }`}
+                            onClick={() => onToggleStatus && onToggleStatus(c.id)}
+                            title={c.status === 'ACTIVE' ? 'Suspend Company' : 'Activate Company'}
+                            aria-label={c.status === 'ACTIVE' ? `Suspend ${c.name}` : `Activate ${c.name}`}
+                          >
+                            {c.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -377,7 +383,7 @@ export default function CompaniesTab({
 
                 <div className="mobile-card__title-row">
                   <h4 className="mobile-card__title">{c.name}</h4>
-                  <span className="mobile-card__subtitle">Est. {c.createdAt}</span>
+                  <span className="mobile-card__subtitle">{formatEstDate(c.createdAt)}</span>
                 </div>
 
                 <div className="mobile-card__details">

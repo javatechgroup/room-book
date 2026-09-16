@@ -14,6 +14,7 @@ import AuditLogsTab from './components/AuditLogsTab';
 import CompanyInspectorDrawer from './components/CompanyInspectorDrawer';
 import CompanyModal from './components/CompanyModal';
 import AdminModal from './components/AdminModal';
+import { formatDate, formatDateTime } from '../../utils/dateUtils';
 import './SuperAdminPortal.css';
 
 export default function SuperAdminPortal() {
@@ -423,7 +424,7 @@ export default function SuperAdminPortal() {
       c.phone || '',
       `"${(c.address || '').replace(/"/g, '""')}"`,
       c.status,
-      c.createdAt,
+      `"${formatDate(c.createdAt)}"`,
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -514,7 +515,7 @@ export default function SuperAdminPortal() {
       `"${(a.companyName || '').replace(/"/g, '""')}"`,
       a.role,
       a.status,
-      a.createdAt,
+      `"${formatDate(a.createdAt)}"`,
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -535,7 +536,7 @@ export default function SuperAdminPortal() {
     const headers = ['ID', 'Timestamp', 'Action', 'Entity Type', 'Entity Name', 'Performed By', 'Company', 'Details', 'Old Value', 'New Value'];
     const rows = targetList.map((log) => [
       log.id,
-      `"${log.formattedTimestamp || log.timestamp || ''}"`,
+      `"${formatDateTime(log.timestamp || log.formattedTimestamp, { showSeconds: true })}"`,
       log.action,
       log.entityType,
       `"${(log.entityName || '').replace(/"/g, '""')}"`,

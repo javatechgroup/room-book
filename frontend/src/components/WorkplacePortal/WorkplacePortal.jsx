@@ -8,6 +8,7 @@ import CampusDirectoryTab from './components/CampusDirectoryTab';
 import MyBookingsTab from './components/MyBookingsTab';
 import FacilityAdminTab from './components/FacilityAdminTab';
 import HelpdeskTab from './components/HelpdeskTab';
+import { formatDate } from '../../utils/dateUtils';
 import './WorkplacePortal.css';
 
 export default function WorkplacePortal() {
@@ -98,7 +99,7 @@ export default function WorkplacePortal() {
 
     toast.success(
       'Slot Successfully Booked!',
-      `${roomName} reserved for ${slotTime} on ${selectedDate} ("${newBooking.purpose}"). Door tablet updated.`,
+      `${roomName} reserved for ${slotTime} on ${formatDate(selectedDate)} ("${newBooking.purpose}"). Door tablet updated.`,
       5000
     );
   };

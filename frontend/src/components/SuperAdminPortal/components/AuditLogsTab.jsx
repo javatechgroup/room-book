@@ -16,6 +16,7 @@ import {
   Layers,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import { formatAuditTimestamp, formatDateTime } from '../../../utils/dateUtils';
 
 export default function AuditLogsTab({
   auditLogs = [],
@@ -184,7 +185,7 @@ export default function AuditLogsTab({
       {/* Desktop Audit Logs Table */}
       <div className="desktop-table-wrap">
         <div className="table-responsive">
-          <table className="superadmin-table">
+          <table className="superadmin-table audit-logs-table">
             <thead>
               <tr>
                 <th className="th-sortable" onClick={() => onSort && onSort('timestamp')}>
@@ -247,11 +248,11 @@ export default function AuditLogsTab({
                   <tr
                     key={log.id}
                     onClick={() => setSelectedLog(log)}
-                    title="Click to inspect audit event details"
+                    title="Click to inspect full audit event snapshot"
                   >
                     <td className="td-subtle">
                       <Clock size={12} className="inline-icon" />
-                      {log.formattedTimestamp || log.timestamp}
+                      {formatAuditTimestamp(log.timestamp || log.formattedTimestamp)}
                     </td>
                     <td>
                       <span className={getActionBadgeClass(log.action)}>
@@ -264,18 +265,30 @@ export default function AuditLogsTab({
                         {log.entityType}
                       </span>
                     </td>
-                    <td className="td-strong">{log.entityName || `Resource #${log.entityId || log.id}`}</td>
-                    <td className="td-subtle">{log.performedBy}</td>
-                    <td className="td-details">{log.details}</td>
+                    <td
+                      className="td-strong td-nowrap"
+                      title={log.entityName || `Resource #${log.entityId || log.id}`}
+                    >
+                      {log.entityName || `Resource #${log.entityId || log.id}`}
+                    </td>
+                    <td className="td-subtle td-nowrap" title={log.performedBy}>
+                      {log.performedBy}
+                    </td>
+                    <td className="td-details" title={log.details || 'No narrative'}>
+                      {log.details || '—'}
+                    </td>
                     <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="action-btn action-btn--inspect"
-                        onClick={() => setSelectedLog(log)}
-                        title="View Full Audit Snapshot"
-                      >
-                        <Eye size={14} />
-                      </button>
+                      <div className="td-actions__group">
+                        <button
+                          type="button"
+                          className="action-btn action-btn--inspect"
+                          onClick={() => setSelectedLog(log)}
+                          title="View Full Audit Snapshot"
+                          aria-label="View Full Audit Snapshot"
+                        >
+                          <Eye size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -299,7 +312,7 @@ export default function AuditLogsTab({
                 <span className={getActionBadgeClass(log.action)}>{log.action ? log.action.replace(/_/g, ' ') : ''}</span>
                 <span className="td-subtle">
                   <Clock size={12} className="inline-icon" />
-                  {log.formattedTimestamp || log.timestamp}
+                  {formatAuditTimestamp(log.timestamp || log.formattedTimestamp)}
                 </span>
               </div>
 
@@ -394,7 +407,7 @@ export default function AuditLogsTab({
                 <div className="drawer-metric-card">
                   <span className="drawer-metric-card__label">Timestamp</span>
                   <span className="drawer-metric-card__value audit-metric-timestamp">
-                    {selectedLog.formattedTimestamp || selectedLog.timestamp}
+                    {formatDateTime(selectedLog.timestamp || selectedLog.formattedTimestamp, { showSeconds: true })}
                   </span>
                 </div>
                 <div className="drawer-metric-card">
