@@ -20,6 +20,9 @@ public class Company {
     @Column(name = "contact_information")
     private String contactInformation;
 
+    @Column(name = "phone")
+    private String phone;
+
     private String address;
 
     private String status = "ACTIVE";
@@ -32,11 +35,12 @@ public class Company {
 
     public Company() {}
 
-    public Company(Long id, String name, String companyCode, String contactInformation, String address, String status) {
+    public Company(Long id, String name, String companyCode, String contactInformation, String phone, String address, String status) {
         this.id = id;
         this.name = name;
         this.companyCode = companyCode;
         this.contactInformation = contactInformation;
+        this.phone = phone;
         this.address = address;
         if (status != null) this.status = status;
     }
@@ -52,6 +56,9 @@ public class Company {
 
     public String getContactInformation() { return contactInformation; }
     public void setContactInformation(String contactInformation) { this.contactInformation = contactInformation; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }

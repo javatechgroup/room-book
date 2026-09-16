@@ -61,6 +61,7 @@ public class CompanyService {
         company.setName(request.getName().trim());
         company.setCompanyCode(companyCode);
         company.setContactInformation(request.getContactInformation().trim());
+        company.setPhone(request.getPhone());
         company.setAddress(request.getAddress());
         company.setStatus(request.getStatus() != null ? request.getStatus() : "ACTIVE");
 
@@ -172,6 +173,7 @@ public class CompanyService {
         company.setName(request.getName().trim());
         company.setCompanyCode(newCode);
         company.setContactInformation(request.getContactInformation().trim());
+        company.setPhone(request.getPhone());
         company.setAddress(request.getAddress());
         if (request.getStatus() != null) {
             company.setStatus(request.getStatus());
@@ -302,6 +304,7 @@ public class CompanyService {
         response.setName(company.getName());
         response.setCompanyCode(company.getCompanyCode());
         response.setContactInformation(company.getContactInformation());
+        response.setPhone(company.getPhone());
         response.setAddress(company.getAddress());
         response.setStatus(company.getStatus());
         response.setCreatedAt(company.getCreatedAt());
