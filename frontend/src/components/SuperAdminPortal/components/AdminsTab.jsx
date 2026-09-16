@@ -13,7 +13,7 @@ import {
   XCircle,
   CheckCircle2,
 } from 'lucide-react';
-import SuperAdminPagination from './SuperAdminPagination';
+import Pagination from '../../common/Pagination/Pagination';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
 
 export default function AdminsTab({
@@ -400,7 +400,7 @@ export default function AdminsTab({
       </div>
 
       {/* Pagination */}
-      <SuperAdminPagination
+      <Pagination
         currentPage={currentPage}
         pageSize={pageSize}
         totalItems={totalFilteredCount}

@@ -1,0 +1,173 @@
+.common-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg, 12px) var(--radius-lg, 12px);
+  font-size: 0.88rem;
+  color: var(--text-secondary, #475569);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.common-pagination__info {
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+}
+
+.common-pagination__info strong {
+  color: var(--text-heading, #0f172a);
+  font-weight: 700;
+}
+
+.common-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.common-pagination__size-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.common-pagination__size-selector select {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--input-bg, #ffffff);
+  color: var(--text-main, #1e293b);
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.common-pagination__size-selector select:hover {
+  border-color: var(--primary-accent, #3b82f6);
+}
+
+.common-pagination__size-selector select:focus {
+  border-color: var(--primary-accent, #3b82f6);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.common-pagination__nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.common-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--input-bg, #ffffff);
+  color: var(--text-main, #334155);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.common-pagination__btn:hover:not(:disabled) {
+  background: var(--hover-bg, #f1f5f9);
+  border-color: var(--primary-accent, #3b82f6);
+  color: var(--primary-accent, #2563eb);
+  transform: translateY(-1px);
+}
+
+.common-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--border-color, #e2e8f0);
+}
+
+.common-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.common-pagination__page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--input-bg, #ffffff);
+  color: var(--text-main, #334155);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.common-pagination__page-btn:hover:not(.common-pagination__page-btn--active) {
+  background: var(--hover-bg, #f1f5f9);
+  border-color: var(--primary-accent, #3b82f6);
+  color: var(--primary-accent, #2563eb);
+}
+
+.common-pagination__page-btn--active {
+  background: var(--primary-accent, #2563eb);
+  border-color: var(--primary-accent, #2563eb);
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.common-pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 32px;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 700;
+  user-select: none;
+}
+
+.common-pagination__badge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--surface-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+}
+
+@media (max-width: 768px) {
+  .common-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .common-pagination__controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .common-pagination__pages {
+    display: none;
+  }
+}

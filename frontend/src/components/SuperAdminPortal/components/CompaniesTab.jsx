@@ -17,7 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
-import SuperAdminPagination from './SuperAdminPagination';
+import Pagination from '../../common/Pagination/Pagination';
 
 export default function CompaniesTab({
   companies = [],
@@ -453,7 +453,7 @@ export default function CompaniesTab({
       </div>
 
       {/* Pagination */}
-      <SuperAdminPagination
+      <Pagination
         currentPage={currentPage}
         pageSize={pageSize}
         totalItems={totalFilteredCount}
