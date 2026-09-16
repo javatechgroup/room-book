@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { companyApi } from '../../api/companyApi';
+import { adminApi } from '../../api/adminApi';
 import { INITIAL_COMPANIES, INITIAL_ADMINS, INITIAL_AUDIT_LOGS } from './data/superAdminData';
 import SuperAdminMetrics from './components/SuperAdminMetrics';
 import SuperAdminTabs from './components/SuperAdminTabs';
@@ -40,6 +41,7 @@ export default function SuperAdminPortal() {
   const [adminSort, setAdminSort] = useState({ field: 'fullName', direction: 'asc' });
   const [adminPage, setAdminPage] = useState(1);
   const [adminPageSize, setAdminPageSize] = useState(10);
+  const [totalAdminsCount, setTotalAdminsCount] = useState(0);
 
   // Slide-Over Detail Drawer State
   const [drawerCompany, setDrawerCompany] = useState(null);
@@ -169,9 +171,38 @@ export default function SuperAdminPortal() {
   }, [admins, adminSearch, adminCompanyFilter, adminStatusFilter, adminSort]);
 
   const paginatedAdmins = useMemo(() => {
+    if (totalAdminsCount > 0) {
+      return admins;
+    }
     const start = (adminPage - 1) * adminPageSize;
     return filteredAndSortedAdmins.slice(start, start + adminPageSize);
-  }, [filteredAndSortedAdmins, adminPage, adminPageSize]);
+  }, [admins, filteredAndSortedAdmins, adminPage, adminPageSize, totalAdminsCount]);
+
+  // Data loading for Facility Administrators with database pagination & filtering
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveAdmins = async () => {
+      const res = await adminApi.getAdmins({
+        page: adminPage,
+        size: adminPageSize,
+        search: adminSearch,
+        companyFilter: adminCompanyFilter,
+        status: adminStatusFilter,
+        sortBy: adminSort.field,
+        sortDir: adminSort.direction,
+      });
+      if (isMounted && res.success && Array.isArray(res.data)) {
+        setAdmins(res.data);
+        if (typeof res.totalElements === 'number') {
+          setTotalAdminsCount(res.totalElements);
+        }
+      }
+    };
+    fetchLiveAdmins();
+    return () => {
+      isMounted = false;
+    };
+  }, [adminPage, adminPageSize, adminSearch, adminCompanyFilter, adminStatusFilter, adminSort]);
 
   // ════════════════════ SELECTION & BULK ACTIONS ════════════════════
 
@@ -436,71 +467,98 @@ export default function SuperAdminPortal() {
     setIsAdminModalOpen(true);
   };
 
-  const handleSaveAdmin = (e) => {
+  const handleSaveAdmin = async (e) => {
     e.preventDefault();
     const assignedCompany = companies.find((c) => String(c.id) === String(adminForm.companyId));
     const companyName = assignedCompany ? assignedCompany.name : 'Unassigned';
 
     if (editingAdmin) {
-      setAdmins((prev) =>
-        prev.map((a) =>
-          a.id === editingAdmin.id
-            ? {
-                ...a,
-                fullName: adminForm.fullName,
-                email: adminForm.email,
-                companyId: Number(adminForm.companyId),
-                companyName,
-                status: adminForm.status,
-              }
-            : a
-        )
-      );
-      showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
+      const res = await adminApi.updateAdmin(editingAdmin.id, adminForm);
+      if (res.success && res.data) {
+        setAdmins((prev) =>
+          prev.map((a) => (a.id === editingAdmin.id ? { ...a, ...res.data } : a))
+        );
+        showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
+        setIsAdminModalOpen(false);
+      } else {
+        if (user?.isDemoSession || !res.error) {
+          setAdmins((prev) =>
+            prev.map((a) =>
+              a.id === editingAdmin.id
+                ? {
+                    ...a,
+                    fullName: adminForm.fullName,
+                    email: adminForm.email,
+                    companyId: Number(adminForm.companyId),
+                    companyName,
+                    status: adminForm.status,
+                  }
+                : a
+            )
+          );
+          showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
+          setIsAdminModalOpen(false);
+        } else {
+          showToast('Update Failed', res.error, 'error');
+        }
+      }
     } else {
-      const newId = Math.max(...admins.map((a) => a.id), 0) + 1;
-      const newAdmin = {
-        id: newId,
-        fullName: adminForm.fullName,
-        email: adminForm.email,
-        companyId: Number(adminForm.companyId),
-        companyName,
-        role: 'COMPANY_ADMIN',
-        status: adminForm.status,
-        createdAt: new Date().toISOString().split('T')[0],
-        lastLogin: 'Never',
-      };
-      setAdmins((prev) => [newAdmin, ...prev]);
+      const res = await adminApi.createAdmin(adminForm);
+      if (res.success && res.data) {
+        const newAdmin = res.data;
+        setAdmins((prev) => [newAdmin, ...prev]);
 
-      setAuditLogs((prev) => [
-        {
-          id: Date.now(),
-          action: 'CREATE_FACILITY_ADMIN',
-          entityType: 'USER',
-          entityName: newAdmin.email,
-          performedBy: user?.email || 'superadmin@system.com',
-          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-          details: `Provisioned Facility Administrator account for ${newAdmin.fullName} (${companyName})`,
-        },
-        ...prev,
-      ]);
+        setAuditLogs((prev) => [
+          {
+            id: Date.now(),
+            action: 'CREATE_FACILITY_ADMIN',
+            entityType: 'USER',
+            entityName: newAdmin.email,
+            performedBy: user?.email || 'superadmin@system.com',
+            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+            details: `Provisioned Facility Administrator account for ${newAdmin.fullName} (${companyName})`,
+          },
+          ...prev,
+        ]);
 
-      showToast('Admin Created', `Administrator credentials created for ${adminForm.fullName}.`);
+        showToast('Admin Created', `Administrator credentials created for ${adminForm.fullName}.`);
+        setIsAdminModalOpen(false);
+      } else {
+        if (user?.isDemoSession) {
+          const newId = Math.max(...admins.map((a) => a.id), 0) + 1;
+          const newAdmin = {
+            ...adminForm,
+            id: newId,
+            companyId: Number(adminForm.companyId),
+            companyName,
+            role: 'COMPANY_ADMIN',
+            status: adminForm.status,
+            createdAt: new Date().toISOString().split('T')[0],
+            lastLogin: 'Never',
+          };
+          setAdmins((prev) => [newAdmin, ...prev]);
+          showToast('Admin Created (Demo)', `Administrator credentials created for ${adminForm.fullName}.`);
+          setIsAdminModalOpen(false);
+        } else {
+          showToast('Creation Failed', res.error, 'error');
+        }
+      }
     }
-    setIsAdminModalOpen(false);
   };
 
-  const handleToggleAdminStatus = (adminId) => {
+  const handleToggleAdminStatus = async (adminId) => {
     const targetAdmin = admins.find((a) => a.id === adminId);
     if (!targetAdmin) return;
 
     const nextStatus = targetAdmin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const res = await adminApi.toggleAdminStatus(adminId);
+    const resolvedStatus = res.success && res.data?.status ? res.data.status : nextStatus;
 
     setAdmins((prev) =>
-      prev.map((a) => (a.id === adminId ? { ...a, status: nextStatus } : a))
+      prev.map((a) => (a.id === adminId ? { ...a, status: resolvedStatus } : a))
     );
 
-    if (nextStatus === 'ACTIVE') {
+    if (resolvedStatus === 'ACTIVE') {
       showToast(
         'Admin Access Activated',
         `Administrator "${targetAdmin.fullName}" access is now active.`,
@@ -532,7 +590,7 @@ export default function SuperAdminPortal() {
             if (tab === 'companies') setSelectedCompanyIds([]);
           }}
           companiesCount={totalCompaniesCount > 0 ? totalCompaniesCount : companies.length}
-          adminsCount={admins.length}
+          adminsCount={totalAdminsCount > 0 ? totalAdminsCount : admins.length}
           auditLogsCount={auditLogs.length}
           onOpenCreateCompany={handleOpenCreateCompany}
           onOpenCreateAdmin={handleOpenCreateAdmin}
@@ -588,7 +646,7 @@ export default function SuperAdminPortal() {
             activeAdminsCount={activeAdminsCount}
             companies={companies}
             paginatedAdmins={paginatedAdmins}
-            totalFilteredCount={filteredAndSortedAdmins.length}
+            totalFilteredCount={totalAdminsCount > 0 ? totalAdminsCount : filteredAndSortedAdmins.length}
             search={adminSearch}
             onSearchSubmit={(val) => {
               setAdminSearch(val);
