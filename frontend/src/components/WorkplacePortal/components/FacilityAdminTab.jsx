@@ -77,10 +77,7 @@ export default function FacilityAdminTab({
             <tbody>
               {rooms.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--text-muted)' }}
-                  >
+                  <td colSpan={6} className="rooms-table-empty">
                     No physical rooms registered in this facility yet.
                   </td>
                 </tr>

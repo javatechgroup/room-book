@@ -46,12 +46,12 @@ export default function SlotFinderTab({
 }) {
   if (!currentRoom) {
     return (
-      <div className="portal-card" style={{ padding: '64px 20px', textAlign: 'center' }}>
-        <Building size={48} style={{ color: 'var(--text-faint)', margin: '0 auto 16px' }} />
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '8px' }}>
+      <div className="portal-card slot-finder-empty-state">
+        <Building size={48} className="slot-finder-empty-state__icon" />
+        <h3 className="slot-finder-empty-state__title">
           No Physical Meeting Rooms Registered
         </h3>
-        <p style={{ color: 'var(--text-muted)', maxWidth: '460px', margin: '0 auto 20px', fontSize: '0.9rem' }}>
+        <p className="slot-finder-empty-state__desc">
           There are currently no meeting rooms configured for this facility.
           {isAdmin ? ' Use the Facilities Console tab to configure meeting rooms.' : ' Please contact your facility administrator to set up rooms.'}
         </p>

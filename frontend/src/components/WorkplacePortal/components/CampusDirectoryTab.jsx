@@ -69,19 +69,12 @@ export default function CampusDirectoryTab({
 
       <div className="directory-grid">
         {filteredDirectoryRooms.length === 0 ? (
-          <div
-            style={{
-              gridColumn: '1 / -1',
-              padding: '48px 20px',
-              textAlign: 'center',
-              color: 'var(--text-muted)',
-            }}
-          >
-            <Building size={36} style={{ color: 'var(--text-faint)', margin: '0 auto 12px' }} />
-            <p style={{ fontWeight: 600, color: 'var(--text-heading)' }}>
+          <div className="directory-empty-state">
+            <Building size={36} className="directory-empty-state__icon" />
+            <p className="directory-empty-state__title">
               No rooms match the selected criteria.
             </p>
-            <p style={{ fontSize: '0.85rem' }}>
+            <p className="directory-empty-state__subtitle">
               Try adjusting your floor or capacity filters or add rooms in the console.
             </p>
           </div>

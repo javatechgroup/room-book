@@ -1214,3 +1214,56 @@
     gap: 4px;
   }
 }
+
+/* Empty states for Workplace Portal */
+.directory-empty-state {
+  grid-column: 1 / -1;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.directory-empty-state__icon {
+  color: var(--text-faint);
+  margin: 0 auto 12px;
+}
+
+.directory-empty-state__title {
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.directory-empty-state__subtitle {
+  font-size: 0.85rem;
+}
+
+.slot-finder-empty-state {
+  padding: 64px 20px;
+  text-align: center;
+}
+
+.slot-finder-empty-state__icon {
+  color: var(--text-faint);
+  margin: 0 auto 16px;
+}
+
+.slot-finder-empty-state__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.slot-finder-empty-state__desc {
+  color: var(--text-muted);
+  max-width: 460px;
+  margin: 0 auto 20px;
+  font-size: 0.9rem;
+}
+
+.rooms-table-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--text-muted);
+}
+
