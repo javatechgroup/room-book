@@ -32,8 +32,15 @@ public class AuditLog {
     @Column(name = "new_value", length = 2000)
     private String newValue;
 
-    @Column(insertable = false, updatable = false)
+    @Column(name = "timestamp")
     private LocalDateTime timestamp;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.timestamp == null) {
+            this.timestamp = LocalDateTime.now();
+        }
+    }
 
     public AuditLog() {}
 
@@ -62,4 +69,5 @@ public class AuditLog {
     public void setNewValue(String newValue) { this.newValue = newValue; }
 
     public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }

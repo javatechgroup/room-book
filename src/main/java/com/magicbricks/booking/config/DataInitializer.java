@@ -1,9 +1,11 @@
 package com.magicbricks.booking.config;
 
+import com.magicbricks.booking.domain.AuditLog;
 import com.magicbricks.booking.domain.Company;
 import com.magicbricks.booking.domain.Department;
 import com.magicbricks.booking.domain.Role;
 import com.magicbricks.booking.domain.User;
+import com.magicbricks.booking.repository.AuditLogRepository;
 import com.magicbricks.booking.repository.CompanyRepository;
 import com.magicbricks.booking.repository.DepartmentRepository;
 import com.magicbricks.booking.repository.UserRepository;
@@ -24,17 +26,20 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final DepartmentRepository departmentRepository;
+    private final AuditLogRepository auditLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
 
     public DataInitializer(UserRepository userRepository,
                            CompanyRepository companyRepository,
                            DepartmentRepository departmentRepository,
+                           AuditLogRepository auditLogRepository,
                            PasswordEncoder passwordEncoder,
                            JdbcTemplate jdbcTemplate) {
         this.userRepository = userRepository;
         this.companyRepository = companyRepository;
         this.departmentRepository = departmentRepository;
+        this.auditLogRepository = auditLogRepository;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -75,7 +80,39 @@ public class DataInitializer implements CommandLineRunner {
         // 5. Ensure Employee user exists with correct passwordHash
         initOrUpdateUser("john.doe@acme.com", "password123", "John Doe", Role.EMPLOYEE, company, adminDept);
 
-        // 6. Sync H2 auto-increment identity sequence counters with max(id) + 1
+        // 6. Ensure default system audit logs are initialized
+        if (auditLogRepository.count() == 0) {
+            AuditLog log1 = new AuditLog();
+            log1.setUserId(1L);
+            log1.setCompanyId(company.getId());
+            log1.setAction("REGISTER_COMPANY");
+            log1.setEntityType("COMPANY");
+            log1.setEntityId(company.getId());
+            log1.setNewValue("Registered company: " + company.getName() + " (" + company.getCompanyCode() + ")");
+            log1.setTimestamp(java.time.LocalDateTime.now().minusDays(30));
+            auditLogRepository.save(log1);
+
+            AuditLog log2 = new AuditLog();
+            log2.setUserId(1L);
+            log2.setCompanyId(company.getId());
+            log2.setAction("CREATE_FACILITY_ADMIN");
+            log2.setEntityType("USER");
+            log2.setEntityId(2L);
+            log2.setNewValue("Created Facility Admin: Acme Admin (admin@acme.com) for company " + company.getName());
+            log2.setTimestamp(java.time.LocalDateTime.now().minusDays(29));
+            auditLogRepository.save(log2);
+
+            AuditLog log3 = new AuditLog();
+            log3.setUserId(1L);
+            log3.setAction("SYSTEM_INIT");
+            log3.setEntityType("SYSTEM");
+            log3.setEntityId(1L);
+            log3.setNewValue("System provisioned with Super Admin master credentials and default tenant isolation.");
+            log3.setTimestamp(java.time.LocalDateTime.now().minusDays(31));
+            auditLogRepository.save(log3);
+        }
+
+        // 7. Sync H2 auto-increment identity sequence counters with max(id) + 1
         syncH2IdentitySequences();
 
         log.info("Default user accounts and database identity sequences successfully synchronized.");

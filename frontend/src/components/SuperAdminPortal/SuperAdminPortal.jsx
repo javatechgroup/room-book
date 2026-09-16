@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
 import { companyApi } from '../../api/companyApi';
 import { adminApi } from '../../api/adminApi';
+import { auditApi } from '../../api/auditApi';
 import { INITIAL_COMPANIES, INITIAL_ADMINS, INITIAL_AUDIT_LOGS } from './data/superAdminData';
 import SuperAdminMetrics from './components/SuperAdminMetrics';
 import SuperAdminTabs from './components/SuperAdminTabs';
@@ -44,6 +45,16 @@ export default function SuperAdminPortal() {
   const [adminPageSize, setAdminPageSize] = useState(10);
   const [totalAdminsCount, setTotalAdminsCount] = useState(0);
   const [selectedAdminIds, setSelectedAdminIds] = useState([]);
+
+  // System Audit Logs Tab State
+  const [auditSearch, setAuditSearch] = useState('');
+  const [auditActionFilter, setAuditActionFilter] = useState('ALL');
+  const [auditEntityTypeFilter, setAuditEntityTypeFilter] = useState('ALL');
+  const [auditSort, setAuditSort] = useState({ field: 'timestamp', direction: 'desc' });
+  const [auditPage, setAuditPage] = useState(1);
+  const [auditPageSize, setAuditPageSize] = useState(10);
+  const [totalAuditLogsCount, setTotalAuditLogsCount] = useState(0);
+  const [availableAuditActions, setAvailableAuditActions] = useState([]);
 
   // Slide-Over Detail Drawer State
   const [drawerCompany, setDrawerCompany] = useState(null);
@@ -101,6 +112,14 @@ export default function SuperAdminPortal() {
       direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc',
     }));
     setAdminPage(1);
+  };
+
+  const handleSortAuditLogs = (field) => {
+    setAuditSort((prev) => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
+    setAuditPage(1);
   };
 
   // Filtered & Sorted Companies
@@ -210,6 +229,47 @@ export default function SuperAdminPortal() {
       isMounted = false;
     };
   }, [adminPage, adminPageSize, adminSearch, adminCompanyFilter, adminStatusFilter, adminSort]);
+
+  // Data loading for System Audit Logs with database pagination & filtering
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveAuditLogs = async () => {
+      const res = await auditApi.getAuditLogs({
+        page: auditPage,
+        size: auditPageSize,
+        search: auditSearch,
+        action: auditActionFilter,
+        entityType: auditEntityTypeFilter,
+        sortBy: auditSort.field,
+        sortDir: auditSort.direction,
+      });
+      if (isMounted && res.success && Array.isArray(res.data)) {
+        setAuditLogs(res.data);
+        if (typeof res.totalElements === 'number') {
+          setTotalAuditLogsCount(res.totalElements);
+        }
+      }
+    };
+    fetchLiveAuditLogs();
+    return () => {
+      isMounted = false;
+    };
+  }, [auditPage, auditPageSize, auditSearch, auditActionFilter, auditEntityTypeFilter, auditSort]);
+
+  // Fetch distinct audit actions for filtering
+  useEffect(() => {
+    let isMounted = true;
+    const fetchActions = async () => {
+      const res = await auditApi.getAuditActions();
+      if (isMounted && res.success && Array.isArray(res.data)) {
+        setAvailableAuditActions(res.data);
+      }
+    };
+    fetchActions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // ════════════════════ SELECTION & BULK ACTIONS ════════════════════
 
@@ -461,6 +521,35 @@ export default function SuperAdminPortal() {
     document.body.removeChild(link);
 
     showToast('Export Successful', `Exported ${targetList.length} administrators to CSV.`);
+  };
+
+  const handleExportAuditLogsCSV = () => {
+    const targetList = auditLogs;
+    const headers = ['ID', 'Timestamp', 'Action', 'Entity Type', 'Entity Name', 'Performed By', 'Company', 'Details', 'Old Value', 'New Value'];
+    const rows = targetList.map((log) => [
+      log.id,
+      `"${log.formattedTimestamp || log.timestamp || ''}"`,
+      log.action,
+      log.entityType,
+      `"${(log.entityName || '').replace(/"/g, '""')}"`,
+      `"${(log.performedBy || '').replace(/"/g, '""')}"`,
+      `"${(log.companyName || '').replace(/"/g, '""')}"`,
+      `"${(log.details || '').replace(/"/g, '""')}"`,
+      `"${(log.oldValue || '').replace(/"/g, '""')}"`,
+      `"${(log.newValue || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `system-audit-logs-export-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast('Export Successful', `Exported ${targetList.length} audit trail records to CSV.`);
   };
 
   // ════════════════════ DRAWER & NAVIGATION ════════════════════
@@ -817,7 +906,7 @@ export default function SuperAdminPortal() {
           }}
           companiesCount={totalCompaniesCount > 0 ? totalCompaniesCount : companies.length}
           adminsCount={totalAdminsCount > 0 ? totalAdminsCount : admins.length}
-          auditLogsCount={auditLogs.length}
+          auditLogsCount={totalAuditLogsCount > 0 ? totalAuditLogsCount : auditLogs.length}
           onOpenCreateCompany={handleOpenCreateCompany}
           onOpenCreateAdmin={handleOpenCreateAdmin}
         />
@@ -911,7 +1000,38 @@ export default function SuperAdminPortal() {
         )}
 
         {/* Tab 3: System Audit Logs */}
-        {activeTab === 'audit' && <AuditLogsTab auditLogs={auditLogs} />}
+        {activeTab === 'audit' && (
+          <AuditLogsTab
+            auditLogs={auditLogs}
+            totalAuditLogsCount={totalAuditLogsCount}
+            search={auditSearch}
+            onSearchSubmit={(val) => {
+              setAuditSearch(val);
+              setAuditPage(1);
+            }}
+            actionFilter={auditActionFilter}
+            onActionFilterChange={(val) => {
+              setAuditActionFilter(val);
+              setAuditPage(1);
+            }}
+            entityTypeFilter={auditEntityTypeFilter}
+            onEntityTypeFilterChange={(val) => {
+              setAuditEntityTypeFilter(val);
+              setAuditPage(1);
+            }}
+            availableActions={availableAuditActions}
+            sort={auditSort}
+            onSort={handleSortAuditLogs}
+            onExportCSV={handleExportAuditLogsCSV}
+            currentPage={auditPage}
+            pageSize={auditPageSize}
+            onPageChange={setAuditPage}
+            onPageSizeChange={(newSize) => {
+              setAuditPageSize(newSize);
+              setAuditPage(1);
+            }}
+          />
+        )}
       </div>
 
       {/* Slide-Over Drawer: Company Inspector */}
