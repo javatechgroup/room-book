@@ -73,6 +73,21 @@
   --text-muted: #475569;   /* Slate-600 for prominent, non-washed descriptions */
   --text-faint: #64748b;   /* Slate-500 for visible captions and helpers */
 
+  /* Segmented Control & Navigation Tabs */
+  --tab-track-bg: #f1f5f9;
+  --tab-track-border: #e2e8f0;
+  --tab-track-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  --tab-text-idle: #475569;
+  --tab-text-hover: #0f172a;
+  --tab-bg-hover: rgba(255, 255, 255, 0.6);
+  --tab-active-bg: #ffffff;
+  --tab-active-text: var(--primary-700);
+  --tab-active-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --tab-badge-bg: #e2e8f0;
+  --tab-badge-text: #334155;
+  --tab-badge-active-bg: var(--primary-600);
+  --tab-badge-active-text: #ffffff;
+
   /* Header */
   --header-bg: rgba(255, 255, 255, 0.88);
   --header-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
@@ -149,6 +164,21 @@
   --text-body: #e2e8f0;
   --text-muted: #94a3b8;
   --text-faint: #64748b;
+
+  /* Segmented Control & Navigation Tabs (Dark) */
+  --tab-track-bg: #141d2e;
+  --tab-track-border: #25334d;
+  --tab-track-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  --tab-text-idle: #94a3b8;
+  --tab-text-hover: #f8fafc;
+  --tab-bg-hover: rgba(255, 255, 255, 0.06);
+  --tab-active-bg: #1e293b;
+  --tab-active-text: var(--primary-300);
+  --tab-active-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --tab-badge-bg: #25334d;
+  --tab-badge-text: #94a3b8;
+  --tab-badge-active-bg: var(--primary-500);
+  --tab-badge-active-text: #ffffff;
 
   /* Header */
   --header-bg: rgba(11, 15, 25, 0.92);

@@ -46,7 +46,8 @@ export default function WorkplaceTabs({
           onClick={() => onTabChange('my-bookings')}
         >
           <BookmarkCheck size={16} />
-          <span>My Scheduled Slots ({bookingsCount})</span>
+          <span>My Scheduled Slots</span>
+          {bookingsCount > 0 && <span className="tab-count-badge">{bookingsCount}</span>}
         </button>
 
         {isAdmin && (

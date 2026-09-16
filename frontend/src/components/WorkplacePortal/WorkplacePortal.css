@@ -26,43 +26,66 @@
 }
 
 .portal-nav-tabs {
-  display: flex;
-  background: var(--bg-card);
-  padding: 4px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-card);
-  gap: 4px;
+  display: inline-flex;
+  gap: 6px;
+  background: var(--tab-track-bg);
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--tab-track-border);
+  box-shadow: var(--tab-track-shadow);
   flex-wrap: wrap;
-  box-shadow: var(--shadow-sm);
 }
 
 .nav-tab {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
-  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  border-radius: 8px;
   border: none;
   background: transparent;
-  color: var(--text-muted);
+  color: var(--tab-text-idle);
   font-family: var(--font-family);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.86rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
 .nav-tab:hover {
-  color: var(--text-heading);
+  color: var(--tab-text-hover);
+  background: var(--tab-bg-hover);
 }
 
 .nav-tab--active {
-  background: var(--primary-600);
-  color: #ffffff !important;
+  background: var(--tab-active-bg) !important;
+  color: var(--tab-active-text) !important;
+  box-shadow: var(--tab-active-shadow);
+  font-weight: 600;
 }
 
 .nav-tab--admin {
-  color: #8b5cf6;
+  color: var(--tab-text-idle);
+}
+
+.nav-tab .tab-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--tab-badge-bg);
+  color: var(--tab-badge-text);
+  transition: all 0.2s ease;
+}
+
+.nav-tab--active .tab-count-badge {
+  background: var(--tab-badge-active-bg);
+  color: var(--tab-badge-active-text);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
 }
 
 /* Main Container Card */
