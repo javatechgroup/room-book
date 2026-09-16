@@ -156,14 +156,14 @@ export default function AuditLogsTab({
             className={`status-segment-btn ${entityTypeFilter === 'COMPANY' ? 'status-segment-btn--active' : ''}`}
             onClick={() => onEntityTypeFilterChange && onEntityTypeFilterChange('COMPANY')}
           >
-            <Building2 size={13} style={{ marginRight: 4 }} /> Companies
+            <Building2 size={13} className="segment-btn-icon" /> Companies
           </button>
           <button
             type="button"
             className={`status-segment-btn ${entityTypeFilter === 'USER' ? 'status-segment-btn--active' : ''}`}
             onClick={() => onEntityTypeFilterChange && onEntityTypeFilterChange('USER')}
           >
-            <User size={13} style={{ marginRight: 4 }} /> Admins / Users
+            <User size={13} className="segment-btn-icon" /> Admins / Users
           </button>
         </div>
 
@@ -247,7 +247,6 @@ export default function AuditLogsTab({
                   <tr
                     key={log.id}
                     onClick={() => setSelectedLog(log)}
-                    style={{ cursor: 'pointer' }}
                     title="Click to inspect audit event details"
                   >
                     <td className="td-subtle">
@@ -256,7 +255,7 @@ export default function AuditLogsTab({
                     </td>
                     <td>
                       <span className={getActionBadgeClass(log.action)}>
-                        {log.action}
+                        {log.action ? log.action.replace(/_/g, ' ') : ''}
                       </span>
                     </td>
                     <td>
@@ -289,15 +288,15 @@ export default function AuditLogsTab({
       {/* Mobile Card List for Audit Logs */}
       <div className="mobile-card-list">
         {auditLogs.length === 0 ? (
-          <div className="mobile-card" style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-muted)' }}>
-            <Clock size={32} style={{ margin: '0 auto 10px', opacity: 0.7 }} />
-            <p style={{ margin: 0, fontWeight: 500 }}>No audit log events match your filter.</p>
+          <div className="mobile-card mobile-card--empty">
+            <Clock size={32} className="mobile-card__empty-icon" />
+            <p className="mobile-card__empty-text">No audit log events match your filter.</p>
           </div>
         ) : (
           auditLogs.map((log) => (
             <div key={log.id} className="mobile-card" onClick={() => setSelectedLog(log)}>
               <div className="mobile-card__header">
-                <span className={getActionBadgeClass(log.action)}>{log.action}</span>
+                <span className={getActionBadgeClass(log.action)}>{log.action ? log.action.replace(/_/g, ' ') : ''}</span>
                 <span className="td-subtle">
                   <Clock size={12} className="inline-icon" />
                   {log.formattedTimestamp || log.timestamp}
@@ -318,7 +317,7 @@ export default function AuditLogsTab({
               </div>
 
               <div className="mobile-card__footer">
-                <span className="td-subtle" style={{ fontSize: '0.78rem' }}>
+                <span className="td-subtle mobile-card__author">
                   By: {log.performedBy}
                 </span>
                 <button
@@ -351,21 +350,20 @@ export default function AuditLogsTab({
       {selectedLog && (
         <div className="confirm-modal-overlay" onClick={() => setSelectedLog(null)}>
           <div
-            className="confirm-modal"
-            style={{ maxWidth: '640px' }}
+            className="confirm-modal confirm-modal--audit-inspector"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
           >
             <div className="confirm-modal__body">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="audit-inspector-header">
+                <div className="audit-inspector-title-group">
                   <div className="confirm-modal__icon-badge confirm-modal__icon-badge--primary">
                     <Activity size={22} />
                   </div>
                   <div>
                     <span className="confirm-modal__subtitle">System Audit Snapshot</span>
-                    <h3 className="confirm-modal__title" style={{ fontSize: '1.2rem' }}>
+                    <h3 className="confirm-modal__title audit-inspector-title">
                       Audit Event #{selectedLog.id}
                     </h3>
                   </div>
@@ -380,35 +378,35 @@ export default function AuditLogsTab({
                 </button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+              <div className="audit-inspector-grid">
                 <div className="drawer-metric-card">
                   <span className="drawer-metric-card__label">Action</span>
-                  <span className={getActionBadgeClass(selectedLog.action)} style={{ display: 'inline-block', marginTop: 4 }}>
-                    {selectedLog.action}
+                  <span className={`${getActionBadgeClass(selectedLog.action)} audit-metric-badge`}>
+                    {selectedLog.action ? selectedLog.action.replace(/_/g, ' ') : ''}
                   </span>
                 </div>
                 <div className="drawer-metric-card">
                   <span className="drawer-metric-card__label">Entity Scope</span>
-                  <span className="entity-tag" style={{ display: 'inline-block', marginTop: 4 }}>
+                  <span className="entity-tag audit-metric-badge">
                     {getEntityIcon(selectedLog.entityType)} {selectedLog.entityType}
                   </span>
                 </div>
                 <div className="drawer-metric-card">
                   <span className="drawer-metric-card__label">Timestamp</span>
-                  <span className="drawer-metric-card__value" style={{ fontSize: '0.9rem' }}>
+                  <span className="drawer-metric-card__value audit-metric-timestamp">
                     {selectedLog.formattedTimestamp || selectedLog.timestamp}
                   </span>
                 </div>
                 <div className="drawer-metric-card">
                   <span className="drawer-metric-card__label">Performed By</span>
-                  <span className="drawer-metric-card__value" style={{ fontSize: '0.85rem' }}>
+                  <span className="drawer-metric-card__value audit-metric-author">
                     {selectedLog.performedBy}
                   </span>
                 </div>
               </div>
 
               {selectedLog.companyName && (
-                <div className="confirm-modal__target-card" style={{ marginBottom: '14px' }}>
+                <div className="confirm-modal__target-card audit-scope-card">
                   <div>
                     <div className="confirm-modal__target-name">{selectedLog.companyName}</div>
                     <div className="confirm-modal__target-sub">Associated Tenant Scope</div>
@@ -417,30 +415,30 @@ export default function AuditLogsTab({
               )}
 
               {/* Detail / Change Comparison Box */}
-              <div style={{ background: 'var(--surface-subtle, #f8fafc)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', padding: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-heading)', marginBottom: '8px' }}>
+              <div className="audit-narrative-box">
+                <div className="audit-narrative-heading">
                   Recorded Changes & Log Narrative:
                 </div>
-                <div style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: 1.5, wordBreak: 'break-word' }}>
+                <div className="audit-narrative-body">
                   {selectedLog.details}
                 </div>
 
                 {selectedLog.oldValue && (
-                  <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--border-color)' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase' }}>
+                  <div className="audit-state-diff">
+                    <span className="audit-diff-label audit-diff-label--prev">
                       Previous State:
                     </span>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <div className="audit-diff-value">
                       {selectedLog.oldValue}
                     </div>
                   </div>
                 )}
                 {selectedLog.newValue && (
-                  <div style={{ marginTop: '8px' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#10b981', textTransform: 'uppercase' }}>
+                  <div className="audit-state-diff--new">
+                    <span className="audit-diff-label audit-diff-label--new">
                       New State:
                     </span>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <div className="audit-diff-value">
                       {selectedLog.newValue}
                     </div>
                   </div>
