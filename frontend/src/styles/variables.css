@@ -72,6 +72,8 @@
   --text-body: #1e293b;    /* Slate-800 for crisp, vivid body text */
   --text-muted: #475569;   /* Slate-600 for prominent, non-washed descriptions */
   --text-faint: #64748b;   /* Slate-500 for visible captions and helpers */
+  --text-link: #2563eb;
+  --text-link-hover: #1d4ed8;
 
   /* Segmented Control & Navigation Tabs */
   --tab-track-bg: #f1f5f9;
@@ -87,6 +89,27 @@
   --tab-badge-text: #334155;
   --tab-badge-active-bg: var(--primary-600);
   --tab-badge-active-text: #ffffff;
+
+  /* Data Tables — Light Theme */
+  --table-wrap-bg: #ffffff;
+  --table-wrap-border: #e2e8f0;
+  --table-wrap-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --th-bg: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  --th-text: #0f172a;
+  --th-border: #cbd5e1;
+  --th-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  --th-sort-hover-bg: #eef2ff;
+  --th-sort-hover-text: #312e81;
+  --th-sort-icon: #4f46e5;
+  --th-sort-idle: #94a3b8;
+  --tr-bg: #ffffff;
+  --tr-alt-bg: #fafbfd;
+  --tr-border: #f1f5f9;
+  --tr-hover-bg: #f4f7ff;
+  --tr-hover-stripe: #4f46e5;
+  --tr-hover-shadow: inset 4px 0 0 0 var(--tr-hover-stripe), 0 2px 8px rgba(79, 70, 229, 0.04);
+  --tr-selected-bg: #eef2ff;
+  --tr-selected-stripe: #4f46e5;
 
   /* Header */
   --header-bg: rgba(255, 255, 255, 0.88);
@@ -163,7 +186,9 @@
   --text-heading: #ffffff;
   --text-body: #e2e8f0;
   --text-muted: #94a3b8;
-  --text-faint: #64748b;
+  --text-faint: #8b9bb4;
+  --text-link: #93c5fd;
+  --text-link-hover: #bfdbfe;
 
   /* Segmented Control & Navigation Tabs (Dark) */
   --tab-track-bg: #141d2e;
@@ -179,6 +204,27 @@
   --tab-badge-text: #94a3b8;
   --tab-badge-active-bg: var(--primary-500);
   --tab-badge-active-text: #ffffff;
+
+  /* Data Tables — Dark Theme */
+  --table-wrap-bg: #141d2e;
+  --table-wrap-border: #25334d;
+  --table-wrap-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px #1a263c;
+  --th-bg: linear-gradient(180deg, #182337 0%, #111a2a 100%);
+  --th-text: #f8fafc;
+  --th-border: #2d3e5e;
+  --th-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --th-sort-hover-bg: rgba(59, 130, 246, 0.18);
+  --th-sort-hover-text: #93c5fd;
+  --th-sort-icon: #60a5fa;
+  --th-sort-idle: #64748b;
+  --tr-bg: #141d2e;
+  --tr-alt-bg: rgba(255, 255, 255, 0.015);
+  --tr-border: #25334d;
+  --tr-hover-bg: rgba(59, 130, 246, 0.12);
+  --tr-hover-stripe: #60a5fa;
+  --tr-hover-shadow: inset 4px 0 0 0 var(--tr-hover-stripe), 0 2px 10px rgba(0, 0, 0, 0.25);
+  --tr-selected-bg: rgba(59, 130, 246, 0.2);
+  --tr-selected-stripe: #93c5fd;
 
   /* Header */
   --header-bg: rgba(11, 15, 25, 0.92);

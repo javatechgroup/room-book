@@ -121,13 +121,21 @@
   align-items: center;
   gap: 5px;
   font-weight: 600;
-  color: var(--primary-600);
+  color: var(--text-link, #2563eb);
   text-decoration: none;
   transition: var(--transition);
 }
 
 .modal-channel-item:hover {
-  color: var(--primary-700);
+  color: var(--text-link-hover, #1d4ed8);
+}
+
+[data-theme='dark'] .modal-channel-item {
+  color: var(--text-link, #93c5fd);
+}
+
+[data-theme='dark'] .modal-channel-item:hover {
+  color: var(--text-link-hover, #bfdbfe);
 }
 
 /* Form Body */

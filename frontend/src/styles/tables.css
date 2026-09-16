@@ -1,0 +1,203 @@
+/* ================================================================
+   MeetSpace — Global Enterprise Data Table Stylesheet
+   ================================================================ */
+
+/* Desktop Table Wrapper Card */
+.desktop-table-wrap {
+  display: block;
+  background: var(--table-wrap-bg);
+  border: 1px solid var(--table-wrap-border);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow: var(--table-wrap-shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Universal Table Base */
+.app-table,
+.superadmin-table,
+.rooms-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.885rem;
+  text-align: left;
+}
+
+/* High-Contrast Table Headers */
+.app-table thead th,
+.superadmin-table thead th,
+.rooms-table thead th,
+.rooms-table th {
+  background: var(--th-bg);
+  color: var(--th-text);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 18px;
+  border-bottom: 2px solid var(--th-border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  user-select: none;
+  box-shadow: var(--th-shadow);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Checkbox Column */
+.th-checkbox,
+.td-checkbox {
+  width: 48px;
+  text-align: center;
+  padding: 14px 12px !important;
+}
+
+.th-checkbox input[type="checkbox"],
+.td-checkbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--primary-600);
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .th-checkbox input[type="checkbox"],
+[data-theme='dark'] .td-checkbox input[type="checkbox"] {
+  accent-color: var(--primary-500);
+}
+
+/* Sortable Headers & Indicators */
+.th-sortable {
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.th-sortable:hover {
+  background: var(--th-sort-hover-bg) !important;
+  color: var(--th-sort-hover-text) !important;
+}
+
+.th-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.th-content svg {
+  color: var(--th-sort-icon);
+  flex-shrink: 0;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.sort-idle {
+  color: var(--th-sort-idle) !important;
+  opacity: 0.65;
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.th-sortable:hover .sort-idle {
+  opacity: 1;
+  color: var(--th-sort-icon) !important;
+  transform: scale(1.1);
+}
+
+/* Layered Table Rows */
+.app-table tbody tr,
+.superadmin-table tbody tr,
+.rooms-table tbody tr {
+  background: var(--tr-bg);
+  border-bottom: 1px solid var(--tr-border);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.app-table tbody tr:nth-child(even),
+.superadmin-table tbody tr:nth-child(even),
+.rooms-table tbody tr:nth-child(even) {
+  background: var(--tr-alt-bg);
+}
+
+.app-table tbody tr:last-child,
+.superadmin-table tbody tr:last-child,
+.rooms-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* Tactile Row Hover Effect */
+.app-table tbody tr:hover,
+.superadmin-table tbody tr:hover,
+.rooms-table tbody tr:hover {
+  background: var(--tr-hover-bg) !important;
+  box-shadow: var(--tr-hover-shadow);
+}
+
+/* Selected Row State */
+.app-table tbody tr.tr--selected,
+.superadmin-table tbody tr.tr--selected,
+.rooms-table tbody tr.tr--selected {
+  background: var(--tr-selected-bg) !important;
+  box-shadow: inset 4px 0 0 0 var(--tr-selected-stripe);
+}
+
+/* Table Cells */
+.app-table td,
+.superadmin-table td,
+.rooms-table td {
+  padding: 14px 18px;
+  color: var(--text-body);
+  vertical-align: middle;
+}
+
+.td-strong {
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.td-subtle {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.td-details {
+  font-size: 0.83rem;
+  font-weight: 400;
+  color: var(--text-body);
+  max-width: 320px;
+  line-height: 1.45;
+}
+
+.td-actions,
+.th-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Empty Table State */
+.td-empty {
+  text-align: center;
+  padding: 56px 24px !important;
+  color: var(--text-muted);
+}
+
+.td-empty .empty-icon {
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  opacity: 0.85;
+}
+
+.td-empty p {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-heading);
+}
