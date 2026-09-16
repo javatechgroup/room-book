@@ -9,6 +9,7 @@ import {
   ArrowUpDown,
   Mail,
   Clock,
+  Eye,
   Edit2,
   XCircle,
   CheckCircle2,
@@ -35,6 +36,7 @@ export default function AdminsTab({
   onToggleSelect,
   onSelectAllPage,
   isAllPageSelected = false,
+  onInspect,
   onEdit,
   onToggleStatus,
   onBulkActivate,
@@ -241,8 +243,12 @@ export default function AdminsTab({
                 paginatedAdmins.map((a) => {
                   const isSelected = selectedIds.includes(a.id);
                   return (
-                  <tr key={a.id} className={isSelected ? 'tr--selected' : ''}>
-                    <td className="td-checkbox">
+                  <tr
+                    key={a.id}
+                    className={`${isSelected ? 'tr--selected' : ''}`}
+                    onClick={() => onInspect && onInspect(a)}
+                  >
+                    <td className="td-checkbox" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -260,7 +266,7 @@ export default function AdminsTab({
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       <span className="contact-chip">
                         <Mail size={12} />
                         <a href={`mailto:${a.email}`}>{a.email}</a>
@@ -287,6 +293,15 @@ export default function AdminsTab({
                     </td>
                     <td className="td-actions" onClick={(e) => e.stopPropagation()}>
                       <div className="td-actions__group">
+                        <button
+                          type="button"
+                          className="action-btn action-btn--inspect"
+                          onClick={() => onInspect && onInspect(a)}
+                          title="Inspect Details"
+                          aria-label={`Inspect ${a.fullName}`}
+                        >
+                          <Eye size={14} />
+                        </button>
                         <button
                           type="button"
                           className="action-btn action-btn--edit"
@@ -338,7 +353,11 @@ export default function AdminsTab({
           </div>
         ) : (
           paginatedAdmins.map((a) => (
-            <div key={a.id} className="mobile-card">
+            <div
+              key={a.id}
+              className="mobile-card"
+              onClick={() => onInspect && onInspect(a)}
+            >
               <div className="mobile-card__header">
                 <div className="admin-user-cell">
                   <div className="admin-avatar">
@@ -359,7 +378,7 @@ export default function AdminsTab({
               </div>
 
               <div className="mobile-card__details">
-                <div className="mobile-card__info-row">
+                <div className="mobile-card__info-row" onClick={(e) => e.stopPropagation()}>
                   <Mail size={14} className="mobile-card__icon" />
                   <a href={`mailto:${a.email}`} className="mobile-card__link">
                     {a.email}
@@ -377,7 +396,16 @@ export default function AdminsTab({
 
               <div className="mobile-card__footer">
                 <span className="role-tag">COMPANY_ADMIN</span>
-                <div className="mobile-card__actions">
+                <div className="mobile-card__actions" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    className="action-btn action-btn--inspect"
+                    onClick={() => onInspect && onInspect(a)}
+                    title="Inspect Details"
+                    aria-label={`Inspect ${a.fullName}`}
+                  >
+                    <Eye size={15} />
+                  </button>
                   <button
                     type="button"
                     className="action-btn action-btn--edit"

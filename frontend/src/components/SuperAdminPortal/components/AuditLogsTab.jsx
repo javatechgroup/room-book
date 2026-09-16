@@ -8,6 +8,7 @@ import {
   Shield,
   Building2,
   User,
+  Mail,
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
@@ -17,6 +18,40 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import { formatAuditTimestamp, formatDateTime } from '../../../utils/dateUtils';
+
+function formatAuditTarget(entityName, entityType) {
+  if (!entityName) return { title: 'Unknown Resource' };
+
+  // Match pattern: "Name (email) for company CompanyName"
+  const userFullMatch = entityName.match(/^([^(]+)\s*\(([^)]+)\)\s*for company\s*(.+)$/i);
+  if (userFullMatch) {
+    return {
+      title: userFullMatch[1].trim(),
+      email: userFullMatch[2].trim(),
+      company: userFullMatch[3].trim(),
+    };
+  }
+
+  // Match pattern: "Name (email)"
+  const userSimpleMatch = entityName.match(/^([^(]+)\s*\(([^)]+)\)$/i);
+  if (userSimpleMatch && entityType === 'USER') {
+    return {
+      title: userSimpleMatch[1].trim(),
+      email: userSimpleMatch[2].trim(),
+    };
+  }
+
+  // Match pattern: "Company Name (CODE)"
+  const compMatch = entityName.match(/^([^(]+)\s*\(([^)]+)\)$/i);
+  if (compMatch && entityType === 'COMPANY') {
+    return {
+      title: compMatch[1].trim(),
+      code: compMatch[2].trim(),
+    };
+  }
+
+  return { title: entityName };
+}
 
 export default function AuditLogsTab({
   auditLogs = [],
@@ -306,46 +341,88 @@ export default function AuditLogsTab({
             <p className="mobile-card__empty-text">No audit log events match your filter.</p>
           </div>
         ) : (
-          auditLogs.map((log) => (
-            <div key={log.id} className="mobile-card" onClick={() => setSelectedLog(log)}>
-              <div className="mobile-card__header">
-                <span className={getActionBadgeClass(log.action)}>{log.action ? log.action.replace(/_/g, ' ') : ''}</span>
-                <span className="td-subtle">
-                  <Clock size={12} className="inline-icon" />
-                  {formatAuditTimestamp(log.timestamp || log.formattedTimestamp)}
-                </span>
-              </div>
+          auditLogs.map((log) => {
+            const target = formatAuditTarget(log.entityName, log.entityType);
+            const trimmedDetails = log.details ? log.details.trim() : '';
+            const isDetailsRedundant =
+              !trimmedDetails ||
+              (log.entityName && trimmedDetails.toLowerCase() === log.entityName.trim().toLowerCase()) ||
+              trimmedDetails.toLowerCase().startsWith('created facility admin:') ||
+              trimmedDetails.toLowerCase().startsWith('updated facility admin:') ||
+              (log.action?.includes('ACTIVATE') && /^(status:\s*)?(active|inactive)$/i.test(trimmedDetails)) ||
+              (log.action?.includes('DEACTIVATE') && /^(status:\s*)?(active|inactive)$/i.test(trimmedDetails));
 
-              <div className="mobile-card__title-row">
-                <h4 className="mobile-card__title">{log.entityName || `Resource #${log.entityId || log.id}`}</h4>
-                <span className="entity-tag">
-                  {getEntityIcon(log.entityType)} {log.entityType}
-                </span>
-              </div>
+            return (
+              <div key={log.id} className="mobile-card audit-mobile-card" onClick={() => setSelectedLog(log)}>
+                {/* Header: Badges & Timestamp */}
+                <div className="audit-mobile-card__header">
+                  <div className="audit-mobile-card__badges">
+                    <span className={getActionBadgeClass(log.action)}>
+                      {log.action ? log.action.replace(/_/g, ' ') : ''}
+                    </span>
+                    <span className="entity-tag">
+                      {getEntityIcon(log.entityType)} {log.entityType}
+                    </span>
+                  </div>
+                  <span className="audit-mobile-card__time">
+                    <Clock size={11} className="inline-icon" />
+                    {formatAuditTimestamp(log.timestamp || log.formattedTimestamp)}
+                  </span>
+                </div>
 
-              <div className="mobile-card__details">
-                <div className="mobile-card__info-row">
-                  <span className="mobile-card__text">{log.details}</span>
+                {/* Target Resource Section */}
+                <div className="audit-mobile-target">
+                  <div className="audit-mobile-target__header">
+                    <h4 className="audit-mobile-target__name">{target.title}</h4>
+                    {target.code && <span className="code-pill">{target.code}</span>}
+                  </div>
+
+                  {(target.email || target.company) && (
+                    <div className="audit-mobile-target__meta">
+                      {target.email && (
+                        <span className="audit-mobile-meta-item">
+                          <Mail size={12} />
+                          <span>{target.email}</span>
+                        </span>
+                      )}
+                      {target.company && (
+                        <span className="audit-mobile-meta-item company-badge">
+                          <Building2 size={12} />
+                          <span>{target.company}</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Narrative / State Changes (only when informative and non-redundant) */}
+                {trimmedDetails && !isDetailsRedundant && (
+                  <div className="audit-mobile-narrative">
+                    <span>{trimmedDetails}</span>
+                  </div>
+                )}
+
+                {/* Footer: Performed By + Proper Inspect Button */}
+                <div className="mobile-card__footer">
+                  <span className="td-subtle mobile-card__author" title={log.performedBy}>
+                    By: {log.performedBy ? log.performedBy.split('(')[0].trim() : 'System'}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--sm audit-inspect-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedLog(log);
+                    }}
+                    title="Inspect Full Audit Record"
+                  >
+                    <Eye size={13} />
+                    <span>Inspect</span>
+                  </button>
                 </div>
               </div>
-
-              <div className="mobile-card__footer">
-                <span className="td-subtle mobile-card__author">
-                  By: {log.performedBy}
-                </span>
-                <button
-                  type="button"
-                  className="btn btn--outline btn--sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedLog(log);
-                  }}
-                >
-                  <Eye size={12} /> Inspect
-                </button>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -383,7 +460,7 @@ export default function AuditLogsTab({
                 </div>
                 <button
                   type="button"
-                  className="drawer-close"
+                  className="audit-inspector-close-btn"
                   onClick={() => setSelectedLog(null)}
                   aria-label="Close dialog"
                 >
@@ -432,9 +509,15 @@ export default function AuditLogsTab({
                 <div className="audit-narrative-heading">
                   Recorded Changes & Log Narrative:
                 </div>
-                <div className="audit-narrative-body">
-                  {selectedLog.details}
-                </div>
+
+                {/* Show general details narrative only when not redundant with newValue/oldValue */}
+                {selectedLog.details &&
+                  selectedLog.details !== selectedLog.newValue &&
+                  selectedLog.details !== selectedLog.oldValue && (
+                    <div className="audit-narrative-body">
+                      {selectedLog.details}
+                    </div>
+                  )}
 
                 {selectedLog.oldValue && (
                   <div className="audit-state-diff">
@@ -454,6 +537,13 @@ export default function AuditLogsTab({
                     <div className="audit-diff-value">
                       {selectedLog.newValue}
                     </div>
+                  </div>
+                )}
+
+                {/* Fallback for logs without oldValue/newValue */}
+                {!selectedLog.oldValue && !selectedLog.newValue && selectedLog.details && (
+                  <div className="audit-narrative-body">
+                    {selectedLog.details}
                   </div>
                 )}
               </div>

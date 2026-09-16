@@ -281,33 +281,33 @@
 
 .admins-table th:nth-child(3),
 .admins-table td:nth-child(3) {
-  width: 22%;
+  width: 20%;
 }
 
 .admins-table th:nth-child(4),
 .admins-table td:nth-child(4) {
-  width: 20%;
+  width: 18%;
 }
 
 .admins-table th:nth-child(5),
 .admins-table td:nth-child(5) {
-  width: 135px;
+  width: 130px;
 }
 
 .admins-table th:nth-child(6),
 .admins-table td:nth-child(6) {
-  width: 110px;
+  width: 105px;
 }
 
 .admins-table th:nth-child(7),
 .admins-table td:nth-child(7) {
-  width: 100px;
+  width: 95px;
   text-align: center;
 }
 
 .admins-table th:nth-child(8),
 .admins-table td:nth-child(8) {
-  width: 115px;
+  width: 145px;
   text-align: right;
 }
 

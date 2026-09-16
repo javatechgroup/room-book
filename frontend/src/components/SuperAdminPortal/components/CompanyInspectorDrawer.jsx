@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, ArrowRight, AlertCircle, Edit2 } from 'lucide-react';
+import { Mail, Phone, MapPin, ArrowRight, AlertCircle, Edit2, Calendar } from 'lucide-react';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function CompanyInspectorDrawer({
@@ -17,11 +17,20 @@ export default function CompanyInspectorDrawer({
   return (
     <div className="sa-drawer-backdrop" onClick={onClose}>
       <div className="sa-drawer" onClick={(e) => e.stopPropagation()}>
-        {/* Drawer Header */}
+        {/* Drawer Header with Integrated Status */}
         <div className="sa-drawer__header">
           <div className="sa-drawer__title-group">
             <span className="code-pill">{company.companyCode}</span>
             <h2>{company.name}</h2>
+            <span
+              className={`status-pill ${
+                company.status === 'ACTIVE'
+                  ? 'status-pill--active'
+                  : 'status-pill--inactive'
+              }`}
+            >
+              {company.status}
+            </span>
           </div>
           <button
             type="button"
@@ -34,21 +43,7 @@ export default function CompanyInspectorDrawer({
         </div>
 
         <div className="sa-drawer__body">
-          {/* Status Banner */}
-          <div className="drawer-status-banner">
-            <span
-              className={`status-pill ${
-                company.status === 'ACTIVE'
-                  ? 'status-pill--active'
-                  : 'status-pill--inactive'
-              }`}
-            >
-              {company.status}
-            </span>
-            <span className="drawer-date">Registered on {formatDate(company.createdAt)}</span>
-          </div>
-
-          {/* Quick Summary Cards */}
+          {/* Quick Summary Metric Strip */}
           <div className="drawer-stats-grid">
             <div className="drawer-stat-card">
               <span className="drawer-stat-label">Facility Admins</span>
@@ -64,33 +59,42 @@ export default function CompanyInspectorDrawer({
             </div>
           </div>
 
-          {/* Company Metadata */}
+          {/* Tenant Metadata (Compact 2-Column Grid) */}
           <div className="drawer-section">
             <h4 className="drawer-section-title">Tenant Metadata</h4>
-            <div className="drawer-info-list">
+            <div className="drawer-info-grid">
               <div className="drawer-info-item">
                 <span className="drawer-info-label">Corporate Email</span>
                 <span className="drawer-info-val">
                   <Mail size={13} />
-                  <a href={`mailto:${company.contactInformation}`}>
+                  <a href={`mailto:${company.contactInformation}`} title={company.contactInformation}>
                     {company.contactInformation || 'Not configured'}
                   </a>
                 </span>
               </div>
-              {company.phone && (
-                <div className="drawer-info-item">
-                  <span className="drawer-info-label">Direct Phone</span>
-                  <span className="drawer-info-val">
-                    <Phone size={13} />
-                    <a href={`tel:${company.phone}`}>{company.phone}</a>
-                  </span>
-                </div>
-              )}
+              <div className="drawer-info-item">
+                <span className="drawer-info-label">Direct Phone</span>
+                <span className="drawer-info-val">
+                  <Phone size={13} />
+                  {company.phone ? (
+                    <a href={`tel:${company.phone}`} title={company.phone}>{company.phone}</a>
+                  ) : (
+                    <span>Not configured</span>
+                  )}
+                </span>
+              </div>
+              <div className="drawer-info-item">
+                <span className="drawer-info-label">Registered Date</span>
+                <span className="drawer-info-val">
+                  <Calendar size={13} />
+                  <span>{company.createdAt ? formatDate(company.createdAt) : 'Recently'}</span>
+                </span>
+              </div>
               <div className="drawer-info-item">
                 <span className="drawer-info-label">Campus Address</span>
                 <span className="drawer-info-val">
                   <MapPin size={13} />
-                  <span>{company.address || 'Address not registered'}</span>
+                  <span title={company.address}>{company.address || 'Address not registered'}</span>
                 </span>
               </div>
             </div>
@@ -118,7 +122,7 @@ export default function CompanyInspectorDrawer({
                   <span>No administrator assigned to this tenant yet.</span>
                 </div>
               ) : (
-                assignedAdmins.map((adm) => (
+                assignedAdmins.slice(0, 3).map((adm) => (
                   <div key={adm.id} className="drawer-admin-card">
                     <div className="admin-avatar">
                       {adm.fullName.charAt(0).toUpperCase()}
@@ -171,3 +175,4 @@ export default function CompanyInspectorDrawer({
     </div>
   );
 }
+

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { AlertTriangle, AlertCircle, Info, ShieldAlert, Check } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { AlertTriangle, AlertCircle, Info, ShieldAlert, Check, X } from 'lucide-react';
 import './ConfirmModal.css';
 
 /**
@@ -38,8 +39,14 @@ export default function ConfirmModal({
         onCancel && onCancel();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onCancel]);
 
   if (!isOpen) return null;
@@ -68,10 +75,10 @@ export default function ConfirmModal({
     }
   };
 
-  return (
+  const modalNode = (
     <div className="confirm-modal-overlay" onClick={onCancel}>
       <div
-        className="confirm-modal"
+        className={`confirm-modal confirm-modal--${type}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -86,6 +93,14 @@ export default function ConfirmModal({
               {subtitle && <span className="confirm-modal__subtitle">{subtitle}</span>}
               <h3 id="confirm-modal-title" className="confirm-modal__title">{title}</h3>
             </div>
+            <button
+              type="button"
+              className="confirm-modal__close-btn"
+              onClick={onCancel}
+              aria-label="Close dialog"
+            >
+              <X size={18} />
+            </button>
           </div>
 
           <p className="confirm-modal__message">{message}</p>
@@ -103,7 +118,7 @@ export default function ConfirmModal({
         <div className="confirm-modal__footer">
           <button
             type="button"
-            className="btn btn--outline btn--sm"
+            className="btn btn--outline confirm-btn--cancel"
             onClick={onCancel}
             disabled={loading}
           >
@@ -111,7 +126,7 @@ export default function ConfirmModal({
           </button>
           <button
             type="button"
-            className={`btn ${getButtonClass()} btn--sm`}
+            className={`btn ${getButtonClass()} confirm-btn--action`}
             onClick={onConfirm}
             disabled={loading}
           >
@@ -121,4 +136,6 @@ export default function ConfirmModal({
       </div>
     </div>
   );
+
+  return createPortal(modalNode, document.body);
 }

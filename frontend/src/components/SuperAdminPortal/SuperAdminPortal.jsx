@@ -12,6 +12,7 @@ import CompaniesTab from './components/CompaniesTab';
 import AdminsTab from './components/AdminsTab';
 import AuditLogsTab from './components/AuditLogsTab';
 import CompanyInspectorDrawer from './components/CompanyInspectorDrawer';
+import AdminInspectorDrawer from './components/AdminInspectorDrawer';
 import CompanyModal from './components/CompanyModal';
 import AdminModal from './components/AdminModal';
 import { formatDate, formatDateTime } from '../../utils/dateUtils';
@@ -57,8 +58,9 @@ export default function SuperAdminPortal() {
   const [totalAuditLogsCount, setTotalAuditLogsCount] = useState(0);
   const [availableAuditActions, setAvailableAuditActions] = useState([]);
 
-  // Slide-Over Detail Drawer State
+  // Slide-Over Detail Drawer States
   const [drawerCompany, setDrawerCompany] = useState(null);
+  const [drawerAdmin, setDrawerAdmin] = useState(null);
 
   // Company Modal State
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
@@ -571,6 +573,16 @@ export default function SuperAdminPortal() {
     fetchAdmins({ companyFilter: String(companyId), search: '', page: 1 });
   };
 
+  const handleViewAdminCompany = (companyId) => {
+    setDrawerAdmin(null);
+    const targetComp = companies.find((c) => c.id === companyId);
+    if (targetComp) {
+      setDrawerCompany(targetComp);
+    } else {
+      setActiveTab('companies');
+    }
+  };
+
   // ════════════════════ COMPANY CRUD ════════════════════
 
   const handleOpenCreateCompany = () => {
@@ -751,11 +763,17 @@ export default function SuperAdminPortal() {
     if (editingAdmin) {
       const res = await adminApi.updateAdmin(editingAdmin.id, adminForm);
       if (res.success && res.data) {
+        if (drawerAdmin && drawerAdmin.id === editingAdmin.id) {
+          setDrawerAdmin((prev) => ({ ...prev, ...res.data }));
+        }
         showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
         setIsAdminModalOpen(false);
         await refreshAllTabsData();
       } else {
         if (user?.isDemoSession || !res.error) {
+          if (drawerAdmin && drawerAdmin.id === editingAdmin.id) {
+            setDrawerAdmin((prev) => ({ ...prev, ...adminForm }));
+          }
           showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
           setIsAdminModalOpen(false);
           await refreshAllTabsData();
@@ -800,6 +818,10 @@ export default function SuperAdminPortal() {
 
     const res = await adminApi.toggleAdminStatus(adminId);
     const resolvedStatus = res.success && res.data?.status ? res.data.status : (targetAdmin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
+
+    if (drawerAdmin && drawerAdmin.id === adminId) {
+      setDrawerAdmin((prev) => (prev ? { ...prev, status: resolvedStatus } : null));
+    }
 
     if (resolvedStatus === 'ACTIVE') {
       showToast(
@@ -910,6 +932,7 @@ export default function SuperAdminPortal() {
             onToggleSelect={handleToggleSelectAdmin}
             onSelectAllPage={handleSelectAllAdminsOnPage}
             isAllPageSelected={isAllAdminsPageSelected}
+            onInspect={(adm) => setDrawerAdmin(adm)}
             onEdit={handleOpenEditAdmin}
             onToggleStatus={handleToggleAdminStatus}
             onBulkActivate={handleBulkActivateAdmins}
@@ -969,6 +992,19 @@ export default function SuperAdminPortal() {
         onEdit={handleOpenEditCompany}
         onToggleStatus={handleToggleCompanyStatus}
         onViewAdmins={handleViewCompanyAdmins}
+      />
+
+      {/* Slide-Over Drawer: Facility Admin Inspector */}
+      <AdminInspectorDrawer
+        admin={drawerAdmin}
+        companies={companies}
+        onClose={() => setDrawerAdmin(null)}
+        onEdit={(adm) => {
+          setDrawerAdmin(null);
+          handleOpenEditAdmin(adm);
+        }}
+        onToggleStatus={handleToggleAdminStatus}
+        onViewCompany={handleViewAdminCompany}
       />
 
       {/* Modal: Create / Edit Company */}
