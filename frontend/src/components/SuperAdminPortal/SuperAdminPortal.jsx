@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
@@ -204,71 +204,146 @@ export default function SuperAdminPortal() {
     return filteredAndSortedAdmins.slice(start, start + adminPageSize);
   }, [admins, filteredAndSortedAdmins, adminPage, adminPageSize, totalAdminsCount]);
 
-  // Data loading for Facility Administrators with database pagination & filtering
-  useEffect(() => {
-    let isMounted = true;
-    const fetchLiveAdmins = async () => {
-      const res = await adminApi.getAdmins({
-        page: adminPage,
-        size: adminPageSize,
-        search: adminSearch,
-        companyFilter: adminCompanyFilter,
-        status: adminStatusFilter,
-        sortBy: adminSort.field,
-        sortDir: adminSort.direction,
-      });
-      if (isMounted && res.success && Array.isArray(res.data)) {
-        setAdmins(res.data);
-        if (typeof res.totalElements === 'number') {
-          setTotalAdminsCount(res.totalElements);
-        }
+  // ════════════════════ UNIFIED DATA LOADERS & ON-DEMAND FETCHING ════════════════════
+
+  const fetchCompanies = useCallback(async (overrides = {}) => {
+    const page = overrides.page !== undefined ? overrides.page : companyPage;
+    const size = overrides.size !== undefined ? overrides.size : companyPageSize;
+    const search = overrides.search !== undefined ? overrides.search : companySearch;
+    const status = overrides.status !== undefined ? overrides.status : companyStatusFilter;
+    const sortBy = overrides.sortBy !== undefined ? overrides.sortBy : companySort.field;
+    const sortDir = overrides.sortDir !== undefined ? overrides.sortDir : companySort.direction;
+
+    const res = await companyApi.getCompanies({
+      page,
+      size,
+      search,
+      status,
+      sortBy,
+      sortDir,
+    });
+    if (res.success && Array.isArray(res.data)) {
+      setCompanies(res.data);
+      if (typeof res.totalElements === 'number') {
+        setTotalCompaniesCount(res.totalElements);
       }
-    };
-    fetchLiveAdmins();
-    return () => {
-      isMounted = false;
-    };
+    }
+    return res;
+  }, [companyPage, companyPageSize, companySearch, companyStatusFilter, companySort]);
+
+  const fetchAdmins = useCallback(async (overrides = {}) => {
+    const page = overrides.page !== undefined ? overrides.page : adminPage;
+    const size = overrides.size !== undefined ? overrides.size : adminPageSize;
+    const search = overrides.search !== undefined ? overrides.search : adminSearch;
+    const companyFilter = overrides.companyFilter !== undefined ? overrides.companyFilter : adminCompanyFilter;
+    const status = overrides.status !== undefined ? overrides.status : adminStatusFilter;
+    const sortBy = overrides.sortBy !== undefined ? overrides.sortBy : adminSort.field;
+    const sortDir = overrides.sortDir !== undefined ? overrides.sortDir : adminSort.direction;
+
+    const res = await adminApi.getAdmins({
+      page,
+      size,
+      search,
+      companyFilter,
+      status,
+      sortBy,
+      sortDir,
+    });
+    if (res.success && Array.isArray(res.data)) {
+      setAdmins(res.data);
+      if (typeof res.totalElements === 'number') {
+        setTotalAdminsCount(res.totalElements);
+      }
+    }
+    return res;
   }, [adminPage, adminPageSize, adminSearch, adminCompanyFilter, adminStatusFilter, adminSort]);
 
-  // Data loading for System Audit Logs with database pagination & filtering
-  useEffect(() => {
-    let isMounted = true;
-    const fetchLiveAuditLogs = async () => {
-      const res = await auditApi.getAuditLogs({
-        page: auditPage,
-        size: auditPageSize,
-        search: auditSearch,
-        action: auditActionFilter,
-        entityType: auditEntityTypeFilter,
-        sortBy: auditSort.field,
-        sortDir: auditSort.direction,
-      });
-      if (isMounted && res.success && Array.isArray(res.data)) {
-        setAuditLogs(res.data);
-        if (typeof res.totalElements === 'number') {
-          setTotalAuditLogsCount(res.totalElements);
-        }
+  const fetchAuditLogs = useCallback(async (overrides = {}) => {
+    const page = overrides.page !== undefined ? overrides.page : auditPage;
+    const size = overrides.size !== undefined ? overrides.size : auditPageSize;
+    const search = overrides.search !== undefined ? overrides.search : auditSearch;
+    const action = overrides.action !== undefined ? overrides.action : auditActionFilter;
+    const entityType = overrides.entityType !== undefined ? overrides.entityType : auditEntityTypeFilter;
+    const sortBy = overrides.sortBy !== undefined ? overrides.sortBy : auditSort.field;
+    const sortDir = overrides.sortDir !== undefined ? overrides.sortDir : auditSort.direction;
+
+    const res = await auditApi.getAuditLogs({
+      page,
+      size,
+      search,
+      action,
+      entityType,
+      sortBy,
+      sortDir,
+    });
+    if (res.success && Array.isArray(res.data)) {
+      setAuditLogs(res.data);
+      if (typeof res.totalElements === 'number') {
+        setTotalAuditLogsCount(res.totalElements);
       }
-    };
-    fetchLiveAuditLogs();
-    return () => {
-      isMounted = false;
-    };
+    }
+    return res;
   }, [auditPage, auditPageSize, auditSearch, auditActionFilter, auditEntityTypeFilter, auditSort]);
 
-  // Fetch distinct audit actions for filtering
+  const fetchAuditActions = useCallback(async () => {
+    const res = await auditApi.getAuditActions();
+    if (res.success && Array.isArray(res.data)) {
+      setAvailableAuditActions(res.data);
+    }
+    return res;
+  }, []);
+
+  // Helper to refresh all related data across all tabs whenever any mutation occurs
+  const refreshAllTabsData = useCallback(async () => {
+    return Promise.all([
+      fetchCompanies(),
+      fetchAdmins(),
+      fetchAuditLogs(),
+      fetchAuditActions(),
+    ]);
+  }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions]);
+
+  // Tab switch & on-demand load on click
+  const handleTabChange = useCallback((tab) => {
+    setActiveTab(tab);
+    if (tab === 'companies') {
+      setSelectedCompanyIds([]);
+      fetchCompanies();
+    } else if (tab === 'admins') {
+      setSelectedAdminIds([]);
+      fetchAdmins();
+      fetchCompanies(); // Keep companies list refreshed for dropdowns/filters
+    } else if (tab === 'audit') {
+      fetchAuditLogs();
+      fetchAuditActions();
+    }
+  }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions]);
+
+  // Reactive data synchronization on filter / page / sort changes
   useEffect(() => {
-    let isMounted = true;
-    const fetchActions = async () => {
-      const res = await auditApi.getAuditActions();
-      if (isMounted && res.success && Array.isArray(res.data)) {
-        setAvailableAuditActions(res.data);
-      }
-    };
-    fetchActions();
-    return () => {
-      isMounted = false;
-    };
+    if (activeTab === 'companies') {
+      fetchCompanies();
+    }
+  }, [companyPage, companyPageSize, companySearch, companyStatusFilter, companySort, activeTab, fetchCompanies]);
+
+  useEffect(() => {
+    if (activeTab === 'admins') {
+      fetchAdmins();
+    }
+  }, [adminPage, adminPageSize, adminSearch, adminCompanyFilter, adminStatusFilter, adminSort, activeTab, fetchAdmins]);
+
+  useEffect(() => {
+    if (activeTab === 'audit') {
+      fetchAuditLogs();
+    }
+  }, [auditPage, auditPageSize, auditSearch, auditActionFilter, auditEntityTypeFilter, auditSort, activeTab, fetchAuditLogs]);
+
+  // Initial load on mount: fetch active tab + background summary for badges/metrics
+  useEffect(() => {
+    fetchCompanies();
+    fetchAdmins();
+    fetchAuditLogs();
+    fetchAuditActions();
   }, []);
 
   // ════════════════════ SELECTION & BULK ACTIONS ════════════════════
@@ -299,27 +374,10 @@ export default function SuperAdminPortal() {
 
     const res = await companyApi.bulkUpdateCompanyStatus(targetIds, 'ACTIVE');
 
-    setCompanies((prev) =>
-      prev.map((c) => (targetIds.includes(c.id) ? { ...c, status: 'ACTIVE' } : c))
-    );
     showToast('Bulk Action Complete', `Activated ${targetIds.length} tenant companies.`);
     setSelectedCompanyIds([]);
 
-    // Re-fetch to sync counts and accurate backend data
-    const refreshRes = await companyApi.getCompanies({
-      page: companyPage,
-      size: companyPageSize,
-      search: companySearch,
-      status: companyStatusFilter,
-      sortBy: companySort.field,
-      sortDir: companySort.direction,
-    });
-    if (refreshRes.success && Array.isArray(refreshRes.data)) {
-      setCompanies(refreshRes.data);
-      if (typeof refreshRes.totalElements === 'number') {
-        setTotalCompaniesCount(refreshRes.totalElements);
-      }
-    }
+    await refreshAllTabsData();
   };
 
   const handleBulkDeactivateCompanies = async () => {
@@ -340,9 +398,6 @@ export default function SuperAdminPortal() {
 
     const res = await companyApi.bulkUpdateCompanyStatus(targetIds, 'INACTIVE');
 
-    setCompanies((prev) =>
-      prev.map((c) => (targetIds.includes(c.id) ? { ...c, status: 'INACTIVE' } : c))
-    );
     showToast(
       'Bulk Action Complete',
       `Deactivated ${targetIds.length} tenant companies.`,
@@ -350,21 +405,7 @@ export default function SuperAdminPortal() {
     );
     setSelectedCompanyIds([]);
 
-    // Re-fetch to sync counts and accurate backend data
-    const refreshRes = await companyApi.getCompanies({
-      page: companyPage,
-      size: companyPageSize,
-      search: companySearch,
-      status: companyStatusFilter,
-      sortBy: companySort.field,
-      sortDir: companySort.direction,
-    });
-    if (refreshRes.success && Array.isArray(refreshRes.data)) {
-      setCompanies(refreshRes.data);
-      if (typeof refreshRes.totalElements === 'number') {
-        setTotalCompaniesCount(refreshRes.totalElements);
-      }
-    }
+    await refreshAllTabsData();
   };
 
   const handleExportCompaniesCSV = () => {
@@ -425,27 +466,10 @@ export default function SuperAdminPortal() {
 
     const res = await adminApi.bulkUpdateAdminStatus(targetIds, 'ACTIVE');
 
-    setAdmins((prev) =>
-      prev.map((a) => (targetIds.includes(a.id) ? { ...a, status: 'ACTIVE' } : a))
-    );
     showToast('Bulk Action Complete', `Activated ${targetIds.length} facility administrators.`);
     setSelectedAdminIds([]);
 
-    const refreshRes = await adminApi.getAdmins({
-      page: adminPage,
-      size: adminPageSize,
-      search: adminSearch,
-      companyFilter: adminCompanyFilter,
-      status: adminStatusFilter,
-      sortBy: adminSort.field,
-      sortDir: adminSort.direction,
-    });
-    if (refreshRes.success && Array.isArray(refreshRes.data)) {
-      setAdmins(refreshRes.data);
-      if (typeof refreshRes.totalElements === 'number') {
-        setTotalAdminsCount(refreshRes.totalElements);
-      }
-    }
+    await refreshAllTabsData();
   };
 
   const handleBulkDeactivateAdmins = async () => {
@@ -466,9 +490,6 @@ export default function SuperAdminPortal() {
 
     const res = await adminApi.bulkUpdateAdminStatus(targetIds, 'INACTIVE');
 
-    setAdmins((prev) =>
-      prev.map((a) => (targetIds.includes(a.id) ? { ...a, status: 'INACTIVE' } : a))
-    );
     showToast(
       'Bulk Action Complete',
       `Suspended ${targetIds.length} facility administrators.`,
@@ -476,21 +497,7 @@ export default function SuperAdminPortal() {
     );
     setSelectedAdminIds([]);
 
-    const refreshRes = await adminApi.getAdmins({
-      page: adminPage,
-      size: adminPageSize,
-      search: adminSearch,
-      companyFilter: adminCompanyFilter,
-      status: adminStatusFilter,
-      sortBy: adminSort.field,
-      sortDir: adminSort.direction,
-    });
-    if (refreshRes.success && Array.isArray(refreshRes.data)) {
-      setAdmins(refreshRes.data);
-      if (typeof refreshRes.totalElements === 'number') {
-        setTotalAdminsCount(refreshRes.totalElements);
-      }
-    }
+    await refreshAllTabsData();
   };
 
   const handleExportAdminsCSV = () => {
@@ -560,6 +567,7 @@ export default function SuperAdminPortal() {
     setAdminCompanyFilter(String(companyId));
     setAdminSearch('');
     setAdminPage(1);
+    fetchAdmins({ companyFilter: String(companyId), search: '', page: 1 });
   };
 
   // ════════════════════ COMPANY CRUD ════════════════════
@@ -624,9 +632,6 @@ export default function SuperAdminPortal() {
     if (editingCompany) {
       const res = await companyApi.updateCompany(editingCompany.id, companyForm);
       if (res.success && res.data) {
-        setCompanies((prev) =>
-          prev.map((c) => (c.id === editingCompany.id ? { ...c, ...res.data } : c))
-        );
         if (drawerCompany && drawerCompany.id === editingCompany.id) {
           setDrawerCompany((prev) => ({ ...prev, ...res.data }));
         }
@@ -634,11 +639,9 @@ export default function SuperAdminPortal() {
         setCompanyConflictSuggestions([]);
         setCompanyModalError('');
         setIsCompanyModalOpen(false);
+        await refreshAllTabsData();
       } else {
         if (user?.isDemoSession || !res.error) {
-          setCompanies((prev) =>
-            prev.map((c) => (c.id === editingCompany.id ? { ...c, ...companyForm } : c))
-          );
           if (drawerCompany && drawerCompany.id === editingCompany.id) {
             setDrawerCompany((prev) => ({ ...prev, ...companyForm }));
           }
@@ -646,6 +649,7 @@ export default function SuperAdminPortal() {
           setCompanyConflictSuggestions([]);
           setCompanyModalError('');
           setIsCompanyModalOpen(false);
+          await refreshAllTabsData();
         } else {
           showToast('Update Failed', res.error, 'error');
         }
@@ -653,42 +657,18 @@ export default function SuperAdminPortal() {
     } else {
       const res = await companyApi.createCompany(companyForm);
       if (res.success && res.data) {
-        const newComp = res.data;
-        setCompanies((prev) => [newComp, ...prev]);
-
-        setAuditLogs((prev) => [
-          {
-            id: Date.now(),
-            action: 'REGISTER_TENANT',
-            entityType: 'COMPANY',
-            entityName: newComp.name,
-            performedBy: user?.email || 'superadmin@system.com',
-            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-            details: `Provisioned new company code ${newComp.companyCode} with initial physical room quotas`,
-          },
-          ...prev,
-        ]);
-
         showToast('Tenant Registered', `New organization "${companyForm.name}" has been registered.`);
         setCompanyConflictSuggestions([]);
         setCompanyModalError('');
         setIsCompanyModalOpen(false);
+        await refreshAllTabsData();
       } else {
         if (user?.isDemoSession) {
-          const newId = Math.max(...companies.map((c) => c.id), 0) + 1;
-          const newComp = {
-            ...companyForm,
-            id: newId,
-            createdAt: new Date().toISOString().split('T')[0],
-            departmentsCount: 1,
-            roomsCount: 0,
-            adminsCount: 0,
-          };
-          setCompanies((prev) => [newComp, ...prev]);
           showToast('Tenant Registered (Demo)', `New organization "${companyForm.name}" provisioned.`);
           setCompanyConflictSuggestions([]);
           setCompanyModalError('');
           setIsCompanyModalOpen(false);
+          await refreshAllTabsData();
         } else {
           setCompanyConflictSuggestions(res.suggestedCodes || []);
           setCompanyModalError(res.error || 'Company registration failed');
@@ -715,13 +695,8 @@ export default function SuperAdminPortal() {
       if (!ok) return;
     }
 
-    const nextStatus = targetComp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     const res = await companyApi.toggleCompanyStatus(companyId);
-    const resolvedStatus = res.success && res.data?.status ? res.data.status : nextStatus;
-
-    setCompanies((prev) =>
-      prev.map((c) => (c.id === companyId ? { ...c, status: resolvedStatus } : c))
-    );
+    const resolvedStatus = res.success && res.data?.status ? res.data.status : (targetComp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
 
     if (drawerCompany && drawerCompany.id === companyId) {
       setDrawerCompany((prev) => (prev ? { ...prev, status: resolvedStatus } : null));
@@ -740,6 +715,8 @@ export default function SuperAdminPortal() {
         'warning'
       );
     }
+
+    await refreshAllTabsData();
   };
 
   // ════════════════════ ADMIN CRUD ════════════════════
@@ -770,35 +747,17 @@ export default function SuperAdminPortal() {
 
   const handleSaveAdmin = async (e) => {
     e.preventDefault();
-    const assignedCompany = companies.find((c) => String(c.id) === String(adminForm.companyId));
-    const companyName = assignedCompany ? assignedCompany.name : 'Unassigned';
-
     if (editingAdmin) {
       const res = await adminApi.updateAdmin(editingAdmin.id, adminForm);
       if (res.success && res.data) {
-        setAdmins((prev) =>
-          prev.map((a) => (a.id === editingAdmin.id ? { ...a, ...res.data } : a))
-        );
         showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
         setIsAdminModalOpen(false);
+        await refreshAllTabsData();
       } else {
         if (user?.isDemoSession || !res.error) {
-          setAdmins((prev) =>
-            prev.map((a) =>
-              a.id === editingAdmin.id
-                ? {
-                    ...a,
-                    fullName: adminForm.fullName,
-                    email: adminForm.email,
-                    companyId: Number(adminForm.companyId),
-                    companyName,
-                    status: adminForm.status,
-                  }
-                : a
-            )
-          );
           showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
           setIsAdminModalOpen(false);
+          await refreshAllTabsData();
         } else {
           showToast('Update Failed', res.error, 'error');
         }
@@ -806,40 +765,14 @@ export default function SuperAdminPortal() {
     } else {
       const res = await adminApi.createAdmin(adminForm);
       if (res.success && res.data) {
-        const newAdmin = res.data;
-        setAdmins((prev) => [newAdmin, ...prev]);
-
-        setAuditLogs((prev) => [
-          {
-            id: Date.now(),
-            action: 'CREATE_FACILITY_ADMIN',
-            entityType: 'USER',
-            entityName: newAdmin.email,
-            performedBy: user?.email || 'superadmin@system.com',
-            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-            details: `Provisioned Facility Administrator account for ${newAdmin.fullName} (${companyName})`,
-          },
-          ...prev,
-        ]);
-
         showToast('Admin Created', `Administrator credentials created for ${adminForm.fullName}.`);
         setIsAdminModalOpen(false);
+        await refreshAllTabsData();
       } else {
         if (user?.isDemoSession) {
-          const newId = Math.max(...admins.map((a) => a.id), 0) + 1;
-          const newAdmin = {
-            ...adminForm,
-            id: newId,
-            companyId: Number(adminForm.companyId),
-            companyName,
-            role: 'COMPANY_ADMIN',
-            status: adminForm.status,
-            createdAt: new Date().toISOString().split('T')[0],
-            lastLogin: 'Never',
-          };
-          setAdmins((prev) => [newAdmin, ...prev]);
           showToast('Admin Created (Demo)', `Administrator credentials created for ${adminForm.fullName}.`);
           setIsAdminModalOpen(false);
+          await refreshAllTabsData();
         } else {
           showToast('Creation Failed', res.error, 'error');
         }
@@ -864,13 +797,8 @@ export default function SuperAdminPortal() {
       if (!ok) return;
     }
 
-    const nextStatus = targetAdmin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     const res = await adminApi.toggleAdminStatus(adminId);
-    const resolvedStatus = res.success && res.data?.status ? res.data.status : nextStatus;
-
-    setAdmins((prev) =>
-      prev.map((a) => (a.id === adminId ? { ...a, status: resolvedStatus } : a))
-    );
+    const resolvedStatus = res.success && res.data?.status ? res.data.status : (targetAdmin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
 
     if (resolvedStatus === 'ACTIVE') {
       showToast(
@@ -885,6 +813,8 @@ export default function SuperAdminPortal() {
         'warning'
       );
     }
+
+    await refreshAllTabsData();
   };
 
   const activeCompaniesCount = companies.filter((c) => c.status === 'ACTIVE').length;
@@ -899,11 +829,7 @@ export default function SuperAdminPortal() {
         {/* Navigation Tabs */}
         <SuperAdminTabs
           activeTab={activeTab}
-          onTabChange={(tab) => {
-            setActiveTab(tab);
-            if (tab === 'companies') setSelectedCompanyIds([]);
-            if (tab === 'admins') setSelectedAdminIds([]);
-          }}
+          onTabChange={handleTabChange}
           companiesCount={totalCompaniesCount > 0 ? totalCompaniesCount : companies.length}
           adminsCount={totalAdminsCount > 0 ? totalAdminsCount : admins.length}
           auditLogsCount={totalAuditLogsCount > 0 ? totalAuditLogsCount : auditLogs.length}
