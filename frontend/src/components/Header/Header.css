@@ -321,11 +321,6 @@
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @media (max-width: 480px) {
   .header__logo-sub {
     display: none;

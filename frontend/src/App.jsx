@@ -11,7 +11,6 @@ import Footer from './components/Footer/Footer';
 import LoginModal from './components/LoginModal/LoginModal';
 import ContactModal from './components/ContactModal/ContactModal';
 import ToastContainer from './components/common/Toast/Toast';
-import './App.css';
 
 function AppContent() {
   const { user, isAuthenticated, openLogin, openConnect } = useAuth();

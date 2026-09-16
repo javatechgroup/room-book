@@ -1,0 +1,85 @@
+/* ================================================================
+   Form Primitives & Shared Input Controls
+   ================================================================ */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.form-label .req {
+  color: var(--red-500);
+  margin-left: 2px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-input);
+  background: var(--bg-input);
+  color: var(--text-heading);
+  font-family: var(--font-family);
+  font-size: 0.925rem;
+  transition: var(--transition);
+  outline: none;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--primary-500);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Icon-adorned input wrapper */
+.input-with-icon,
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-with-icon .input-icon,
+.input-wrap .input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-faint);
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-with-icon input,
+.input-wrap input {
+  width: 100%;
+  padding: 12px 42px 12px 42px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-input);
+  background: var(--bg-input);
+  color: var(--text-heading);
+  font-family: var(--font-family);
+  font-size: 0.925rem;
+  transition: var(--transition);
+  outline: none;
+}
+
+.input-with-icon input:focus,
+.input-wrap input:focus {
+  border-color: var(--primary-500);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
