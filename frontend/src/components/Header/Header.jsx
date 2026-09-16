@@ -103,53 +103,98 @@ function Header() {
         <a href="#" className="header__logo">
           <Building2 size={26} className="header__logo-icon" />
           <div className="header__brand-text">
-            <span className="header__logo-text">Workplace Portal</span>
-            <span className="header__logo-sub">Building A • Room Manager</span>
+            <span className="header__logo-text">
+              {user?.role === 'SUPER_ADMIN' ? 'Super Admin Portal' : 'Workplace Portal'}
+            </span>
+            <span className="header__logo-sub">
+              {user?.role === 'SUPER_ADMIN' ? 'Tenant & Access Management' : 'Building A • Room Manager'}
+            </span>
           </div>
         </a>
 
+        {/* Navigation / Mobile Menu Drawer */}
         <nav className={`header__nav ${mobileOpen ? 'header__nav--open' : ''}`}>
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="header__link"
-              onClick={(e) => handleNavLinkClick(e, link)}
+          <div className="header__nav-top">
+            <div className="header__nav-brand">
+              <Building2 size={20} className="header__logo-icon" />
+              <span>{user?.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Workplace'}</span>
+            </div>
+            <button
+              type="button"
+              className="header__nav-close"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close navigation menu"
             >
-              {link.label}
-            </a>
-          ))}
+              <X size={20} />
+            </button>
+          </div>
 
-          {isAuthenticated ? (
-            <div className="header__user-mobile">
-              <div className="header__user-mobile-info">
-                <span className="header__user-name">{user.fullName || user.email}</span>
-                <span className="header__user-role-badge">
-                  {getRoleShortLabel(user.role)}
-                </span>
+          <div className="header__nav-body">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="header__link"
+                onClick={(e) => handleNavLinkClick(e, link)}
+              >
+                {link.label}
+              </a>
+            ))}
+
+            {isAuthenticated ? (
+              <div className="header__user-mobile">
+                <div className="header__user-mobile-card">
+                  <div className="header__user-mobile-avatar">
+                    {React.createElement(getRoleIcon(user.role), { size: 20 })}
+                  </div>
+                  <div className="header__user-mobile-info">
+                    <span className="header__user-name">{user.fullName || user.email?.split('@')[0]}</span>
+                    {user.email && <span className="header__user-email">{user.email}</span>}
+                    <span className="header__user-role-badge">
+                      {getRoleShortLabel(user.role)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="header__nav-theme-row">
+                  <span className="header__nav-theme-label">Theme Mode</span>
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--sm theme-switch-btn"
+                    onClick={toggleTheme}
+                  >
+                    {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
+                    <span>{theme === 'dark' ? 'Dark' : 'Light'}</span>
+                  </button>
+                </div>
               </div>
+            ) : (
+              <div className="header__nav-auth">
+                <button
+                  type="button"
+                  className="btn btn--primary btn--sm btn--full"
+                  onClick={() => {
+                    openConnect();
+                    setMobileOpen(false);
+                  }}
+                >
+                  <Mail size={15} /> Connect With Us
+                </button>
+              </div>
+            )}
+          </div>
+
+          {isAuthenticated && (
+            <div className="header__nav-footer">
               <button
                 type="button"
-                className="btn btn--sm btn--logout-mobile"
+                className="btn btn--logout-mobile"
                 onClick={() => {
                   handleLogout();
                   setMobileOpen(false);
                 }}
               >
                 <LogOut size={16} /> Sign Out
-              </button>
-            </div>
-          ) : (
-            <div className="header__nav-auth">
-              <button
-                type="button"
-                className="btn btn--primary btn--sm btn--full"
-                onClick={() => {
-                  openConnect();
-                  setMobileOpen(false);
-                }}
-              >
-                <Mail size={15} /> Connect With Us
               </button>
             </div>
           )}
