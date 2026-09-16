@@ -2,11 +2,13 @@ package com.magicbricks.booking.controller;
 
 import com.magicbricks.booking.common.ApiResponse;
 import com.magicbricks.booking.common.PageResponse;
+import com.magicbricks.booking.dto.BulkStatusUpdateRequest;
 import com.magicbricks.booking.dto.CompanyRegistrationRequest;
 import com.magicbricks.booking.dto.CompanyResponse;
 import com.magicbricks.booking.security.UserPrincipal;
 import com.magicbricks.booking.service.CompanyService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -76,5 +78,14 @@ public class CompanyController {
         Long userId = currentUser != null ? currentUser.getId() : 1L;
         CompanyResponse response = companyService.toggleCompanyStatus(id, userId);
         return ResponseEntity.ok(ApiResponse.success(response, "Company status updated successfully"));
+    }
+
+    @PatchMapping("/bulk/status")
+    public ResponseEntity<ApiResponse<List<CompanyResponse>>> bulkUpdateCompanyStatus(
+            @Valid @RequestBody BulkStatusUpdateRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long userId = currentUser != null ? currentUser.getId() : 1L;
+        List<CompanyResponse> response = companyService.bulkUpdateCompanyStatus(request.getIds(), request.getStatus(), userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Bulk company status updated successfully"));
     }
 }

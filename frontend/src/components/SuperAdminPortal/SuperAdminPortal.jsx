@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import { companyApi } from '../../api/companyApi';
 import { adminApi } from '../../api/adminApi';
 import { INITIAL_COMPANIES, INITIAL_ADMINS, INITIAL_AUDIT_LOGS } from './data/superAdminData';
@@ -42,6 +43,7 @@ export default function SuperAdminPortal() {
   const [adminPage, setAdminPage] = useState(1);
   const [adminPageSize, setAdminPageSize] = useState(10);
   const [totalAdminsCount, setTotalAdminsCount] = useState(0);
+  const [selectedAdminIds, setSelectedAdminIds] = useState([]);
 
   // Slide-Over Detail Drawer State
   const [drawerCompany, setDrawerCompany] = useState(null);
@@ -70,6 +72,9 @@ export default function SuperAdminPortal() {
     companyId: 1,
     status: 'ACTIVE',
   });
+
+  // Universal Confirmation Hook
+  const { confirm } = useConfirm();
 
   // Global Toast Hook
   const { toast } = useToast();
@@ -228,24 +233,78 @@ export default function SuperAdminPortal() {
     paginatedCompanies.length > 0 &&
     paginatedCompanies.every((c) => selectedCompanyIds.includes(c.id));
 
-  const handleBulkActivateCompanies = () => {
+  const handleBulkActivateCompanies = async () => {
+    if (selectedCompanyIds.length === 0) return;
+    const targetIds = [...selectedCompanyIds];
+
+    const res = await companyApi.bulkUpdateCompanyStatus(targetIds, 'ACTIVE');
+
     setCompanies((prev) =>
-      prev.map((c) => (selectedCompanyIds.includes(c.id) ? { ...c, status: 'ACTIVE' } : c))
+      prev.map((c) => (targetIds.includes(c.id) ? { ...c, status: 'ACTIVE' } : c))
     );
-    showToast('Bulk Action Complete', `Activated ${selectedCompanyIds.length} tenant companies.`);
+    showToast('Bulk Action Complete', `Activated ${targetIds.length} tenant companies.`);
     setSelectedCompanyIds([]);
+
+    // Re-fetch to sync counts and accurate backend data
+    const refreshRes = await companyApi.getCompanies({
+      page: companyPage,
+      size: companyPageSize,
+      search: companySearch,
+      status: companyStatusFilter,
+      sortBy: companySort.field,
+      sortDir: companySort.direction,
+    });
+    if (refreshRes.success && Array.isArray(refreshRes.data)) {
+      setCompanies(refreshRes.data);
+      if (typeof refreshRes.totalElements === 'number') {
+        setTotalCompaniesCount(refreshRes.totalElements);
+      }
+    }
   };
 
-  const handleBulkDeactivateCompanies = () => {
+  const handleBulkDeactivateCompanies = async () => {
+    if (selectedCompanyIds.length === 0) return;
+    const targetIds = [...selectedCompanyIds];
+
+    const ok = await confirm({
+      title: 'Bulk Deactivate Companies?',
+      subtitle: 'Tenant Organization Management',
+      message: `You are about to suspend access for ${targetIds.length} selected tenant companies. All associated facility administrators, staff, and active room reservations under these organizations will be impacted immediately.`,
+      targetName: `${targetIds.length} Companies Selected`,
+      targetSub: 'Status will transition to Inactive / Suspended',
+      confirmText: 'Deactivate Selected',
+      type: 'danger',
+    });
+
+    if (!ok) return;
+
+    const res = await companyApi.bulkUpdateCompanyStatus(targetIds, 'INACTIVE');
+
     setCompanies((prev) =>
-      prev.map((c) => (selectedCompanyIds.includes(c.id) ? { ...c, status: 'INACTIVE' } : c))
+      prev.map((c) => (targetIds.includes(c.id) ? { ...c, status: 'INACTIVE' } : c))
     );
     showToast(
       'Bulk Action Complete',
-      `Deactivated ${selectedCompanyIds.length} tenant companies.`,
+      `Deactivated ${targetIds.length} tenant companies.`,
       'warning'
     );
     setSelectedCompanyIds([]);
+
+    // Re-fetch to sync counts and accurate backend data
+    const refreshRes = await companyApi.getCompanies({
+      page: companyPage,
+      size: companyPageSize,
+      search: companySearch,
+      status: companyStatusFilter,
+      sortBy: companySort.field,
+      sortDir: companySort.direction,
+    });
+    if (refreshRes.success && Array.isArray(refreshRes.data)) {
+      setCompanies(refreshRes.data);
+      if (typeof refreshRes.totalElements === 'number') {
+        setTotalCompaniesCount(refreshRes.totalElements);
+      }
+    }
   };
 
   const handleExportCompaniesCSV = () => {
@@ -277,6 +336,131 @@ export default function SuperAdminPortal() {
     document.body.removeChild(link);
 
     showToast('Export Successful', `Exported ${targetList.length} companies to CSV.`);
+  };
+
+  // Facility Admin Bulk Selection & Operations
+  const handleSelectAllAdminsOnPage = (e) => {
+    if (e.target.checked) {
+      const pageIds = paginatedAdmins.map((a) => a.id);
+      setSelectedAdminIds((prev) => Array.from(new Set([...prev, ...pageIds])));
+    } else {
+      const pageIds = new Set(paginatedAdmins.map((a) => a.id));
+      setSelectedAdminIds((prev) => prev.filter((id) => !pageIds.has(id)));
+    }
+  };
+
+  const handleToggleSelectAdmin = (id) => {
+    setSelectedAdminIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const isAllAdminsPageSelected =
+    paginatedAdmins.length > 0 &&
+    paginatedAdmins.every((a) => selectedAdminIds.includes(a.id));
+
+  const handleBulkActivateAdmins = async () => {
+    if (selectedAdminIds.length === 0) return;
+    const targetIds = [...selectedAdminIds];
+
+    const res = await adminApi.bulkUpdateAdminStatus(targetIds, 'ACTIVE');
+
+    setAdmins((prev) =>
+      prev.map((a) => (targetIds.includes(a.id) ? { ...a, status: 'ACTIVE' } : a))
+    );
+    showToast('Bulk Action Complete', `Activated ${targetIds.length} facility administrators.`);
+    setSelectedAdminIds([]);
+
+    const refreshRes = await adminApi.getAdmins({
+      page: adminPage,
+      size: adminPageSize,
+      search: adminSearch,
+      companyFilter: adminCompanyFilter,
+      status: adminStatusFilter,
+      sortBy: adminSort.field,
+      sortDir: adminSort.direction,
+    });
+    if (refreshRes.success && Array.isArray(refreshRes.data)) {
+      setAdmins(refreshRes.data);
+      if (typeof refreshRes.totalElements === 'number') {
+        setTotalAdminsCount(refreshRes.totalElements);
+      }
+    }
+  };
+
+  const handleBulkDeactivateAdmins = async () => {
+    if (selectedAdminIds.length === 0) return;
+    const targetIds = [...selectedAdminIds];
+
+    const ok = await confirm({
+      title: 'Bulk Suspend Administrators?',
+      subtitle: 'Facility Administrator Management',
+      message: `You are about to suspend access for ${targetIds.length} selected facility administrators. They will be locked out of facility management until reactivated.`,
+      targetName: `${targetIds.length} Administrators Selected`,
+      targetSub: 'Status will transition to Inactive / Suspended',
+      confirmText: 'Suspend Selected',
+      type: 'danger',
+    });
+
+    if (!ok) return;
+
+    const res = await adminApi.bulkUpdateAdminStatus(targetIds, 'INACTIVE');
+
+    setAdmins((prev) =>
+      prev.map((a) => (targetIds.includes(a.id) ? { ...a, status: 'INACTIVE' } : a))
+    );
+    showToast(
+      'Bulk Action Complete',
+      `Suspended ${targetIds.length} facility administrators.`,
+      'warning'
+    );
+    setSelectedAdminIds([]);
+
+    const refreshRes = await adminApi.getAdmins({
+      page: adminPage,
+      size: adminPageSize,
+      search: adminSearch,
+      companyFilter: adminCompanyFilter,
+      status: adminStatusFilter,
+      sortBy: adminSort.field,
+      sortDir: adminSort.direction,
+    });
+    if (refreshRes.success && Array.isArray(refreshRes.data)) {
+      setAdmins(refreshRes.data);
+      if (typeof refreshRes.totalElements === 'number') {
+        setTotalAdminsCount(refreshRes.totalElements);
+      }
+    }
+  };
+
+  const handleExportAdminsCSV = () => {
+    const targetList =
+      selectedAdminIds.length > 0
+        ? admins.filter((a) => selectedAdminIds.includes(a.id))
+        : filteredAndSortedAdmins;
+
+    const headers = ['ID', 'Full Name', 'Email', 'Company', 'Role', 'Status', 'Created Date'];
+    const rows = targetList.map((a) => [
+      a.id,
+      `"${a.fullName.replace(/"/g, '""')}"`,
+      a.email,
+      `"${(a.companyName || '').replace(/"/g, '""')}"`,
+      a.role,
+      a.status,
+      a.createdAt,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `facility-admins-export-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast('Export Successful', `Exported ${targetList.length} administrators to CSV.`);
   };
 
   // ════════════════════ DRAWER & NAVIGATION ════════════════════
@@ -429,8 +613,20 @@ export default function SuperAdminPortal() {
     const targetComp = companies.find((c) => c.id === companyId);
     if (!targetComp) return;
 
-    const nextStatus = targetComp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    if (targetComp.status === 'ACTIVE') {
+      const ok = await confirm({
+        title: 'Suspend Tenant Organization?',
+        subtitle: 'Company Status Management',
+        message: `Are you sure you want to deactivate "${targetComp.name}"? Facility administrators and employees from this organization will no longer be able to schedule rooms or manage facilities while suspended.`,
+        targetName: targetComp.name,
+        targetSub: `Code: ${targetComp.companyCode} • ID: #${targetComp.id}`,
+        confirmText: 'Suspend Company',
+        type: 'danger',
+      });
+      if (!ok) return;
+    }
 
+    const nextStatus = targetComp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     const res = await companyApi.toggleCompanyStatus(companyId);
     const resolvedStatus = res.success && res.data?.status ? res.data.status : nextStatus;
 
@@ -566,6 +762,19 @@ export default function SuperAdminPortal() {
     const targetAdmin = admins.find((a) => a.id === adminId);
     if (!targetAdmin) return;
 
+    if (targetAdmin.status === 'ACTIVE') {
+      const ok = await confirm({
+        title: 'Suspend Administrator Access?',
+        subtitle: 'Facility Administrator Management',
+        message: `Are you sure you want to deactivate administrative access for "${targetAdmin.fullName}"? They will be locked out of the facility management dashboard until reactivated.`,
+        targetName: targetAdmin.fullName,
+        targetSub: `${targetAdmin.email} • ${targetAdmin.companyName || 'Unassigned'}`,
+        confirmText: 'Suspend Access',
+        type: 'danger',
+      });
+      if (!ok) return;
+    }
+
     const nextStatus = targetAdmin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     const res = await adminApi.toggleAdminStatus(adminId);
     const resolvedStatus = res.success && res.data?.status ? res.data.status : nextStatus;
@@ -604,6 +813,7 @@ export default function SuperAdminPortal() {
           onTabChange={(tab) => {
             setActiveTab(tab);
             if (tab === 'companies') setSelectedCompanyIds([]);
+            if (tab === 'admins') setSelectedAdminIds([]);
           }}
           companiesCount={totalCompaniesCount > 0 ? totalCompaniesCount : companies.length}
           adminsCount={totalAdminsCount > 0 ? totalAdminsCount : admins.length}
@@ -680,8 +890,16 @@ export default function SuperAdminPortal() {
             }}
             sort={adminSort}
             onSort={handleSortAdmins}
+            selectedIds={selectedAdminIds}
+            onToggleSelect={handleToggleSelectAdmin}
+            onSelectAllPage={handleSelectAllAdminsOnPage}
+            isAllPageSelected={isAllAdminsPageSelected}
             onEdit={handleOpenEditAdmin}
             onToggleStatus={handleToggleAdminStatus}
+            onBulkActivate={handleBulkActivateAdmins}
+            onBulkDeactivate={handleBulkDeactivateAdmins}
+            onBulkExport={handleExportAdminsCSV}
+            onBulkClear={() => setSelectedAdminIds([])}
             currentPage={adminPage}
             pageSize={adminPageSize}
             onPageChange={setAdminPage}

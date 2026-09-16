@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import SuperAdminPagination from './SuperAdminPagination';
+import BulkOperationsToolbar from './BulkOperationsToolbar';
 
 export default function AdminsTab({
   admins = [],
@@ -30,8 +31,16 @@ export default function AdminsTab({
   onStatusFilterChange,
   sort = { field: 'fullName', direction: 'asc' },
   onSort,
+  selectedIds = [],
+  onToggleSelect,
+  onSelectAllPage,
+  isAllPageSelected = false,
   onEdit,
   onToggleStatus,
+  onBulkActivate,
+  onBulkDeactivate,
+  onBulkExport,
+  onBulkClear,
   currentPage = 1,
   pageSize = 10,
   onPageChange,
@@ -149,12 +158,30 @@ export default function AdminsTab({
         </div>
       </div>
 
+      {/* Floating Bulk Operations Toolbar */}
+      <BulkOperationsToolbar
+        selectedCount={selectedIds.length}
+        entityName="administrators"
+        onActivate={onBulkActivate}
+        onSuspend={onBulkDeactivate}
+        onExport={onBulkExport}
+        onClear={onBulkClear}
+      />
+
       {/* Desktop Admins Table */}
       <div className="desktop-table-wrap">
         <div className="table-responsive">
           <table className="superadmin-table">
             <thead>
               <tr>
+                <th className="th-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={isAllPageSelected}
+                    onChange={onSelectAllPage}
+                    aria-label="Select all on this page"
+                  />
+                </th>
                 <th className="th-sortable" onClick={() => onSort && onSort('fullName')}>
                   <div className="th-content">
                     <span>Administrator Name</span>
@@ -194,7 +221,7 @@ export default function AdminsTab({
             <tbody>
               {paginatedAdmins.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="td-empty">
+                  <td colSpan="8" className="td-empty">
                     <Users size={32} className="empty-icon" />
                     <p>No Facility Administrators match your search criteria.</p>
                     <button
@@ -211,8 +238,17 @@ export default function AdminsTab({
                   </td>
                 </tr>
               ) : (
-                paginatedAdmins.map((a) => (
-                  <tr key={a.id}>
+                paginatedAdmins.map((a) => {
+                  const isSelected = selectedIds.includes(a.id);
+                  return (
+                  <tr key={a.id} className={isSelected ? 'tr--selected' : ''}>
+                    <td className="td-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => onToggleSelect && onToggleSelect(a.id)}
+                      />
+                    </td>
                     <td className="td-strong">
                       <div className="admin-user-cell">
                         <div className="admin-avatar">
@@ -270,7 +306,8 @@ export default function AdminsTab({
                       </button>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

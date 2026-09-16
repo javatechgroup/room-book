@@ -196,6 +196,28 @@ export const companyApi = {
       };
     }
   },
+
+  /**
+   * Bulk update company active/inactive status
+   * Calls PATCH /book/api/admin/companies/bulk/status
+   */
+  async bulkUpdateCompanyStatus(ids, status) {
+    try {
+      const response = await apiClient.patch('/admin/companies/bulk/status', {
+        ids: ids.map(Number),
+        status,
+      });
+      return {
+        success: true,
+        data: response.data?.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to bulk update company statuses',
+      };
+    }
+  },
 };
 
 export default companyApi;

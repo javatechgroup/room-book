@@ -5,9 +5,11 @@ import com.magicbricks.booking.common.PageResponse;
 import com.magicbricks.booking.dto.AdminRegistrationRequest;
 import com.magicbricks.booking.dto.AdminResponse;
 import com.magicbricks.booking.dto.AdminUpdateRequest;
+import com.magicbricks.booking.dto.BulkStatusUpdateRequest;
 import com.magicbricks.booking.security.UserPrincipal;
 import com.magicbricks.booking.service.AdminService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,5 +72,14 @@ public class AdminController {
         Long userId = currentUser != null ? currentUser.getId() : 1L;
         AdminResponse response = adminService.toggleAdminStatus(id, userId);
         return ResponseEntity.ok(ApiResponse.success(response, "Facility Administrator status updated successfully"));
+    }
+
+    @PatchMapping("/bulk/status")
+    public ResponseEntity<ApiResponse<List<AdminResponse>>> bulkUpdateAdminStatus(
+            @Valid @RequestBody BulkStatusUpdateRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long userId = currentUser != null ? currentUser.getId() : 1L;
+        List<AdminResponse> response = adminService.bulkUpdateAdminStatus(request.getIds(), request.getStatus(), userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Bulk Facility Administrator status updated successfully"));
     }
 }

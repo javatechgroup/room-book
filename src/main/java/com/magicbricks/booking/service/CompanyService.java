@@ -218,6 +218,37 @@ public class CompanyService {
         return mapToResponse(updated);
     }
 
+    @Transactional
+    public List<CompanyResponse> bulkUpdateCompanyStatus(List<Long> companyIds, String status, Long currentUserId) {
+        if (companyIds == null || companyIds.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        String targetStatus = "ACTIVE".equalsIgnoreCase(status) ? "ACTIVE" : "INACTIVE";
+        List<Company> companies = companyRepository.findAllById(companyIds);
+        List<Company> updatedCompanies = new java.util.ArrayList<>();
+
+        for (Company company : companies) {
+            String oldStatus = company.getStatus();
+            company.setStatus(targetStatus);
+            Company saved = companyRepository.save(company);
+            updatedCompanies.add(saved);
+
+            // Audit Log
+            AuditLog log = new AuditLog();
+            log.setUserId(currentUserId);
+            log.setCompanyId(saved.getId());
+            log.setAction(targetStatus.equals("ACTIVE") ? "ACTIVATE_COMPANY" : "SUSPEND_COMPANY");
+            log.setEntityType("COMPANY");
+            log.setEntityId(saved.getId());
+            log.setOldValue("Bulk Status: " + oldStatus);
+            log.setNewValue("Bulk Status: " + targetStatus);
+            auditLogRepository.save(log);
+        }
+
+        return updatedCompanies.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public List<String> suggestAvailableCompanyCodes(String companyName, String baseCode) {
         java.util.Set<String> candidates = new java.util.LinkedHashSet<>();

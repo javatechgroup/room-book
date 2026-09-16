@@ -232,6 +232,39 @@ public class AdminService {
         return mapToResponse(updatedUser);
     }
 
+    @Transactional
+    public List<AdminResponse> bulkUpdateAdminStatus(List<Long> adminIds, String status, Long currentUserId) {
+        if (adminIds == null || adminIds.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        String targetStatus = "ACTIVE".equalsIgnoreCase(status) ? "ACTIVE" : "INACTIVE";
+        List<User> users = userRepository.findAllById(adminIds);
+        List<User> updatedUsers = new java.util.ArrayList<>();
+
+        for (User user : users) {
+            if (user.getRole() == Role.COMPANY_ADMIN) {
+                String oldStatus = user.getStatus();
+                user.setStatus(targetStatus);
+                User saved = userRepository.save(user);
+                updatedUsers.add(saved);
+
+                // Audit Log
+                AuditLog log = new AuditLog();
+                log.setUserId(currentUserId);
+                log.setCompanyId(user.getCompany() != null ? user.getCompany().getId() : null);
+                log.setAction(targetStatus.equals("ACTIVE") ? "ACTIVATE_FACILITY_ADMIN" : "SUSPEND_FACILITY_ADMIN");
+                log.setEntityType("USER");
+                log.setEntityId(saved.getId());
+                log.setOldValue("Bulk Status: " + oldStatus);
+                log.setNewValue("Bulk Status: " + targetStatus);
+                auditLogRepository.save(log);
+            }
+        }
+
+        return updatedUsers.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
     private AdminResponse mapToResponse(User user) {
         AdminResponse response = new AdminResponse();
         response.setId(user.getId());

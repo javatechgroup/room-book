@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { ConfirmProvider } from './context/ConfirmContext';
 import Header from './components/Header/Header';
 import LoginGateway from './components/LoginGateway/LoginGateway';
 import WorkplacePortal from './components/WorkplacePortal/WorkplacePortal';
@@ -63,7 +64,9 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <AppContent />
+        <ConfirmProvider>
+          <AppContent />
+        </ConfirmProvider>
       </ToastProvider>
     </AuthProvider>
   );
