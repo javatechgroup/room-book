@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BookingConflictException.class)
     public ResponseEntity<ApiErrorResponse> handleBookingConflict(BookingConflictException ex) {
-        ApiErrorResponse error = new ApiErrorResponse(LocalDateTime.now(), HttpStatus.CONFLICT.value(), "BOOKING_CONFLICT", ex.getMessage(), null);
+        ApiErrorResponse error = new ApiErrorResponse(LocalDateTime.now(), HttpStatus.CONFLICT.value(), "BOOKING_CONFLICT", ex.getMessage(), ex.getDetails());
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 

@@ -49,6 +49,8 @@ export default function SuperAdminPortal() {
   // Company Modal State
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
+  const [companyConflictSuggestions, setCompanyConflictSuggestions] = useState([]);
+  const [companyModalError, setCompanyModalError] = useState('');
   const [companyForm, setCompanyForm] = useState({
     name: '',
     companyCode: '',
@@ -291,6 +293,8 @@ export default function SuperAdminPortal() {
 
   const handleOpenCreateCompany = () => {
     setEditingCompany(null);
+    setCompanyConflictSuggestions([]);
+    setCompanyModalError('');
     setCompanyForm({
       name: '',
       companyCode: '',
@@ -329,6 +333,8 @@ export default function SuperAdminPortal() {
 
   const handleOpenEditCompany = (comp) => {
     setEditingCompany(comp);
+    setCompanyConflictSuggestions([]);
+    setCompanyModalError('');
     setCompanyForm({
       name: comp.name,
       companyCode: comp.companyCode,
@@ -352,6 +358,8 @@ export default function SuperAdminPortal() {
           setDrawerCompany((prev) => ({ ...prev, ...res.data }));
         }
         showToast('Tenant Updated', `Company details for "${companyForm.name}" updated successfully.`);
+        setCompanyConflictSuggestions([]);
+        setCompanyModalError('');
         setIsCompanyModalOpen(false);
       } else {
         if (user?.isDemoSession || !res.error) {
@@ -362,6 +370,8 @@ export default function SuperAdminPortal() {
             setDrawerCompany((prev) => ({ ...prev, ...companyForm }));
           }
           showToast('Tenant Updated', `Company details for "${companyForm.name}" updated.`);
+          setCompanyConflictSuggestions([]);
+          setCompanyModalError('');
           setIsCompanyModalOpen(false);
         } else {
           showToast('Update Failed', res.error, 'error');
@@ -387,6 +397,8 @@ export default function SuperAdminPortal() {
         ]);
 
         showToast('Tenant Registered', `New organization "${companyForm.name}" has been registered.`);
+        setCompanyConflictSuggestions([]);
+        setCompanyModalError('');
         setIsCompanyModalOpen(false);
       } else {
         if (user?.isDemoSession) {
@@ -401,9 +413,13 @@ export default function SuperAdminPortal() {
           };
           setCompanies((prev) => [newComp, ...prev]);
           showToast('Tenant Registered (Demo)', `New organization "${companyForm.name}" provisioned.`);
+          setCompanyConflictSuggestions([]);
+          setCompanyModalError('');
           setIsCompanyModalOpen(false);
         } else {
-          showToast('Registration Failed', res.error, 'error');
+          setCompanyConflictSuggestions(res.suggestedCodes || []);
+          setCompanyModalError(res.error || 'Company registration failed');
+          showToast('Registration Conflict', res.error, 'error');
         }
       }
     }
@@ -698,6 +714,8 @@ export default function SuperAdminPortal() {
         onChange={setCompanyForm}
         onClose={() => setIsCompanyModalOpen(false)}
         onSave={handleSaveCompany}
+        externalSuggestions={companyConflictSuggestions}
+        errorMessage={companyModalError}
       />
 
       {/* Modal: Create / Edit Facility Administrator */}

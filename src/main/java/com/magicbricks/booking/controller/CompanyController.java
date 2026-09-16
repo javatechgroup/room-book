@@ -45,6 +45,14 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Companies fetched successfully"));
     }
 
+    @GetMapping("/suggest-code")
+    public ResponseEntity<ApiResponse<java.util.List<String>>> suggestCompanyCode(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String baseCode) {
+        java.util.List<String> suggestions = companyService.suggestAvailableCompanyCodes(name, baseCode);
+        return ResponseEntity.ok(ApiResponse.success(suggestions, "Available company code suggestions retrieved"));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CompanyResponse>> getCompanyById(@PathVariable Long id) {
         CompanyResponse response = companyService.getCompanyById(id);

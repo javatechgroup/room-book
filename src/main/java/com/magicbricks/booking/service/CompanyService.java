@@ -46,7 +46,14 @@ public class CompanyService {
         String companyCode = request.getCompanyCode().trim().toUpperCase();
 
         if (companyRepository.existsByCompanyCode(companyCode)) {
-            throw new BookingConflictException("Company with code '" + companyCode + "' already exists");
+            List<String> suggestions = suggestAvailableCompanyCodes(request.getName(), companyCode);
+            String suggestionsStr = String.join(", ", suggestions);
+            java.util.Map<String, String> details = new java.util.HashMap<>();
+            details.put("suggestedCodes", suggestionsStr);
+            throw new BookingConflictException(
+                    "Company with code '" + companyCode + "' already exists. Available suggestions: " + suggestionsStr,
+                    details
+            );
         }
 
         // 1. Create and save Company
@@ -209,6 +216,53 @@ public class CompanyService {
         auditLogRepository.save(log);
 
         return mapToResponse(updated);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> suggestAvailableCompanyCodes(String companyName, String baseCode) {
+        java.util.Set<String> candidates = new java.util.LinkedHashSet<>();
+
+        String cleanBase = (baseCode != null && !baseCode.trim().isEmpty())
+                ? baseCode.trim().toUpperCase().replaceAll("[^A-Z0-9]", "")
+                : "";
+
+        if (cleanBase.isEmpty() && companyName != null && !companyName.trim().isEmpty()) {
+            String[] words = companyName.trim().split("\\s+");
+            if (words.length == 1) {
+                cleanBase = words[0].toUpperCase().replaceAll("[^A-Z0-9]", "");
+            } else {
+                StringBuilder acronym = new StringBuilder();
+                for (String w : words) {
+                    if (!w.isEmpty()) {
+                        acronym.append(Character.toUpperCase(w.charAt(0)));
+                    }
+                }
+                cleanBase = acronym.toString();
+            }
+        }
+
+        if (cleanBase.isEmpty()) {
+            cleanBase = "CORP";
+        }
+
+        if (cleanBase.length() > 6) {
+            cleanBase = cleanBase.substring(0, 6);
+        }
+
+        // Generate smart corporate prefix/suffix combinations
+        candidates.add(cleanBase + "-HQ");
+        candidates.add(cleanBase + "-CORP");
+        candidates.add(cleanBase + "2");
+        candidates.add(cleanBase + "-TECH");
+        candidates.add(cleanBase + "-GL");
+        candidates.add(cleanBase + "99");
+        candidates.add(cleanBase + "-01");
+
+        return candidates.stream()
+                .filter(code -> code.length() <= 10)
+                .filter(code -> !companyRepository.existsByCompanyCode(code))
+                .limit(4)
+                .collect(Collectors.toList());
     }
 
     private CompanyResponse mapToResponse(Company company) {

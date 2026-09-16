@@ -84,6 +84,30 @@ export const companyApi = {
   },
 
   /**
+   * Suggest available company codes
+   * Calls GET /book/api/admin/companies/suggest-code
+   */
+  async suggestCompanyCodes(name = '', baseCode = '') {
+    try {
+      const response = await apiClient.get('/admin/companies/suggest-code', {
+        params: {
+          name: name ? name.trim() : undefined,
+          baseCode: baseCode ? baseCode.trim() : undefined,
+        },
+      });
+      return {
+        success: true,
+        data: response.data?.data || [],
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+      };
+    }
+  },
+
+  /**
    * Register a new tenant company
    * Calls POST /book/api/admin/companies
    */
@@ -104,14 +128,19 @@ export const companyApi = {
         data: response.data?.data,
       };
     } catch (error) {
+      const details = error.response?.data?.details;
+      const suggestedCodesStr = details?.suggestedCodes;
+      const suggestedCodes = suggestedCodesStr
+        ? suggestedCodesStr.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
+
       const errorMsg =
-        error.response?.data?.details
-          ? Object.values(error.response.data.details).join(', ')
-          : error.response?.data?.message || 'Failed to register company on server';
+        error.response?.data?.message || 'Failed to register company on server';
 
       return {
         success: false,
         error: errorMsg,
+        suggestedCodes,
       };
     }
   },
