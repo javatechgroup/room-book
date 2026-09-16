@@ -2559,6 +2559,53 @@
   margin-left: auto;
 }
 
+/* Active Filter Banner */
+.active-filter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: var(--radius-md, 8px);
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--text-heading);
+}
+
+[data-theme='dark'] .active-filter-banner {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: #f1f5f9;
+}
+
+.active-filter-banner__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-filter-banner__icon {
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] .active-filter-banner__icon {
+  color: #818cf8;
+}
+
+.active-filter-banner__clear-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+}
+
 .mobile-empty-state {
   text-align: center;
   padding: 36px 16px;

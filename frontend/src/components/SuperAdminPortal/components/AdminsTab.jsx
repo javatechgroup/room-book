@@ -13,6 +13,8 @@ import {
   Edit2,
   XCircle,
   CheckCircle2,
+  X,
+  Filter,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
@@ -21,6 +23,7 @@ export default function AdminsTab({
   admins = [],
   activeAdminsCount = 0,
   companies = [],
+  allAdminsCount = 0,
   paginatedAdmins = [],
   totalFilteredCount = 0,
   search = '',
@@ -71,6 +74,8 @@ export default function AdminsTab({
       onSearchChange('');
     }
   };
+
+  const selectedCompanyObj = companies.find((c) => String(c.id) === String(companyFilter));
 
   return (
     <div className="superadmin-panel">
@@ -141,7 +146,7 @@ export default function AdminsTab({
             className={`status-segment-btn ${statusFilter === 'ALL' ? 'status-segment-btn--active' : ''}`}
             onClick={() => onStatusFilterChange && onStatusFilterChange('ALL')}
           >
-            All <span>{admins.length}</span>
+            All <span>{totalFilteredCount > 0 ? totalFilteredCount : admins.length}</span>
           </button>
           <button
             type="button"
@@ -155,10 +160,31 @@ export default function AdminsTab({
             className={`status-segment-btn ${statusFilter === 'INACTIVE' ? 'status-segment-btn--active' : ''}`}
             onClick={() => onStatusFilterChange && onStatusFilterChange('INACTIVE')}
           >
-            Suspended <span>{admins.length - activeAdminsCount}</span>
+            Suspended <span>{Math.max(0, (totalFilteredCount > 0 ? totalFilteredCount : admins.length) - activeAdminsCount)}</span>
           </button>
         </div>
       </div>
+
+      {/* Active Company Filter Indicator Banner */}
+      {companyFilter !== 'ALL' && (
+        <div className="active-filter-banner">
+          <div className="active-filter-banner__info">
+            <Building2 size={15} className="active-filter-banner__icon" />
+            <span>
+              Filtered by tenant company: <strong>{selectedCompanyObj ? `${selectedCompanyObj.name} (${selectedCompanyObj.companyCode})` : `Company #${companyFilter}`}</strong>
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn--outline btn--xs active-filter-banner__clear-btn"
+            onClick={() => onCompanyFilterChange && onCompanyFilterChange('ALL')}
+            title="Clear company filter and show all administrators"
+          >
+            <X size={12} />
+            <span>Show All Administrators ({allAdminsCount > 0 ? allAdminsCount : admins.length})</span>
+          </button>
+        </div>
+      )}
 
       {/* Floating Bulk Operations Toolbar */}
       <BulkOperationsToolbar

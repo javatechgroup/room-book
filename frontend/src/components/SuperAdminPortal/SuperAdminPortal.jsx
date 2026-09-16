@@ -26,7 +26,9 @@ export default function SuperAdminPortal() {
 
   // Primary Data State
   const [companies, setCompanies] = useState(INITIAL_COMPANIES);
+  const [allCompanies, setAllCompanies] = useState(INITIAL_COMPANIES);
   const [admins, setAdmins] = useState(INITIAL_ADMINS);
+  const [allAdmins, setAllAdmins] = useState(INITIAL_ADMINS);
   const [auditLogs, setAuditLogs] = useState(INITIAL_AUDIT_LOGS);
 
   // Tenant Companies Tab State
@@ -227,6 +229,9 @@ export default function SuperAdminPortal() {
     });
     if (res.success && Array.isArray(res.data)) {
       setCompanies(res.data);
+      if (search === '' && status === 'ALL') {
+        setAllCompanies(res.data);
+      }
       if (typeof res.totalElements === 'number') {
         setTotalCompaniesCount(res.totalElements);
       }
@@ -254,6 +259,9 @@ export default function SuperAdminPortal() {
     });
     if (res.success && Array.isArray(res.data)) {
       setAdmins(res.data);
+      if (companyFilter === 'ALL' && status === 'ALL' && search === '') {
+        setAllAdmins(res.data);
+      }
       if (typeof res.totalElements === 'number') {
         setTotalAdminsCount(res.totalElements);
       }
@@ -296,6 +304,30 @@ export default function SuperAdminPortal() {
     return res;
   }, []);
 
+  // Fetch full global data for metrics and company-admin count correlation
+  const fetchAllGlobalSummary = useCallback(async () => {
+    try {
+      const [compRes, admRes] = await Promise.all([
+        companyApi.getCompanies({ page: 1, size: 1000, search: '', status: 'ALL' }),
+        adminApi.getAdmins({ page: 1, size: 1000, companyFilter: 'ALL', status: 'ALL', search: '' }),
+      ]);
+      if (compRes.success && Array.isArray(compRes.data)) {
+        setAllCompanies(compRes.data);
+        if (typeof compRes.totalElements === 'number') {
+          setTotalCompaniesCount(compRes.totalElements);
+        }
+      }
+      if (admRes.success && Array.isArray(admRes.data)) {
+        setAllAdmins(admRes.data);
+        if (typeof admRes.totalElements === 'number') {
+          setTotalAdminsCount(admRes.totalElements);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading global summary:', e);
+    }
+  }, []);
+
   // Helper to refresh all related data across all tabs whenever any mutation occurs
   const refreshAllTabsData = useCallback(async () => {
     return Promise.all([
@@ -303,24 +335,37 @@ export default function SuperAdminPortal() {
       fetchAdmins(),
       fetchAuditLogs(),
       fetchAuditActions(),
+      fetchAllGlobalSummary(),
     ]);
-  }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions]);
+  }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions, fetchAllGlobalSummary]);
 
-  // Tab switch & on-demand load on click
+  // Tab switch & on-demand load on click (resets filters so full list is shown)
   const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
     if (tab === 'companies') {
       setSelectedCompanyIds([]);
-      fetchCompanies();
+      setCompanySearch('');
+      setCompanyStatusFilter('ALL');
+      setCompanyPage(1);
+      fetchCompanies({ search: '', status: 'ALL', page: 1 });
+      fetchAllGlobalSummary();
     } else if (tab === 'admins') {
       setSelectedAdminIds([]);
-      fetchAdmins();
-      fetchCompanies(); // Keep companies list refreshed for dropdowns/filters
+      setAdminCompanyFilter('ALL');
+      setAdminSearch('');
+      setAdminStatusFilter('ALL');
+      setAdminPage(1);
+      fetchAdmins({ companyFilter: 'ALL', search: '', status: 'ALL', page: 1 });
+      fetchAllGlobalSummary();
     } else if (tab === 'audit') {
-      fetchAuditLogs();
+      setAuditSearch('');
+      setAuditActionFilter('ALL');
+      setAuditEntityTypeFilter('ALL');
+      setAuditPage(1);
+      fetchAuditLogs({ search: '', action: 'ALL', entityType: 'ALL', page: 1 });
       fetchAuditActions();
     }
-  }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions]);
+  }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions, fetchAllGlobalSummary]);
 
   // Reactive data synchronization on filter / page / sort changes
   useEffect(() => {
@@ -347,6 +392,7 @@ export default function SuperAdminPortal() {
     fetchAdmins();
     fetchAuditLogs();
     fetchAuditActions();
+    fetchAllGlobalSummary();
   }, []);
 
   // ════════════════════ SELECTION & BULK ACTIONS ════════════════════
@@ -840,21 +886,23 @@ export default function SuperAdminPortal() {
     await refreshAllTabsData();
   };
 
-  const activeCompaniesCount = companies.filter((c) => c.status === 'ACTIVE').length;
-  const activeAdminsCount = admins.filter((a) => a.status === 'ACTIVE').length;
+  const effectiveCompanies = allCompanies.length > 0 ? allCompanies : companies;
+  const effectiveAdmins = allAdmins.length > 0 ? allAdmins : admins;
+  const activeCompaniesCount = effectiveCompanies.filter((c) => c.status === 'ACTIVE').length;
+  const activeAdminsCount = effectiveAdmins.filter((a) => a.status === 'ACTIVE').length;
 
   return (
     <div className="superadmin-portal" id="superadmin-console">
       <div className="container">
         {/* Top Focused Metrics */}
-        <SuperAdminMetrics companies={companies} admins={admins} />
+        <SuperAdminMetrics companies={effectiveCompanies} admins={effectiveAdmins} />
 
         {/* Navigation Tabs */}
         <SuperAdminTabs
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          companiesCount={totalCompaniesCount > 0 ? totalCompaniesCount : companies.length}
-          adminsCount={totalAdminsCount > 0 ? totalAdminsCount : admins.length}
+          companiesCount={effectiveCompanies.length}
+          adminsCount={effectiveAdmins.length}
           auditLogsCount={totalAuditLogsCount > 0 ? totalAuditLogsCount : auditLogs.length}
           onOpenCreateCompany={handleOpenCreateCompany}
           onOpenCreateAdmin={handleOpenCreateAdmin}
@@ -883,7 +931,7 @@ export default function SuperAdminPortal() {
             onToggleSelect={handleToggleSelectCompany}
             onSelectAllPage={handleSelectAllCompaniesOnPage}
             isAllPageSelected={isAllCompaniesPageSelected}
-            admins={admins}
+            admins={effectiveAdmins}
             onInspect={(comp) => setDrawerCompany(comp)}
             onEdit={handleOpenEditCompany}
             onToggleStatus={handleToggleCompanyStatus}
@@ -908,7 +956,8 @@ export default function SuperAdminPortal() {
           <AdminsTab
             admins={admins}
             activeAdminsCount={activeAdminsCount}
-            companies={companies}
+            companies={effectiveCompanies}
+            allAdminsCount={effectiveAdmins.length}
             paginatedAdmins={paginatedAdmins}
             totalFilteredCount={totalAdminsCount > 0 ? totalAdminsCount : filteredAndSortedAdmins.length}
             search={adminSearch}
