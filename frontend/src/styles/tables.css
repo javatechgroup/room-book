@@ -315,40 +315,43 @@
 .table--dense thead th,
 .superadmin-table--dense thead th,
 .audit-logs-table thead th {
-  padding: 10px 14px;
+  padding: 10px 12px;
   font-size: 0.74rem;
 }
 
 .table--dense td,
 .superadmin-table--dense td,
 .audit-logs-table td {
-  padding: 8px 14px;
+  padding: 8px 12px;
   font-size: 0.835rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .audit-logs-table th:nth-child(1),
 .audit-logs-table td:nth-child(1) {
-  width: 155px;
+  width: 200px;
 }
 
 .audit-logs-table th:nth-child(2),
 .audit-logs-table td:nth-child(2) {
-  width: 175px;
+  width: 215px;
 }
 
 .audit-logs-table th:nth-child(3),
 .audit-logs-table td:nth-child(3) {
-  width: 120px;
+  width: 110px;
 }
 
 .audit-logs-table th:nth-child(4),
 .audit-logs-table td:nth-child(4) {
-  width: 18%;
+  width: 16%;
 }
 
 .audit-logs-table th:nth-child(5),
 .audit-logs-table td:nth-child(5) {
-  width: 18%;
+  width: 16%;
 }
 
 .audit-logs-table th:nth-child(6),
@@ -358,7 +361,7 @@
 
 .audit-logs-table th:nth-child(7),
 .audit-logs-table td:nth-child(7) {
-  width: 75px;
+  width: 60px;
   text-align: center;
 }
 

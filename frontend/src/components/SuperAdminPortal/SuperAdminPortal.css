@@ -1256,9 +1256,9 @@
 .action-tag {
   display: inline-flex;
   align-items: center;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 6px;
   background: #f1f5f9;
   color: #334155;
@@ -1266,6 +1266,7 @@
   letter-spacing: 0.01em;
   white-space: nowrap;
   line-height: 1.25;
+  max-width: 100%;
 }
 
 .action-tag--create {
