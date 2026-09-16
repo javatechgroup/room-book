@@ -46,10 +46,14 @@ ol {
 img,
 picture,
 video,
-canvas,
-svg {
+canvas {
   max-width: 100%;
   display: block;
+}
+
+svg {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 input,

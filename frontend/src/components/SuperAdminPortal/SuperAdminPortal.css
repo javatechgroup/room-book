@@ -693,11 +693,11 @@
 /* Polished Table Header */
 .superadmin-table thead th {
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  color: var(--text-faint, #64748b);
-  font-size: 0.74rem;
-  font-weight: 800;
+  color: var(--text-muted, #475569);
+  font-size: 0.76rem;
+  font-weight: 750;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   padding: 14px 18px;
   border-bottom: 1.5px solid var(--border-card);
   white-space: nowrap;
