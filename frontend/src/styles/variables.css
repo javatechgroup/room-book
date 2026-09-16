@@ -57,7 +57,7 @@
   --accent-gradient-subtle: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
   --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
 
-  /* Semantic Colors — Layered Depth in Light Theme */
+  /* Semantic Colors — Layered Depth & High-Contrast Typography in Light Theme */
   --bg-body: #f8fafc;
   --bg-surface: #ffffff;
   --bg-surface-alt: #f1f5f9;
@@ -68,10 +68,10 @@
   --border-card-hover: #93c5fd;
   --border-input: #cbd5e1;
   --border-input-focus: #3b82f6;
-  --text-heading: #0f172a;
-  --text-body: #334155;
-  --text-muted: #64748b;
-  --text-faint: #94a3b8;
+  --text-heading: #020617; /* Deep Slate-950 for sharp, rich titles */
+  --text-body: #1e293b;    /* Slate-800 for crisp, vivid body text */
+  --text-muted: #475569;   /* Slate-600 for prominent, non-washed descriptions */
+  --text-faint: #64748b;   /* Slate-500 for visible captions and helpers */
 
   /* Header */
   --header-bg: rgba(255, 255, 255, 0.88);

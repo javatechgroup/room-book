@@ -1,16 +1,24 @@
 /* ================================================================
-   Typography & Shared Section Headers
+   Typography & Shared Section Headers (Vibrant, Crisp Contrast)
    ================================================================ */
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family);
   color: var(--text-heading);
-  font-weight: 700;
+  font-weight: 750;
   line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-rendering: optimizeLegibility;
+}
+
+p, span, label, td, th, li {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 p {
   color: var(--text-body);
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 /* ───────────────── Section Common ───────────────── */
