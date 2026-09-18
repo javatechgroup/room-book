@@ -160,7 +160,10 @@ export const facilityApi = {
     } catch (e) {
       console.warn('Backend /facility/departments unreachable, fallback:', e.message);
     }
-    let list = [...localDepartments];
+    let list = localDepartments.map((d) => ({
+      ...d,
+      employeeCount: localEmployees.filter((e) => e.departmentId === d.id).length,
+    }));
     if (params.status && params.status !== 'ALL') {
       list = list.filter((d) => d.status === params.status);
     }

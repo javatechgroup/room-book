@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Building2,
@@ -50,8 +50,14 @@ export default function EmployeesTab({
   onPageSizeChange,
 }) {
   const [localSearch, setLocalSearch] = useState(search);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const isAllSelected = employees.length > 0 && employees.every((e) => selectedEmployeeIds.includes(e.id));
+  const activeDept = departments.find((d) => String(d.id) === String(departmentFilter));
 
   const activeCount = employees.filter((e) => e.status === 'ACTIVE').length;
   const inactiveCount = employees.filter((e) => e.status === 'INACTIVE').length;
@@ -160,6 +166,48 @@ export default function EmployeesTab({
         </div>
       </div>
 
+      {/* Active Department Filter Alert Banner */}
+      {departmentFilter !== 'ALL' && activeDept && (
+        <div className="active-dept-banner" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          padding: '0.75rem 1.25rem',
+          background: 'var(--bg-surface-alt, #eff6ff)',
+          border: '1px solid var(--primary-200, #bfdbfe)',
+          borderRadius: '10px',
+          marginBottom: '1.25rem',
+          fontSize: '0.88rem',
+          color: 'var(--primary-700, #1d4ed8)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Building2 size={18} />
+            <span>
+              Showing staff filtered by department: <strong>{activeDept.name}</strong> ({totalCount || employees.length} {totalCount === 1 ? 'member' : 'members'})
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn--outline btn--sm"
+            style={{
+              padding: '4px 12px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              background: '#ffffff',
+              color: '#2563eb',
+              borderColor: '#93c5fd',
+              cursor: 'pointer'
+            }}
+            onClick={() => onDepartmentFilterChange('ALL')}
+          >
+            Show All Departments
+          </button>
+        </div>
+      )}
+
       {/* Bulk Operations Toolbar */}
       {selectedEmployeeIds.length > 0 && (
         <div className="bulk-toolbar">
@@ -231,10 +279,25 @@ export default function EmployeesTab({
                 <tr>
                   <td colSpan={7} className="td-empty">
                     <Users size={32} className="empty-icon" />
-                    <p>No employees match your current search.</p>
-                    <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateEmployee}>
-                      <Plus size={14} /> Add Employee
-                    </button>
+                    <p style={{ margin: '0.5rem 0', fontWeight: 500 }}>
+                      {departmentFilter !== 'ALL' && activeDept
+                        ? `No staff members found in the "${activeDept.name}" department.`
+                        : 'No employees match your current search or filter criteria.'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                      {departmentFilter !== 'ALL' && (
+                        <button
+                          type="button"
+                          className="btn btn--primary btn--sm"
+                          onClick={() => onDepartmentFilterChange('ALL')}
+                        >
+                          Show All Departments
+                        </button>
+                      )}
+                      <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateEmployee}>
+                        <Plus size={14} /> Add Employee
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -337,10 +400,25 @@ export default function EmployeesTab({
         {employees.length === 0 ? (
           <div className="mobile-empty-state">
             <Users size={32} className="empty-icon" />
-            <p>No staff members match your filter.</p>
-            <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateEmployee}>
-              Onboard Employee
-            </button>
+            <p>
+              {departmentFilter !== 'ALL' && activeDept
+                ? `No staff found in ${activeDept.name}.`
+                : 'No staff members match your filter.'}
+            </p>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+              {departmentFilter !== 'ALL' && (
+                <button
+                  type="button"
+                  className="btn btn--primary btn--sm"
+                  onClick={() => onDepartmentFilterChange('ALL')}
+                >
+                  Show All Staff
+                </button>
+              )}
+              <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateEmployee}>
+                Onboard Employee
+              </button>
+            </div>
           </div>
         ) : (
           employees.map((emp) => {

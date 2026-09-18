@@ -75,6 +75,7 @@ export default function FacilityAdminPortal() {
   const [empPage, setEmpPage] = useState(1);
   const [empPageSize, setEmpPageSize] = useState(10);
   const [totalEmpsCount, setTotalEmpsCount] = useState(0);
+  const [totalCompanyEmployees, setTotalCompanyEmployees] = useState(0);
   const [selectedEmpIds, setSelectedEmpIds] = useState([]);
 
   // 4. Booking Monitor Tab
@@ -191,7 +192,12 @@ export default function FacilityAdminPortal() {
     const res = await facilityApi.getEmployees({ page, size, search, departmentId, role, status, sortBy, sortDir });
     if (res.success && Array.isArray(res.data)) {
       setEmployees(res.data);
-      if (typeof res.totalElements === 'number') setTotalEmpsCount(res.totalElements);
+      if (typeof res.totalElements === 'number') {
+        setTotalEmpsCount(res.totalElements);
+        if (!departmentId && (!search || search.trim() === '') && status === 'ALL' && role === 'ALL') {
+          setTotalCompanyEmployees(res.totalElements);
+        }
+      }
     }
   }, [empPage, empPageSize, empSearch, empDeptFilter, empRoleFilter, empStatusFilter, empSort]);
 
@@ -708,11 +714,18 @@ export default function FacilityAdminPortal() {
         {/* Tab Switcher Header */}
         <FacilityAdminTabs
           activeTab={activeTab}
-          onTabChange={setActiveTab}
-          roomsCount={totalRoomsCount || rooms.length}
-          departmentsCount={totalDeptsCount || departments.length}
-          employeesCount={totalEmpsCount || employees.length}
-          bookingsCount={totalBookingsCount || bookings.length}
+          onTabChange={(tabKey) => {
+            setActiveTab(tabKey);
+            if (tabKey === 'employees') {
+              setEmpDeptFilter('ALL');
+              setEmpSearch('');
+              setEmpPage(1);
+            }
+          }}
+          roomsCount={summary.totalRooms || totalRoomsCount || rooms.length}
+          departmentsCount={summary.totalDepartments || totalDeptsCount || departments.length}
+          employeesCount={summary.totalEmployees || totalCompanyEmployees || totalEmpsCount || employees.length}
+          bookingsCount={summary.todayBookingsCount || totalBookingsCount || bookings.length}
           myBookingsCount={myBookings.filter((b) => b.status === 'CONFIRMED').length}
           onOpenCreateRoom={handleOpenCreateRoom}
           onOpenCreateDepartment={handleOpenCreateDepartment}
