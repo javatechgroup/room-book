@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Activity,
   Calendar,
@@ -32,7 +32,7 @@ export default function BookingMonitorTab({
   onFloorFilterChange,
   statusFilter = 'ALL',
   onStatusFilterChange,
-  dateFilter,
+  dateFilter = '',
   onDateFilterChange,
   onInspectBooking,
   onCancelBooking,
@@ -46,13 +46,9 @@ export default function BookingMonitorTab({
 }) {
   const [activeView, setActiveView] = useState('grid'); // 'grid' (Floor Map) | 'list' (Table)
   const [localSearch, setLocalSearch] = useState(search);
-  const [roomPage, setRoomPage] = useState(1);
-  const [roomPageSize, setRoomPageSize] = useState(6);
-  const [bookingPage, setBookingPage] = useState(page || 1);
-  const [bookingPageSize, setBookingPageSize] = useState(pageSize || 5);
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
-  // Real-time heartbeat ticker: automatically recalculates statuses every 15 seconds without requiring page refresh
+  // 15s real-time heartbeat ticker to dynamically transition meetings from In Progress -> Completed
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -62,10 +58,20 @@ export default function BookingMonitorTab({
 
   const now = currentTime;
 
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  // Pagination for Master Log table
+  const [bookingPage, setBookingPage] = useState(1);
+  const [bookingPageSize, setBookingPageSize] = useState(5);
+
+  // Pagination for Room Occupancy grid
+  const [roomPage, setRoomPage] = useState(1);
+  const [roomPageSize, setRoomPageSize] = useState(6);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
 
   // Dynamic booking state helper
-  const getBookingLifecycleState = (booking) => {
+  const getBookingLifecycleState = useCallback((booking) => {
     if (!booking) {
       return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false };
     }
@@ -101,45 +107,51 @@ export default function BookingMonitorTab({
       colorClass: 'status-pill--active',
       canCancel: true,
     };
-  };
+  }, [now]);
 
-  const inProgressCount = bookings.filter((b) => {
-    if (b.status === 'CANCELLED') return false;
-    const s = new Date(b.startTime);
-    const e = new Date(b.endTime);
-    return now >= s && now <= e;
-  }).length;
+  // Memoized Status counts
+  const { inProgressCount, upcomingCount, completedCount, cancelledCount } = useMemo(() => {
+    let inProgress = 0;
+    let upcoming = 0;
+    let completed = 0;
+    let cancelled = 0;
 
-  const upcomingCount = bookings.filter((b) => {
-    if (b.status === 'CANCELLED') return false;
-    const s = new Date(b.startTime);
-    return s > now;
-  }).length;
+    for (const b of bookings) {
+      if (b.status === 'CANCELLED') {
+        cancelled++;
+      } else {
+        const s = new Date(b.startTime);
+        const e = new Date(b.endTime);
+        if (now >= s && now <= e) inProgress++;
+        else if (s > now) upcoming++;
+        else if (e < now) completed++;
+      }
+    }
 
-  const completedCount = bookings.filter((b) => {
-    if (b.status === 'CANCELLED') return false;
-    const e = new Date(b.endTime);
-    return e < now;
-  }).length;
+    return { inProgressCount: inProgress, upcomingCount: upcoming, completedCount: completed, cancelledCount: cancelled };
+  }, [bookings, now]);
 
-  const cancelledCount = bookings.filter((b) => b.status === 'CANCELLED').length;
+  // Memoized Displayed Bookings
+  const displayedBookings = useMemo(() => {
+    return [...bookings]
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+      .filter((b) => {
+        if (statusFilter === 'ALL') return true;
+        const state = getBookingLifecycleState(b);
+        if (statusFilter === 'IN_PROGRESS') return state.key === 'IN_PROGRESS';
+        if (statusFilter === 'CONFIRMED' || statusFilter === 'UPCOMING') return state.key === 'CONFIRMED';
+        if (statusFilter === 'COMPLETED') return state.key === 'COMPLETED';
+        if (statusFilter === 'CANCELLED') return state.key === 'CANCELLED';
+        return true;
+      });
+  }, [bookings, statusFilter, getBookingLifecycleState]);
 
-  const displayedBookings = [...bookings]
-    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-    .filter((b) => {
-      if (statusFilter === 'ALL') return true;
-      const state = getBookingLifecycleState(b);
-      if (statusFilter === 'IN_PROGRESS') return state.key === 'IN_PROGRESS';
-      if (statusFilter === 'CONFIRMED' || statusFilter === 'UPCOMING') return state.key === 'CONFIRMED';
-      if (statusFilter === 'COMPLETED') return state.key === 'COMPLETED';
-      if (statusFilter === 'CANCELLED') return state.key === 'CANCELLED';
-      return true;
-    });
-
-  const paginatedBookings = displayedBookings.slice(
-    (bookingPage - 1) * bookingPageSize,
-    bookingPage * bookingPageSize
-  );
+  const paginatedBookings = useMemo(() => {
+    return displayedBookings.slice(
+      (bookingPage - 1) * bookingPageSize,
+      bookingPage * bookingPageSize
+    );
+  }, [displayedBookings, bookingPage, bookingPageSize]);
 
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();

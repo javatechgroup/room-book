@@ -1,5 +1,5 @@
 /* ════════════════════ FACILITY ADMIN PORTAL STYLES ════════════════════ */
-/* Inherits core variables and layouts from SuperAdminPortal.css */
+@import '../SuperAdminPortal/SuperAdminPortal.css';
 
 .facility-admin-portal .container {
   max-width: 1440px;

@@ -21,6 +21,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByCompanyId(Long companyId);
     long countByDepartmentId(Long departmentId);
 
+    @Query("SELECT d.name, COUNT(u.id) FROM Department d LEFT JOIN User u ON u.department.id = d.id " +
+           "WHERE d.company.id = :companyId GROUP BY d.id, d.name ORDER BY d.name ASC")
+    List<Object[]> getDepartmentHeadcountsByCompanyId(@Param("companyId") Long companyId);
+
     @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.company c " +
                    "WHERE u.role = :role " +
                    "AND (:companyId IS NULL OR c.id = :companyId) " +

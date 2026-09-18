@@ -242,12 +242,14 @@ export default function FacilityAdminPortal() {
     ]);
   }, [fetchSummary, fetchRooms, fetchFloors, fetchDepartments, fetchEmployees, fetchBookings, fetchMyBookings, fetchDirectory]);
 
-  // Initial mount load
+  // Initial mount load: only load core metadata (Summary, Floors, and My Bookings count)
   useEffect(() => {
-    refreshAllData();
-  }, [refreshAllData]);
+    fetchSummary();
+    fetchFloors();
+    fetchMyBookings();
+  }, [fetchSummary, fetchFloors, fetchMyBookings]);
 
-  // Reactive loaders on tab/filter updates
+  // On-demand reactive loaders per active tab
   useEffect(() => {
     if (activeTab === 'rooms') fetchRooms();
   }, [activeTab, roomPage, roomPageSize, roomSearch, roomFloorFilter, roomStatusFilter, roomSort, fetchRooms]);
@@ -257,8 +259,11 @@ export default function FacilityAdminPortal() {
   }, [activeTab, deptPage, deptPageSize, deptSearch, deptStatusFilter, deptSort, fetchDepartments]);
 
   useEffect(() => {
-    if (activeTab === 'employees') fetchEmployees();
-  }, [activeTab, empPage, empPageSize, empSearch, empDeptFilter, empRoleFilter, empStatusFilter, empSort, fetchEmployees]);
+    if (activeTab === 'employees') {
+      fetchEmployees();
+      fetchDepartments();
+    }
+  }, [activeTab, empPage, empPageSize, empSearch, empDeptFilter, empRoleFilter, empStatusFilter, empSort, fetchEmployees, fetchDepartments]);
 
   useEffect(() => {
     if (activeTab === 'monitor') {
@@ -271,11 +276,21 @@ export default function FacilityAdminPortal() {
   }, [activeTab, monitorPage, monitorPageSize, monitorSearch, monitorFloorFilter, fetchBookings]);
 
   useEffect(() => {
-    if (activeTab === 'book-room' || activeTab === 'my-bookings') {
+    if (activeTab === 'book-room') {
+      fetchRooms();
+      fetchDepartments();
       fetchMyBookings();
       fetchBookings();
+    } else if (activeTab === 'my-bookings') {
+      fetchMyBookings();
     }
-  }, [activeTab, fetchMyBookings, fetchBookings]);
+  }, [activeTab, fetchRooms, fetchDepartments, fetchMyBookings, fetchBookings]);
+
+  useEffect(() => {
+    if (activeTab === 'directory') {
+      fetchDirectory();
+    }
+  }, [activeTab, fetchDirectory]);
 
   // ════════════════════ ROOM ACTIONS ════════════════════
   const handleOpenCreateRoom = () => {

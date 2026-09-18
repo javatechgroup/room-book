@@ -70,11 +70,15 @@ public class FacilityDirectoryService {
             floorMap.put(floor, floorMap.getOrDefault(floor, 0L) + 1);
         }
 
-        // Department headcount
-        List<Department> allDepts = departmentRepository.findByCompanyId(companyId);
+        // Department headcount (Single Aggregated Query instead of N+1 loop)
         Map<String, Long> deptHeadcount = new LinkedHashMap<>();
-        for (Department d : allDepts) {
-            deptHeadcount.put(d.getName(), userRepository.countByDepartmentId(d.getId()));
+        List<Object[]> headcountResults = userRepository.getDepartmentHeadcountsByCompanyId(companyId);
+        for (Object[] row : headcountResults) {
+            if (row != null && row.length >= 2 && row[0] != null) {
+                String deptName = (String) row[0];
+                Long count = ((Number) row[1]).longValue();
+                deptHeadcount.put(deptName, count);
+            }
         }
 
         summary.setTotalRooms(totalRooms);

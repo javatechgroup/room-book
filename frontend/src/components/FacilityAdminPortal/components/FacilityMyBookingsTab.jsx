@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   CalendarCheck2,
   Calendar,
@@ -43,7 +43,7 @@ export default function FacilityMyBookingsTab({
   const now = currentTime;
 
   // Dynamic booking state helper
-  const getBookingLifecycleState = (booking) => {
+  const getBookingLifecycleState = useCallback((booking) => {
     if (!booking) {
       return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false };
     }
@@ -79,62 +79,66 @@ export default function FacilityMyBookingsTab({
       colorClass: 'status-pill--active',
       canCancel: true,
     };
-  };
+  }, [now]);
 
-  // Status counts
-  const inProgressCount = myBookings.filter((b) => {
-    if (b.status === 'CANCELLED') return false;
-    const s = new Date(b.startTime);
-    const e = new Date(b.endTime);
-    return now >= s && now <= e;
-  }).length;
+  // Memoized Status counts
+  const { inProgressCount, upcomingCount, completedCount, cancelledCount } = useMemo(() => {
+    let inProgress = 0;
+    let upcoming = 0;
+    let completed = 0;
+    let cancelled = 0;
 
-  const upcomingCount = myBookings.filter((b) => {
-    if (b.status === 'CANCELLED') return false;
-    const s = new Date(b.startTime);
-    return s > now;
-  }).length;
-
-  const completedCount = myBookings.filter((b) => {
-    if (b.status === 'CANCELLED') return false;
-    const e = new Date(b.endTime);
-    return e < now;
-  }).length;
-
-  const cancelledCount = myBookings.filter((b) => b.status === 'CANCELLED').length;
-
-  // Filter and sort bookings latest first
-  const filteredBookings = [...myBookings]
-    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-    .filter((b) => {
-      // Floor filter
-      if (floorFilter !== 'ALL' && b.floor !== floorFilter) return false;
-
-      // Status filter
-      if (statusFilter !== 'ALL') {
-        const state = getBookingLifecycleState(b);
-        if (statusFilter === 'IN_PROGRESS' && state.key !== 'IN_PROGRESS') return false;
-        if ((statusFilter === 'CONFIRMED' || statusFilter === 'UPCOMING') && state.key !== 'CONFIRMED') return false;
-        if (statusFilter === 'COMPLETED' && state.key !== 'COMPLETED') return false;
-        if (statusFilter === 'CANCELLED' && state.key !== 'CANCELLED') return false;
+    for (const b of myBookings) {
+      if (b.status === 'CANCELLED') {
+        cancelled++;
+      } else {
+        const s = new Date(b.startTime);
+        const e = new Date(b.endTime);
+        if (now >= s && now <= e) inProgress++;
+        else if (s > now) upcoming++;
+        else if (e < now) completed++;
       }
+    }
 
-      // Search filter
-      if (search && search.trim()) {
-        const q = search.trim().toLowerCase();
-        const matchesTitle = b.title && b.title.toLowerCase().includes(q);
-        const matchesRoom = b.roomName && b.roomName.toLowerCase().includes(q);
-        const matchesDesc = b.description && b.description.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesRoom && !matchesDesc) return false;
-      }
+    return { inProgressCount: inProgress, upcomingCount: upcoming, completedCount: completed, cancelledCount: cancelled };
+  }, [myBookings, now]);
 
-      return true;
-    });
+  // Memoized Filtered and sorted bookings
+  const filteredBookings = useMemo(() => {
+    return [...myBookings]
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+      .filter((b) => {
+        // Floor filter
+        if (floorFilter !== 'ALL' && b.floor !== floorFilter) return false;
 
-  const paginatedBookings = filteredBookings.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
+        // Status filter
+        if (statusFilter !== 'ALL') {
+          const state = getBookingLifecycleState(b);
+          if (statusFilter === 'IN_PROGRESS' && state.key !== 'IN_PROGRESS') return false;
+          if ((statusFilter === 'CONFIRMED' || statusFilter === 'UPCOMING') && state.key !== 'CONFIRMED') return false;
+          if (statusFilter === 'COMPLETED' && state.key !== 'COMPLETED') return false;
+          if (statusFilter === 'CANCELLED' && state.key !== 'CANCELLED') return false;
+        }
+
+        // Search filter
+        if (search && search.trim()) {
+          const q = search.trim().toLowerCase();
+          const matchesTitle = b.title && b.title.toLowerCase().includes(q);
+          const matchesRoom = b.roomName && b.roomName.toLowerCase().includes(q);
+          const matchesDesc = b.description && b.description.toLowerCase().includes(q);
+          if (!matchesTitle && !matchesRoom && !matchesDesc) return false;
+        }
+
+        return true;
+      });
+  }, [myBookings, floorFilter, statusFilter, search, getBookingLifecycleState]);
+
+  const paginatedBookings = useMemo(() => {
+    return filteredBookings.slice(
+      (page - 1) * pageSize,
+      page * pageSize
+    );
+  }, [filteredBookings, page, pageSize]);
 
   const handleStatusFilterChange = (newStatus) => {
     setStatusFilter(newStatus);
