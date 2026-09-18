@@ -19,6 +19,23 @@ import {
 import DoorTabletPreview from './DoorTabletPreview';
 import { TIME_SLOTS, FLOORS } from '../data/workplaceData';
 
+const isSlotInPast = (dateStr, slotStr) => {
+  if (!dateStr || !slotStr) return false;
+  try {
+    const startTimePart = slotStr.split('-')[0].trim();
+    const [time, period] = startTimePart.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const slotDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+    return slotDate < new Date();
+  } catch (_) {
+    return false;
+  }
+};
+
 export default function SlotFinderTab({
   rooms,
   filteredRooms,
@@ -44,6 +61,8 @@ export default function SlotFinderTab({
   isAdmin,
   onGoToAdmin,
 }) {
+  const isPastTime = isSlotInPast(selectedDate, selectedSlot);
+
   if (!currentRoom) {
     return (
       <div className="portal-card slot-finder-empty-state">
@@ -113,6 +132,7 @@ export default function SlotFinderTab({
           <input
             id="slot-date"
             type="date"
+            min={new Date().toISOString().split('T')[0]}
             value={selectedDate}
             onChange={(e) => onDateChange(e.target.value)}
           />
@@ -127,11 +147,14 @@ export default function SlotFinderTab({
             value={selectedSlot}
             onChange={(e) => onSlotChange(e.target.value)}
           >
-            {TIME_SLOTS.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
-              </option>
-            ))}
+            {TIME_SLOTS.map((slot) => {
+              const isPast = isSlotInPast(selectedDate, slot);
+              return (
+                <option key={slot} value={slot}>
+                  {slot} {isPast ? '(Past)' : ''}
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>
@@ -194,6 +217,19 @@ export default function SlotFinderTab({
                   </div>
                 </div>
               )}
+            </div>
+          ) : isPastTime ? (
+            /* PAST TIME STATE */
+            <div className="status-panel status-panel--occupied" style={{ borderLeftColor: '#f59e0b' }}>
+              <div className="status-panel-header">
+                <AlertTriangle size={20} style={{ color: '#d97706' }} />
+                <div>
+                  <h3>Time Slot Has Already Passed</h3>
+                  <p>
+                    The time slot <strong>{selectedSlot}</strong> on <strong>{selectedDate}</strong> has already passed. Please choose a future time slot or date.
+                  </p>
+                </div>
+              </div>
             </div>
           ) : isOccupied ? (
             /* OCCUPIED STATE: SHOW SMART SUGGESTIONS */

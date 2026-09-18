@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Activity,
   Calendar,
@@ -17,6 +17,7 @@ import {
   XCircle,
   SlidersHorizontal,
   ChevronDown,
+  Radio,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import { formatDate } from '../../../utils/dateUtils';
@@ -47,51 +48,148 @@ export default function BookingMonitorTab({
   const [localSearch, setLocalSearch] = useState(search);
   const [roomPage, setRoomPage] = useState(1);
   const [roomPageSize, setRoomPageSize] = useState(6);
+  const [bookingPage, setBookingPage] = useState(page || 1);
+  const [bookingPageSize, setBookingPageSize] = useState(pageSize || 5);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
-  const now = new Date();
-  const currentTimeISO = now.toISOString();
+  // Real-time heartbeat ticker: automatically recalculates statuses every 15 seconds without requiring page refresh
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const now = currentTime;
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
-  const confirmedCount = bookings.filter((b) => b.status === 'CONFIRMED').length;
+  // Dynamic booking state helper
+  const getBookingLifecycleState = (booking) => {
+    if (!booking) {
+      return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false };
+    }
+    if (booking.status === 'CANCELLED') {
+      return {
+        key: 'CANCELLED',
+        label: 'Cancelled',
+        colorClass: 'status-pill--inactive',
+        canCancel: false,
+      };
+    }
+    const end = new Date(booking.endTime);
+    const start = new Date(booking.startTime);
+    if (now > end) {
+      return {
+        key: 'COMPLETED',
+        label: 'Completed',
+        colorClass: 'status-pill--completed',
+        canCancel: false,
+      };
+    }
+    if (now >= start && now <= end) {
+      return {
+        key: 'IN_PROGRESS',
+        label: 'In Progress',
+        colorClass: 'status-pill--live',
+        canCancel: true,
+      };
+    }
+    return {
+      key: 'CONFIRMED',
+      label: 'Confirmed',
+      colorClass: 'status-pill--active',
+      canCancel: true,
+    };
+  };
+
+  const inProgressCount = bookings.filter((b) => {
+    if (b.status === 'CANCELLED') return false;
+    const s = new Date(b.startTime);
+    const e = new Date(b.endTime);
+    return now >= s && now <= e;
+  }).length;
+
+  const upcomingCount = bookings.filter((b) => {
+    if (b.status === 'CANCELLED') return false;
+    const s = new Date(b.startTime);
+    return s > now;
+  }).length;
+
+  const completedCount = bookings.filter((b) => {
+    if (b.status === 'CANCELLED') return false;
+    const e = new Date(b.endTime);
+    return e < now;
+  }).length;
+
   const cancelledCount = bookings.filter((b) => b.status === 'CANCELLED').length;
+
+  const displayedBookings = [...bookings]
+    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+    .filter((b) => {
+      if (statusFilter === 'ALL') return true;
+      const state = getBookingLifecycleState(b);
+      if (statusFilter === 'IN_PROGRESS') return state.key === 'IN_PROGRESS';
+      if (statusFilter === 'CONFIRMED' || statusFilter === 'UPCOMING') return state.key === 'CONFIRMED';
+      if (statusFilter === 'COMPLETED') return state.key === 'COMPLETED';
+      if (statusFilter === 'CANCELLED') return state.key === 'CANCELLED';
+      return true;
+    });
+
+  const paginatedBookings = displayedBookings.slice(
+    (bookingPage - 1) * bookingPageSize,
+    bookingPage * bookingPageSize
+  );
 
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
+    setBookingPage(1);
     if (onSearchChange) onSearchChange(localSearch);
   };
 
   const handleClearSearch = () => {
     setLocalSearch('');
+    setBookingPage(1);
     if (onSearchChange) onSearchChange('');
   };
 
   const handleFloorChange = (newFloor) => {
     setRoomPage(1);
+    setBookingPage(1);
     if (onFloorFilterChange) onFloorFilterChange(newFloor);
+  };
+
+  const handleStatusFilterChange = (newStatus) => {
+    setBookingPage(1);
+    if (onStatusFilterChange) onStatusFilterChange(newStatus);
   };
 
   // Compute live occupancy for each room right now
   const getRoomOccupancyStatus = (room) => {
     if (room.status === 'MAINTENANCE') {
-      return { status: 'MAINTENANCE', label: 'Under Maintenance', color: 'amber' };
+      return { status: 'MAINTENANCE', label: 'Under Maintenance', color: 'amber', isInProgress: false };
     }
-    const currentBooking = bookings.find(
-      (b) =>
-        b.roomId === room.id &&
-        b.status === 'CONFIRMED' &&
-        b.startTime <= currentTimeISO &&
-        b.endTime >= currentTimeISO
-    );
+    const currentBooking = bookings.find((b) => {
+      if (b.status === 'CANCELLED') return false;
+      const matchesRoom =
+        (b.roomId !== undefined && room.id !== undefined && String(b.roomId) === String(room.id)) ||
+        (b.roomName && room.name && b.roomName.trim().toLowerCase() === room.name.trim().toLowerCase());
+      if (!matchesRoom) return false;
+      const start = new Date(b.startTime);
+      const end = new Date(b.endTime);
+      return now >= start && now <= end;
+    });
+
     if (currentBooking) {
       return {
         status: 'OCCUPIED',
-        label: 'Occupied Now',
+        label: 'In Session Now',
         color: 'rose',
         booking: currentBooking,
+        isInProgress: true,
       };
     }
-    return { status: 'AVAILABLE', label: 'Vacant / Free', color: 'emerald' };
+    return { status: 'AVAILABLE', label: 'Vacant / Free', color: 'emerald', isInProgress: false };
   };
 
   const filteredRooms = rooms.filter(
@@ -141,7 +239,10 @@ export default function BookingMonitorTab({
             <input
               type="date"
               value={dateFilter}
-              onChange={(e) => onDateFilterChange(e.target.value)}
+              onChange={(e) => {
+                setBookingPage(1);
+                if (onDateFilterChange) onDateFilterChange(e.target.value);
+              }}
               className="filter-date-input"
               title="Filter by reservation date"
             />
@@ -167,21 +268,35 @@ export default function BookingMonitorTab({
             <button
               type="button"
               className={`status-segment-btn ${statusFilter === 'ALL' ? 'status-segment-btn--active' : ''}`}
-              onClick={() => onStatusFilterChange('ALL')}
+              onClick={() => handleStatusFilterChange('ALL')}
             >
-              All <span>{totalCount > 0 ? totalCount : bookings.length}</span>
+              All <span>{bookings.length}</span>
             </button>
             <button
               type="button"
-              className={`status-segment-btn ${statusFilter === 'CONFIRMED' ? 'status-segment-btn--active' : ''}`}
-              onClick={() => onStatusFilterChange('CONFIRMED')}
+              className={`status-segment-btn ${statusFilter === 'IN_PROGRESS' ? 'status-segment-btn--active' : ''}`}
+              onClick={() => handleStatusFilterChange('IN_PROGRESS')}
             >
-              Confirmed <span>{confirmedCount}</span>
+              <span className="live-blinking-dot" /> In Progress <span>{inProgressCount}</span>
+            </button>
+            <button
+              type="button"
+              className={`status-segment-btn ${statusFilter === 'CONFIRMED' || statusFilter === 'UPCOMING' ? 'status-segment-btn--active' : ''}`}
+              onClick={() => handleStatusFilterChange('UPCOMING')}
+            >
+              Upcoming <span>{upcomingCount}</span>
+            </button>
+            <button
+              type="button"
+              className={`status-segment-btn ${statusFilter === 'COMPLETED' ? 'status-segment-btn--active' : ''}`}
+              onClick={() => handleStatusFilterChange('COMPLETED')}
+            >
+              Completed <span>{completedCount}</span>
             </button>
             <button
               type="button"
               className={`status-segment-btn ${statusFilter === 'CANCELLED' ? 'status-segment-btn--active' : ''}`}
-              onClick={() => onStatusFilterChange('CANCELLED')}
+              onClick={() => handleStatusFilterChange('CANCELLED')}
             >
               Cancelled <span>{cancelledCount}</span>
             </button>
@@ -227,7 +342,7 @@ export default function BookingMonitorTab({
           </div>
           <div className="occupancy-legend">
             <span className="legend-item"><span className="legend-dot legend-dot--emerald" /> Vacant (Free)</span>
-            <span className="legend-item"><span className="legend-dot legend-dot--rose" /> In Session (Occupied)</span>
+            <span className="legend-item"><span className="live-blinking-dot" /> In Session (Occupied)</span>
             <span className="legend-item"><span className="legend-dot legend-dot--amber" /> Maintenance</span>
           </div>
         </div>
@@ -245,7 +360,7 @@ export default function BookingMonitorTab({
                 return (
                   <div
                     key={room.id}
-                    className={`occupancy-card occupancy-card--${occ.color}`}
+                    className={`occupancy-card occupancy-card--${occ.color} ${occ.isInProgress ? 'occupancy-card--in-progress' : ''}`}
                     onClick={() => onInspectRoom && onInspectRoom(room)}
                     style={{ cursor: 'pointer' }}
                   >
@@ -253,9 +368,15 @@ export default function BookingMonitorTab({
                       <span className="floor-badge floor-badge--sm">
                         <Layers size={11} /> {room.floor}
                       </span>
-                      <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
-                        <span className="pulse-dot" /> {occ.label}
-                      </span>
+                      {occ.isInProgress ? (
+                        <span className="occupancy-status-pill occupancy-status-pill--live">
+                          <Radio size={12} className="blinking-live-icon" /> In Session Now
+                        </span>
+                      ) : (
+                        <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
+                          <span className="pulse-dot" /> {occ.label}
+                        </span>
+                      )}
                     </div>
 
                     <div className="occupancy-card__title">
@@ -271,12 +392,19 @@ export default function BookingMonitorTab({
                     {occ.status === 'OCCUPIED' && occ.booking && (
                       <div className="occupancy-active-session">
                         <div className="session-header">
-                          <strong>In Session:</strong>
+                          <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#1d4ed8' }}>
+                            <Radio size={12} className="blinking-live-icon" /> In Session:
+                          </strong>
                           <span className="session-time">Until {occ.booking.endTime?.substring(11, 16)}</span>
                         </div>
-                        <div className="session-title">"{occ.booking.title}"</div>
-                        <div className="session-booker">
-                          <User size={12} /> {occ.booking.bookerName}
+                        <div className="session-title" title={occ.booking.title}>
+                          "{occ.booking.title}"
+                        </div>
+                        <div className="session-booker" title={occ.booking.bookerName}>
+                          <User size={12} style={{ flexShrink: 0 }} />
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {occ.booking.bookerName}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -326,12 +454,13 @@ export default function BookingMonitorTab({
                     return (
                       <tr
                         key={room.id}
+                        className={`occupancy-table-row ${occ.isInProgress ? 'tr--in-progress' : ''}`}
                         onClick={() => onInspectRoom && onInspectRoom(room)}
                         style={{ cursor: 'pointer' }}
                       >
                         <td className="td-strong">
                           <div className="entity-cell">
-                            <div className="entity-cell__icon entity-cell__icon--indigo">
+                            <div className={`entity-cell__icon ${occ.isInProgress ? 'entity-cell__icon--blue' : 'entity-cell__icon--indigo'}`}>
                               <DoorOpen size={15} />
                             </div>
                             <div className="entity-cell__content">
@@ -352,9 +481,15 @@ export default function BookingMonitorTab({
                           </span>
                         </td>
                         <td>
-                          <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
-                            <span className="pulse-dot" /> {occ.label}
-                          </span>
+                          {occ.isInProgress ? (
+                            <span className="occupancy-status-pill occupancy-status-pill--live">
+                              <Radio size={12} className="blinking-live-icon" /> In Session Now
+                            </span>
+                          ) : (
+                            <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
+                              <span className="pulse-dot" /> {occ.label}
+                            </span>
+                          )}
                         </td>
                         <td>
                           {occ.status === 'OCCUPIED' && occ.booking ? (
@@ -412,7 +547,7 @@ export default function BookingMonitorTab({
       {/* Desktop Reservation Log Table */}
       <div className="desktop-table-wrap" style={{ marginTop: '1.5rem' }}>
         <div className="table-header-title">
-          <h4>Scheduled Reservations Master Log ({bookings.length} Records)</h4>
+          <h4>Scheduled Reservations Master Log ({displayedBookings.length} Records)</h4>
         </div>
         <div className="table-responsive">
           <table className="superadmin-table bookings-table">
@@ -428,7 +563,7 @@ export default function BookingMonitorTab({
               </tr>
             </thead>
             <tbody>
-              {bookings.length === 0 ? (
+              {displayedBookings.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="td-empty">
                     <Activity size={32} className="empty-icon" />
@@ -436,14 +571,15 @@ export default function BookingMonitorTab({
                   </td>
                 </tr>
               ) : (
-                bookings.map((booking) => {
-                  const isCancelled = booking.status === 'CANCELLED';
+                paginatedBookings.map((booking) => {
+                  const state = getBookingLifecycleState(booking);
                   const startTimeDisplay = booking.startTime?.substring(11, 16);
                   const endTimeDisplay = booking.endTime?.substring(11, 16);
 
                   return (
                     <tr
                       key={booking.id}
+                      className={state.key === 'IN_PROGRESS' ? 'tr--in-progress' : ''}
                       onClick={() => onInspectBooking(booking)}
                     >
                       <td>
@@ -455,8 +591,12 @@ export default function BookingMonitorTab({
                       </td>
                       <td className="td-strong">
                         <div className="entity-cell">
-                          <div className="entity-cell__icon entity-cell__icon--blue">
-                            <Activity size={15} />
+                          <div className={`entity-cell__icon ${state.key === 'IN_PROGRESS' ? 'entity-cell__icon--blue' : 'entity-cell__icon--blue'}`}>
+                            {state.key === 'IN_PROGRESS' ? (
+                              <Radio size={15} className="blinking-live-icon" />
+                            ) : (
+                              <Activity size={15} />
+                            )}
                           </div>
                           <div className="entity-cell__content">
                             <div className="entity-cell__name">{booking.title}</div>
@@ -482,8 +622,12 @@ export default function BookingMonitorTab({
                         </span>
                       </td>
                       <td>
-                        <span className={`status-pill ${isCancelled ? 'status-pill--inactive' : 'status-pill--active'}`}>
-                          {isCancelled ? 'Cancelled' : 'Confirmed'}
+                        <span className={`status-pill ${state.colorClass}`}>
+                          {state.key === 'IN_PROGRESS' && <Radio size={12} className="blinking-live-icon" />}
+                          {state.key === 'CANCELLED' && <XCircle size={12} />}
+                          {state.key === 'CONFIRMED' && <span className="pulse-dot" />}
+                          {state.key === 'COMPLETED' && <CheckCircle2 size={12} />}
+                          <span>{state.label}</span>
                         </span>
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>
@@ -497,7 +641,7 @@ export default function BookingMonitorTab({
                           >
                             <Eye size={14} />
                           </button>
-                          {!isCancelled && onCancelBooking && (
+                          {state.canCancel && onCancelBooking && (
                             <button
                               type="button"
                               className="action-btn action-btn--deactivate"
@@ -517,25 +661,44 @@ export default function BookingMonitorTab({
             </tbody>
           </table>
         </div>
+
+        {/* Universal Pagination for Scheduled Reservations Master Log */}
+        <Pagination
+          currentPage={bookingPage}
+          pageSize={bookingPageSize}
+          totalItems={displayedBookings.length}
+          itemName="reservations"
+          onPageChange={(newPage) => {
+            setBookingPage(newPage);
+            if (onPageChange) onPageChange(newPage);
+          }}
+          onPageSizeChange={(newSize) => {
+            setBookingPageSize(newSize);
+            setBookingPage(1);
+            if (onPageSizeChange) onPageSizeChange(newSize);
+          }}
+          pageSizeOptions={[3, 5, 10, 20]}
+          className="bookings-log-pagination"
+        />
       </div>
 
       {/* Mobile Card List (Visible on mobile/tablet < 768px) */}
       <div className="mobile-card-list">
-        {bookings.length === 0 ? (
+        {displayedBookings.length === 0 ? (
           <div className="mobile-empty-state">
             <Activity size={32} className="empty-icon" />
             <p>No reservations found for current filter.</p>
           </div>
         ) : (
-          bookings.map((booking) => {
-            const isCancelled = booking.status === 'CANCELLED';
+          paginatedBookings.map((booking) => {
+            const state = getBookingLifecycleState(booking);
             const startTimeDisplay = booking.startTime?.substring(11, 16);
             const endTimeDisplay = booking.endTime?.substring(11, 16);
 
             return (
               <div
                 key={booking.id}
-                className="mobile-card"
+                className={`mobile-card ${state.key === 'IN_PROGRESS' ? 'tr--in-progress' : ''}`}
                 onClick={() => onInspectBooking(booking)}
               >
                 <div className="mobile-card__header">
@@ -547,8 +710,12 @@ export default function BookingMonitorTab({
                       </span>
                     </div>
                   </div>
-                  <span className={`status-pill ${isCancelled ? 'status-pill--inactive' : 'status-pill--active'}`}>
-                    {isCancelled ? 'Cancelled' : 'Confirmed'}
+                  <span className={`status-pill ${state.colorClass}`}>
+                    {state.key === 'IN_PROGRESS' && <Radio size={12} className="blinking-live-icon" />}
+                    {state.key === 'CANCELLED' && <XCircle size={12} />}
+                    {state.key === 'CONFIRMED' && <span className="pulse-dot" />}
+                    {state.key === 'COMPLETED' && <CheckCircle2 size={12} />}
+                    <span>{state.label}</span>
                   </span>
                 </div>
 
@@ -584,7 +751,7 @@ export default function BookingMonitorTab({
                     >
                       <Eye size={15} />
                     </button>
-                    {!isCancelled && onCancelBooking && (
+                    {state.canCancel && onCancelBooking && (
                       <button
                         type="button"
                         className="action-btn action-btn--deactivate"
@@ -602,6 +769,26 @@ export default function BookingMonitorTab({
           })
         )}
       </div>
+
+      {displayedBookings.length > 0 && (
+        <Pagination
+          currentPage={bookingPage}
+          pageSize={bookingPageSize}
+          totalItems={displayedBookings.length}
+          itemName="reservations"
+          onPageChange={(newPage) => {
+            setBookingPage(newPage);
+            if (onPageChange) onPageChange(newPage);
+          }}
+          onPageSizeChange={(newSize) => {
+            setBookingPageSize(newSize);
+            setBookingPage(1);
+            if (onPageSizeChange) onPageSizeChange(newSize);
+          }}
+          pageSizeOptions={[3, 5, 10, 20]}
+          className="bookings-log-pagination mobile-only-pagination"
+        />
+      )}
     </div>
   );
 }

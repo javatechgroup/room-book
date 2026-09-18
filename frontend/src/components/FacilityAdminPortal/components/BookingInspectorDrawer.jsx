@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   XCircle,
   Ban,
+  Radio,
 } from 'lucide-react';
 import { formatDate } from '../../../utils/dateUtils';
 
@@ -22,9 +23,26 @@ export default function BookingInspectorDrawer({
 }) {
   if (!booking) return null;
 
-  const isCancelled = booking.status === 'CANCELLED';
+  const now = new Date();
   const startTime = booking.startTime?.substring(11, 16);
   const endTime = booking.endTime?.substring(11, 16);
+
+  const getBookingState = () => {
+    if (booking.status === 'CANCELLED') {
+      return { key: 'CANCELLED', label: 'Cancelled Reservation', badgeClass: 'status-badge--inactive', canCancel: false };
+    }
+    const end = new Date(booking.endTime);
+    const start = new Date(booking.startTime);
+    if (now > end) {
+      return { key: 'COMPLETED', label: 'Completed Session', badgeClass: 'status-badge--completed', canCancel: false };
+    }
+    if (now >= start && now <= end) {
+      return { key: 'IN_PROGRESS', label: 'In Progress (Active Now)', badgeClass: 'status-badge--live', canCancel: true };
+    }
+    return { key: 'CONFIRMED', label: 'Confirmed Reservation', badgeClass: 'status-badge--active', canCancel: true };
+  };
+
+  const state = getBookingState();
 
   return (
     <div className="inspector-drawer-overlay" onClick={onClose}>
@@ -51,16 +69,19 @@ export default function BookingInspectorDrawer({
           </div>
 
           <div className="inspector-status-badge-row">
-            <span className={`status-badge ${isCancelled ? 'status-badge--inactive' : 'status-badge--active'}`}>
-              <span className="status-badge__dot" />
-              {isCancelled ? 'Cancelled' : 'Confirmed Reservation'}
+            <span className={`status-badge ${state.badgeClass}`}>
+              {state.key === 'IN_PROGRESS' && <Radio size={13} className="blinking-live-icon" />}
+              {state.key === 'CANCELLED' && <XCircle size={13} />}
+              {state.key === 'CONFIRMED' && <span className="status-badge__dot" />}
+              {state.key === 'COMPLETED' && <CheckCircle2 size={13} />}
+              <span>{state.label}</span>
             </span>
             <span className="capacity-badge">
               <Users size={14} /> {booking.attendeesCount || 2} Attendees
             </span>
           </div>
 
-          {!isCancelled && onCancelBooking && (
+          {state.canCancel && onCancelBooking && (
             <div className="inspector-quick-actions">
               <button
                 type="button"

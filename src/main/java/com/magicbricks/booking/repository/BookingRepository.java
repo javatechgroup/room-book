@@ -34,7 +34,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                    "WHERE b.company.id = :companyId " +
                    "AND (:roomId IS NULL OR r.id = :roomId) " +
                    "AND (:floor = 'ALL' OR r.floor = :floor) " +
-                   "AND (:status = 'ALL' OR b.status = :status) " +
+                   "AND (:status = 'ALL' " +
+                   "     OR (:status = 'CANCELLED' AND b.status = 'CANCELLED') " +
+                   "     OR ((:status = 'CONFIRMED' OR :status = 'UPCOMING') AND b.status = 'CONFIRMED' AND b.startTime > :now) " +
+                   "     OR (:status = 'IN_PROGRESS' AND b.status = 'CONFIRMED' AND b.startTime <= :now AND b.endTime >= :now) " +
+                   "     OR (:status = 'COMPLETED' AND b.status = 'CONFIRMED' AND b.endTime < :now) " +
+                   "     OR b.status = :status) " +
                    "AND (:bookerId IS NULL OR u.id = :bookerId) " +
                    "AND (:startTimeFrom IS NULL OR b.startTime >= :startTimeFrom) " +
                    "AND (:startTimeTo IS NULL OR b.startTime <= :startTimeTo) " +
@@ -45,7 +50,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                    "WHERE b.company.id = :companyId " +
                    "AND (:roomId IS NULL OR r.id = :roomId) " +
                    "AND (:floor = 'ALL' OR r.floor = :floor) " +
-                   "AND (:status = 'ALL' OR b.status = :status) " +
+                   "AND (:status = 'ALL' " +
+                   "     OR (:status = 'CANCELLED' AND b.status = 'CANCELLED') " +
+                   "     OR ((:status = 'CONFIRMED' OR :status = 'UPCOMING') AND b.status = 'CONFIRMED' AND b.startTime > :now) " +
+                   "     OR (:status = 'IN_PROGRESS' AND b.status = 'CONFIRMED' AND b.startTime <= :now AND b.endTime >= :now) " +
+                   "     OR (:status = 'COMPLETED' AND b.status = 'CONFIRMED' AND b.endTime < :now) " +
+                   "     OR b.status = :status) " +
                    "AND (:bookerId IS NULL OR u.id = :bookerId) " +
                    "AND (:startTimeFrom IS NULL OR b.startTime >= :startTimeFrom) " +
                    "AND (:startTimeTo IS NULL OR b.startTime <= :startTimeTo) " +
@@ -61,6 +71,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("startTimeFrom") LocalDateTime startTimeFrom,
             @Param("startTimeTo") LocalDateTime startTimeTo,
             @Param("search") String search,
+            @Param("now") LocalDateTime now,
             Pageable pageable
     );
 

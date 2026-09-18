@@ -100,6 +100,7 @@ public class DataInitializer implements CommandLineRunner {
             Room boardRoom = roomRepository.findByCompanyIdAndName(company.getId(), "Executive Boardroom").orElse(null);
 
             LocalDate today = LocalDate.now();
+            LocalDateTime now = LocalDateTime.now();
 
             if (confA != null && facilityAdmin != null) {
                 Booking b1 = new Booking();
@@ -108,8 +109,8 @@ public class DataInitializer implements CommandLineRunner {
                 b1.setBooker(facilityAdmin);
                 b1.setTitle("Q3 Facilities & Workplace Review");
                 b1.setDescription("Quarterly operations review with company leads");
-                b1.setStartTime(LocalDateTime.of(today, LocalTime.of(10, 0)));
-                b1.setEndTime(LocalDateTime.of(today, LocalTime.of(11, 30)));
+                b1.setStartTime(now.minusHours(4));
+                b1.setEndTime(now.minusHours(2).minusMinutes(30));
                 b1.setStatus("CONFIRMED");
                 bookingRepository.save(b1);
             }
@@ -119,10 +120,10 @@ public class DataInitializer implements CommandLineRunner {
                 b2.setCompany(company);
                 b2.setRoom(team102);
                 b2.setBooker(john);
-                b2.setTitle("Engineering Sprint Sync");
-                b2.setDescription("Daily architecture checkpoint and code review");
-                b2.setStartTime(LocalDateTime.of(today, LocalTime.of(14, 0)));
-                b2.setEndTime(LocalDateTime.of(today, LocalTime.of(15, 0)));
+                b2.setTitle("Engineering Sprint Sync & Architecture (LIVE)");
+                b2.setDescription("Live daily architecture checkpoint and active sprint sync");
+                b2.setStartTime(now.minusMinutes(30));
+                b2.setEndTime(now.plusMinutes(60));
                 b2.setStatus("CONFIRMED");
                 bookingRepository.save(b2);
             }
@@ -134,10 +135,38 @@ public class DataInitializer implements CommandLineRunner {
                 b3.setBooker(sarah);
                 b3.setTitle("Product Roadmap Alignment");
                 b3.setDescription("Cross-functional design and product roadmap walk-through");
-                b3.setStartTime(LocalDateTime.of(today, LocalTime.of(16, 0)));
-                b3.setEndTime(LocalDateTime.of(today, LocalTime.of(17, 30)));
+                b3.setStartTime(now.plusHours(2));
+                b3.setEndTime(now.plusHours(3).plusMinutes(30));
                 b3.setStatus("CONFIRMED");
                 bookingRepository.save(b3);
+            }
+
+            Room designStudio = roomRepository.findByCompanyIdAndName(company.getId(), "Design Studio 302").orElse(null);
+            if (designStudio != null && sarah != null) {
+                Booking b4 = new Booking();
+                b4.setCompany(company);
+                b4.setRoom(designStudio);
+                b4.setBooker(sarah);
+                b4.setTitle("UI Design Critique & Feedback");
+                b4.setDescription("Cancelled design critique session due to schedule conflicts");
+                b4.setStartTime(now.plusHours(4));
+                b4.setEndTime(now.plusHours(5));
+                b4.setStatus("CANCELLED");
+                bookingRepository.save(b4);
+            }
+
+            Room focusPod = roomRepository.findByCompanyIdAndName(company.getId(), "Focus Pod 101").orElse(null);
+            if (focusPod != null && alex != null) {
+                Booking b5 = new Booking();
+                b5.setCompany(company);
+                b5.setRoom(focusPod);
+                b5.setBooker(alex);
+                b5.setTitle("Marketing Vendor Briefing (Completed)");
+                b5.setDescription("Morning briefing with creative branding agency");
+                b5.setStartTime(now.minusHours(6));
+                b5.setEndTime(now.minusHours(5));
+                b5.setStatus("CONFIRMED");
+                bookingRepository.save(b5);
             }
         }
 

@@ -395,11 +395,21 @@ export const facilityApi = {
       console.warn('Backend /facility/bookings unreachable, fallback:', e.message);
     }
     let list = [...localBookings];
+    const now = new Date();
     if (params.floor && params.floor !== 'ALL') {
       list = list.filter((b) => b.floor === params.floor);
     }
     if (params.status && params.status !== 'ALL') {
-      list = list.filter((b) => b.status === params.status);
+      list = list.filter((b) => {
+        if (params.status === 'CANCELLED') return b.status === 'CANCELLED';
+        if (b.status === 'CANCELLED') return false;
+        const s = new Date(b.startTime);
+        const e = new Date(b.endTime);
+        if (params.status === 'IN_PROGRESS') return now >= s && now <= e;
+        if (params.status === 'CONFIRMED' || params.status === 'UPCOMING') return s > now;
+        if (params.status === 'COMPLETED') return e < now;
+        return b.status === params.status;
+      });
     }
     if (params.roomId) {
       list = list.filter((b) => String(b.roomId) === String(params.roomId));
@@ -459,6 +469,10 @@ export const facilityApi = {
       const errMsg = e.response?.data?.message || e.message;
       return { success: false, error: errMsg };
     }
+    if (new Date(bookingData.startTime) < new Date()) {
+      return { success: false, error: 'Cannot book a room in the past. Please select a future date and time.' };
+    }
+
     const room = localRooms.find((r) => r.id === Number(bookingData.roomId));
     const newBooking = {
       id: Date.now(),
@@ -511,9 +525,20 @@ export const facilityApi = {
     } catch (e) {
       console.warn('Backend /facility/summary fallback:', e.message);
     }
+    const now = new Date();
     const totalRooms = localRooms.length;
     const maintenanceRooms = localRooms.filter((r) => r.status === 'MAINTENANCE').length;
-    const activeBookings = localBookings.filter((b) => b.status === 'CONFIRMED').length;
+    const occupiedRoomsNow = localBookings.filter((b) => {
+      if (b.status === 'CANCELLED') return false;
+      const s = new Date(b.startTime);
+      const e = new Date(b.endTime);
+      return now >= s && now <= e;
+    }).length;
+    const upcomingBookingsCount = localBookings.filter((b) => {
+      if (b.status === 'CANCELLED') return false;
+      return new Date(b.startTime) > now;
+    }).length;
+    const todayBookingsCount = localBookings.filter((b) => b.status !== 'CANCELLED').length;
 
     const floorDist = {};
     localRooms.forEach((r) => {
@@ -529,13 +554,13 @@ export const facilityApi = {
       success: true,
       data: {
         totalRooms,
-        availableRooms: Math.max(0, totalRooms - maintenanceRooms - 1),
+        availableRooms: Math.max(0, totalRooms - maintenanceRooms - occupiedRoomsNow),
         maintenanceRooms,
-        occupiedRoomsNow: 1,
+        occupiedRoomsNow,
         totalDepartments: localDepartments.length,
         totalEmployees: localEmployees.length,
-        todayBookingsCount: activeBookings,
-        upcomingBookingsCount: activeBookings,
+        todayBookingsCount,
+        upcomingBookingsCount,
         floorDistribution: floorDist,
         departmentHeadcount: deptHeadcount,
       },

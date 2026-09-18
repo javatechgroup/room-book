@@ -265,7 +265,17 @@ export const INITIAL_EMPLOYEES = [
   },
 ];
 
-const todayStr = new Date().toISOString().split('T')[0];
+const nowMs = Date.now();
+const formatIsoLocal = (dateObj) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  const y = dateObj.getFullYear();
+  const m = pad(dateObj.getMonth() + 1);
+  const d = pad(dateObj.getDate());
+  const h = pad(dateObj.getHours());
+  const min = pad(dateObj.getMinutes());
+  const s = pad(dateObj.getSeconds());
+  return `${y}-${m}-${d}T${h}:${min}:${s}`;
+};
 
 export const INITIAL_BOOKINGS = [
   {
@@ -282,11 +292,11 @@ export const INITIAL_BOOKINGS = [
     departmentName: 'Admin',
     title: 'Q3 Facilities & Workplace Review',
     description: 'Quarterly operations, vendor contracts, and space utilization review.',
-    startTime: `${todayStr}T10:00:00`,
-    endTime: `${todayStr}T11:30:00`,
+    startTime: formatIsoLocal(new Date(nowMs - 4 * 60 * 60 * 1000)),
+    endTime: formatIsoLocal(new Date(nowMs - 2.5 * 60 * 60 * 1000)),
     status: 'CONFIRMED',
     attendeesCount: 6,
-    createdAt: `${todayStr}T08:00:00`,
+    createdAt: formatIsoLocal(new Date(nowMs - 8 * 60 * 60 * 1000)),
   },
   {
     id: 102,
@@ -300,13 +310,13 @@ export const INITIAL_BOOKINGS = [
     bookerName: 'John Doe',
     bookerEmail: 'john.doe@acme.com',
     departmentName: 'Engineering',
-    title: 'Engineering Sprint Sync & Architecture',
-    description: 'Sprint demo and microservice refactoring alignment.',
-    startTime: `${todayStr}T14:00:00`,
-    endTime: `${todayStr}T15:00:00`,
+    title: 'Engineering Sprint Sync & Architecture (LIVE)',
+    description: 'Live daily architecture checkpoint and active sprint sync.',
+    startTime: formatIsoLocal(new Date(nowMs - 30 * 60 * 1000)),
+    endTime: formatIsoLocal(new Date(nowMs + 60 * 60 * 1000)),
     status: 'CONFIRMED',
     attendeesCount: 5,
-    createdAt: `${todayStr}T08:30:00`,
+    createdAt: formatIsoLocal(new Date(nowMs - 2 * 60 * 60 * 1000)),
   },
   {
     id: 103,
@@ -322,11 +332,51 @@ export const INITIAL_BOOKINGS = [
     departmentName: 'Product & Design',
     title: 'Product Roadmap Alignment',
     description: 'Executive walkthrough of Q4 roadmap deliverables.',
-    startTime: `${todayStr}T16:00:00`,
-    endTime: `${todayStr}T17:30:00`,
+    startTime: formatIsoLocal(new Date(nowMs + 2 * 60 * 60 * 1000)),
+    endTime: formatIsoLocal(new Date(nowMs + 3.5 * 60 * 60 * 1000)),
     status: 'CONFIRMED',
     attendeesCount: 8,
-    createdAt: `${todayStr}T09:00:00`,
+    createdAt: formatIsoLocal(new Date(nowMs - 1 * 60 * 60 * 1000)),
+  },
+  {
+    id: 104,
+    companyId: 1,
+    companyName: 'Acme Corporation',
+    roomId: 6,
+    roomName: 'Design Studio 302',
+    floor: 'Floor 3',
+    location: 'South Wing',
+    bookerId: 4,
+    bookerName: 'Sarah Connor',
+    bookerEmail: 'sarah.connor@acme.com',
+    departmentName: 'Product & Design',
+    title: 'UI Design Critique & Feedback',
+    description: 'Cancelled design critique session due to schedule conflicts.',
+    startTime: formatIsoLocal(new Date(nowMs + 4 * 60 * 60 * 1000)),
+    endTime: formatIsoLocal(new Date(nowMs + 5 * 60 * 60 * 1000)),
+    status: 'CANCELLED',
+    attendeesCount: 4,
+    createdAt: formatIsoLocal(new Date(nowMs - 3 * 60 * 60 * 1000)),
+  },
+  {
+    id: 105,
+    companyId: 1,
+    companyName: 'Acme Corporation',
+    roomId: 1,
+    roomName: 'Focus Pod 101',
+    floor: 'Floor 1',
+    location: 'East Wing',
+    bookerId: 5,
+    bookerName: 'Alex Morgan',
+    bookerEmail: 'alex.morgan@acme.com',
+    departmentName: 'Marketing & Growth',
+    title: 'Marketing Vendor Briefing (Completed)',
+    description: 'Morning briefing with creative branding agency.',
+    startTime: formatIsoLocal(new Date(nowMs - 6 * 60 * 60 * 1000)),
+    endTime: formatIsoLocal(new Date(nowMs - 5 * 60 * 60 * 1000)),
+    status: 'CONFIRMED',
+    attendeesCount: 2,
+    createdAt: formatIsoLocal(new Date(nowMs - 12 * 60 * 60 * 1000)),
   },
 ];
 
@@ -337,8 +387,8 @@ export const INITIAL_FACILITY_SUMMARY = {
   occupiedRoomsNow: 1,
   totalDepartments: 6,
   totalEmployees: 8,
-  todayBookingsCount: 3,
-  upcomingBookingsCount: 3,
+  todayBookingsCount: 4,
+  upcomingBookingsCount: 1,
   floorDistribution: {
     'Ground Floor': 1,
     'Floor 1': 2,

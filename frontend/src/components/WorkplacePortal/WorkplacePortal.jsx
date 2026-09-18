@@ -67,7 +67,29 @@ export default function WorkplacePortal() {
       )
     : [];
 
+  const isSlotInPast = (dateStr, slotStr) => {
+    if (!dateStr || !slotStr) return false;
+    try {
+      const startTimePart = slotStr.split('-')[0].trim();
+      const [time, period] = startTimePart.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      if (period === 'PM' && hours < 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const slotDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+      return slotDate < new Date();
+    } catch (_) {
+      return false;
+    }
+  };
+
   const handleBookRoom = (roomId, roomName, slotTime, floorName) => {
+    if (isSlotInPast(selectedDate, slotTime)) {
+      toast.error('Cannot Book Past Slot', 'Please select a future date and time slot.');
+      return;
+    }
+
     const newBooking = {
       id: 'b-' + Date.now(),
       roomName,

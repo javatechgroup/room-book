@@ -27,13 +27,22 @@
 
 .portal-nav-tabs {
   display: inline-flex;
+  align-items: center;
   gap: 6px;
   background: var(--tab-track-bg);
   padding: 5px;
   border-radius: 12px;
   border: 1px solid var(--tab-track-border);
   box-shadow: var(--tab-track-shadow);
-  flex-wrap: wrap;
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+}
+
+.portal-nav-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-tab {
@@ -51,6 +60,18 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  line-height: 1.25;
+}
+
+.nav-tab span {
+  white-space: nowrap !important;
+  display: inline-block;
+}
+
+.nav-tab svg {
+  flex-shrink: 0;
 }
 
 .nav-tab:hover {

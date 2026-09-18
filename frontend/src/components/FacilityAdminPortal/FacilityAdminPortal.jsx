@@ -21,6 +21,7 @@ import EmployeesTab from './components/EmployeesTab';
 import EmployeeModal from './components/EmployeeModal';
 import EmployeeInspectorDrawer from './components/EmployeeInspectorDrawer';
 import BookRoomTab from './components/BookRoomTab';
+import FacilityMyBookingsTab from './components/FacilityMyBookingsTab';
 import BookingMonitorTab from './components/BookingMonitorTab';
 import BookingInspectorDrawer from './components/BookingInspectorDrawer';
 import CompanyDirectoryTab from './components/CompanyDirectoryTab';
@@ -206,14 +207,13 @@ export default function FacilityAdminPortal() {
     const size = overrides.size !== undefined ? overrides.size : monitorPageSize;
     const search = overrides.search !== undefined ? overrides.search : monitorSearch;
     const floor = overrides.floor !== undefined ? overrides.floor : monitorFloorFilter;
-    const status = overrides.status !== undefined ? overrides.status : monitorStatusFilter;
 
-    const res = await facilityApi.getBookings({ page, size, search, floor, status });
+    const res = await facilityApi.getBookings({ page, size, search, floor, status: 'ALL' });
     if (res.success && Array.isArray(res.data)) {
       setBookings(res.data);
       if (typeof res.totalElements === 'number') setTotalBookingsCount(res.totalElements);
     }
-  }, [monitorPage, monitorPageSize, monitorSearch, monitorFloorFilter, monitorStatusFilter]);
+  }, [monitorPage, monitorPageSize, monitorSearch, monitorFloorFilter]);
 
   const fetchMyBookings = useCallback(async () => {
     const res = await facilityApi.getMyBookings();
@@ -261,11 +261,17 @@ export default function FacilityAdminPortal() {
   }, [activeTab, empPage, empPageSize, empSearch, empDeptFilter, empRoleFilter, empStatusFilter, empSort, fetchEmployees]);
 
   useEffect(() => {
-    if (activeTab === 'monitor') fetchBookings();
-  }, [activeTab, monitorPage, monitorPageSize, monitorSearch, monitorFloorFilter, monitorStatusFilter, fetchBookings]);
+    if (activeTab === 'monitor') {
+      fetchBookings();
+      const interval = setInterval(() => {
+        fetchBookings();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [activeTab, monitorPage, monitorPageSize, monitorSearch, monitorFloorFilter, fetchBookings]);
 
   useEffect(() => {
-    if (activeTab === 'book-room') {
+    if (activeTab === 'book-room' || activeTab === 'my-bookings') {
       fetchMyBookings();
       fetchBookings();
     }
@@ -726,7 +732,7 @@ export default function FacilityAdminPortal() {
           departmentsCount={summary.totalDepartments || totalDeptsCount || departments.length}
           employeesCount={summary.totalEmployees || totalCompanyEmployees || totalEmpsCount || employees.length}
           bookingsCount={summary.todayBookingsCount || totalBookingsCount || bookings.length}
-          myBookingsCount={myBookings.filter((b) => b.status === 'CONFIRMED').length}
+          myBookingsCount={myBookings.length}
           onOpenCreateRoom={handleOpenCreateRoom}
           onOpenCreateDepartment={handleOpenCreateDepartment}
           onOpenCreateEmployee={handleOpenCreateEmployee}
@@ -865,7 +871,7 @@ export default function FacilityAdminPortal() {
             />
           )}
 
-          {/* Tab 4: Book a Room & My Scheduled Reservations */}
+          {/* Tab 4: Book a Room & 3 Latest Reservations Preview */}
           {activeTab === 'book-room' && (
             <BookRoomTab
               rooms={rooms}
@@ -876,10 +882,23 @@ export default function FacilityAdminPortal() {
               onBookRoom={handleBookRoom}
               onCancelBooking={handleCancelBooking}
               currentUser={user}
+              onNavigateToMyBookings={() => setActiveTab('my-bookings')}
             />
           )}
 
-          {/* Tab 5: Live Room Booking Monitor */}
+          {/* Tab 5: My Bookings (Dedicated User Reservations Tab) */}
+          {activeTab === 'my-bookings' && (
+            <FacilityMyBookingsTab
+              myBookings={myBookings}
+              floors={floors}
+              onInspectBooking={setDrawerBooking}
+              onCancelBooking={handleCancelBooking}
+              onOpenBookRoom={() => setActiveTab('book-room')}
+              onExportCSV={handleExportBookingsCSV}
+            />
+          )}
+
+          {/* Tab 6: Live Room Booking Monitor */}
           {activeTab === 'monitor' && (
             <BookingMonitorTab
               rooms={rooms}

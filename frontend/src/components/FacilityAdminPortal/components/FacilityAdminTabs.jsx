@@ -1,5 +1,5 @@
 import React from 'react';
-import { DoorOpen, Building2, Users, CalendarPlus, Activity, BookOpen, Plus } from 'lucide-react';
+import { DoorOpen, Building2, Users, CalendarPlus, CalendarCheck2, Activity, BookOpen, Plus } from 'lucide-react';
 
 export default function FacilityAdminTabs({
   activeTab = 'rooms',
@@ -54,7 +54,16 @@ export default function FacilityAdminTabs({
         >
           <CalendarPlus size={16} />
           <span>Book a Room</span>
-          {myBookingsCount > 0 && <span className="tab-count-badge tab-count-badge--highlight">{myBookingsCount} Mine</span>}
+        </button>
+
+        <button
+          type="button"
+          className={`superadmin-tab ${activeTab === 'my-bookings' ? 'superadmin-tab--active' : ''}`}
+          onClick={() => onTabChange && onTabChange('my-bookings')}
+        >
+          <CalendarCheck2 size={16} />
+          <span>My Bookings</span>
+          <span className="tab-count-badge">{myBookingsCount}</span>
         </button>
 
         <button

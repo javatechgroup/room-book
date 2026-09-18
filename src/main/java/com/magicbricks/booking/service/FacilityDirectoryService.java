@@ -59,7 +59,7 @@ public class FacilityDirectoryService {
         List<Booking> todayBookings = bookingRepository.findBookingsForDay(companyId, today.atStartOfDay(), today.atTime(LocalTime.MAX));
         long todayCount = todayBookings.size();
         long upcomingCount = todayBookings.stream()
-                .filter(b -> b.getEndTime().isAfter(now) && !"CANCELLED".equalsIgnoreCase(b.getStatus()))
+                .filter(b -> b.getStartTime().isAfter(now) && !"CANCELLED".equalsIgnoreCase(b.getStatus()))
                 .count();
 
         // Floor distribution (rooms count per floor)

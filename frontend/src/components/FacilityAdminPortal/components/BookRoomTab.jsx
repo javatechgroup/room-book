@@ -33,6 +33,31 @@ const PRESET_SLOTS = [
   { label: '04:00 - 05:00 PM', sH: '04', sM: '00', sP: 'PM', eH: '05', eM: '00', eP: 'PM' },
 ];
 
+const getInitialTimes = () => {
+  const now = new Date();
+  const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+  let h = nextHour.getHours();
+  let nextH = (h + 1) % 24;
+
+  const formatH = (hour24) => {
+    const period = hour24 >= 12 ? 'PM' : 'AM';
+    let h12 = hour24 % 12;
+    if (h12 === 0) h12 = 12;
+    return { hour: String(h12).padStart(2, '0'), period };
+  };
+
+  const startObj = formatH(h);
+  const endObj = formatH(nextH);
+  return {
+    startHour: startObj.hour,
+    startMin: '00',
+    startPeriod: startObj.period,
+    endHour: endObj.hour,
+    endMin: '00',
+    endPeriod: endObj.period,
+  };
+};
+
 export default function BookRoomTab({
   rooms = [],
   floors = [],
@@ -42,21 +67,20 @@ export default function BookRoomTab({
   onBookRoom,
   onCancelBooking,
   currentUser,
+  onNavigateToMyBookings,
 }) {
   const [selectedFloor, setSelectedFloor] = useState('ALL');
-  const [resPage, setResPage] = useState(1);
-  const [resPageSize, setResPageSize] = useState(4);
   const [selectedRoomId, setSelectedRoomId] = useState(() => rooms[0]?.id || '');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
 
-  // Flexible Hour & Minute Dropdown State
-  const [startHour, setStartHour] = useState('10');
-  const [startMin, setStartMin] = useState('00');
-  const [startPeriod, setStartPeriod] = useState('AM');
+  // Flexible Hour & Minute Dropdown State initialized to upcoming hour
+  const [startHour, setStartHour] = useState(() => getInitialTimes().startHour);
+  const [startMin, setStartMin] = useState(() => getInitialTimes().startMin);
+  const [startPeriod, setStartPeriod] = useState(() => getInitialTimes().startPeriod);
 
-  const [endHour, setEndHour] = useState('11');
-  const [endMin, setEndMin] = useState('00');
-  const [endPeriod, setEndPeriod] = useState('AM');
+  const [endHour, setEndHour] = useState(() => getInitialTimes().endHour);
+  const [endMin, setEndMin] = useState(() => getInitialTimes().endMin);
+  const [endPeriod, setEndPeriod] = useState(() => getInitialTimes().endPeriod);
 
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState('Admin');
@@ -71,6 +95,12 @@ export default function BookRoomTab({
 
   const currentRoom = rooms.find((r) => r.id === Number(selectedRoomId)) || availableRoomsForFloor[0] || rooms[0];
 
+  // Sort bookings latest first
+  const sortedMyBookings = [...myBookings].sort(
+    (a, b) => new Date(b.startTime) - new Date(a.startTime)
+  );
+  const latestThreeBookings = sortedMyBookings.slice(0, 3);
+
   // Helper to convert 12h (HH, MM, AM/PM) to 24h ISO time string
   const to24Hour = (hStr, mStr, pStr) => {
     let h = Number(hStr);
@@ -81,6 +111,8 @@ export default function BookRoomTab({
 
   const startTimeStr = `${selectedDate}T${to24Hour(startHour, startMin, startPeriod)}`;
   const endTimeStr = `${selectedDate}T${to24Hour(endHour, endMin, endPeriod)}`;
+
+  const isPastTime = new Date(startTimeStr) < new Date();
 
   // Calculate meeting duration in minutes
   const getDurationInMinutes = (sH, sM, sP, eH, eM, eP) => {
@@ -151,6 +183,7 @@ export default function BookRoomTab({
     e.preventDefault();
     if (!currentRoom) return;
     if (isMaintenance) return;
+    if (isPastTime) return;
     if (isOccupied) return;
     if (!isValidTimeRange) return;
 
@@ -367,7 +400,8 @@ export default function BookRoomTab({
 
                     const pStartStr = `${selectedDate}T${to24Hour(p.sH, p.sM, p.sP)}`;
                     const pEndStr = `${selectedDate}T${to24Hour(p.eH, p.eM, p.eP)}`;
-                    const pConflict = allBookings.some(
+                    const isPastPreset = new Date(pStartStr) < new Date();
+                    const pConflict = !isPastPreset && allBookings.some(
                       (b) =>
                         b.roomId === currentRoom?.id &&
                         b.status === 'CONFIRMED' &&
@@ -379,11 +413,14 @@ export default function BookRoomTab({
                       <button
                         key={p.label}
                         type="button"
-                        className={`preset-chip ${isPresetSelected ? 'preset-chip--selected' : ''} ${pConflict ? 'preset-chip--occupied' : ''}`}
-                        onClick={() => handleSelectPreset(p)}
+                        disabled={isPastPreset}
+                        className={`preset-chip ${isPresetSelected ? 'preset-chip--selected' : ''} ${pConflict ? 'preset-chip--occupied' : ''} ${isPastPreset ? 'preset-chip--past' : ''}`}
+                        onClick={() => !isPastPreset && handleSelectPreset(p)}
+                        title={isPastPreset ? 'Past time slot cannot be booked' : pConflict ? 'Room is already occupied' : 'Click to select this slot'}
                       >
                         <span>{p.label}</span>
-                        {pConflict && <span className="preset-chip__tag">Busy</span>}
+                        {isPastPreset && <span className="preset-chip__tag">Past</span>}
+                        {!isPastPreset && pConflict && <span className="preset-chip__tag">Busy</span>}
                       </button>
                     );
                   })}
@@ -398,6 +435,14 @@ export default function BookRoomTab({
                 <div>
                   <strong>Room Under Maintenance</strong>
                   <p>{currentRoom?.name} is currently offline for facility servicing. Please choose another space.</p>
+                </div>
+              </div>
+            ) : isPastTime ? (
+              <div className="booking-status-alert booking-status-alert--danger">
+                <AlertCircle size={18} />
+                <div>
+                  <strong>Selected Time is in the Past</strong>
+                  <p>You cannot book a room for an elapsed time slot ({formattedTimeRange}). Please choose a current or future time.</p>
                 </div>
               </div>
             ) : !isValidTimeRange ? (
@@ -514,7 +559,7 @@ export default function BookRoomTab({
             <button
               type="submit"
               className="btn btn--primary btn--full"
-              disabled={isMaintenance || isOccupied || isSubmitting}
+              disabled={isMaintenance || isPastTime || isOccupied || !isValidTimeRange || isSubmitting}
             >
               <CalendarPlus size={16} />
               <span>{isSubmitting ? 'Confirming Reservation...' : 'Confirm Room Reservation'}</span>
@@ -529,13 +574,17 @@ export default function BookRoomTab({
               <CalendarCheck2 size={20} />
             </div>
             <div>
-              <h3>My Scheduled Reservations</h3>
-              <p>Meetings booked by your Facility Admin account ({myBookings.length} total)</p>
+              <h3>My Recent Reservations</h3>
+              <p>
+                {myBookings.length > 3
+                  ? `Showing 3 latest of ${myBookings.length} total reservations`
+                  : `Meetings booked by your Facility Admin account (${myBookings.length} total)`}
+              </p>
             </div>
           </div>
 
           <div className="my-reservations-list">
-            {myBookings.length === 0 ? (
+            {sortedMyBookings.length === 0 ? (
               <div className="my-reservations-empty">
                 <CalendarCheck2 size={36} />
                 <h4>No Scheduled Reservations</h4>
@@ -543,14 +592,19 @@ export default function BookRoomTab({
               </div>
             ) : (
               <>
-                {myBookings.slice((resPage - 1) * resPageSize, resPage * resPageSize).map((b) => {
+                {latestThreeBookings.map((b) => {
                   const isCancelled = b.status === 'CANCELLED';
                   const startTimeDisplay = b.startTime?.substring(11, 16) || '10:00';
                   const endTimeDisplay = b.endTime?.substring(11, 16) || '11:00';
                   const dateDisplay = formatDate(b.startTime);
 
+                  const bEnd = new Date(b.endTime);
+                  const isCompleted = !isCancelled && bEnd < new Date();
+                  const bStart = new Date(b.startTime);
+                  const isInProgress = !isCancelled && new Date() >= bStart && new Date() <= bEnd;
+
                   return (
-                    <div key={b.id} className={`my-reservation-item ${isCancelled ? 'my-reservation-item--cancelled' : ''}`}>
+                    <div key={b.id} className={`my-reservation-item ${isCancelled ? 'my-reservation-item--cancelled' : ''} ${isInProgress ? 'my-reservation-item--in-progress' : ''}`}>
                       <div className="reservation-item-top">
                         <div className="reservation-time-pill">
                           <Clock size={13} />
@@ -560,6 +614,14 @@ export default function BookRoomTab({
                           <span className="status-pill status-pill--inactive">
                             Cancelled
                           </span>
+                        ) : isInProgress ? (
+                          <span className="status-pill status-pill--live">
+                            In Progress
+                          </span>
+                        ) : isCompleted ? (
+                          <span className="status-pill status-pill--completed">
+                            Completed
+                          </span>
                         ) : (
                           <span className="status-pill status-pill--active">
                             Confirmed
@@ -568,7 +630,7 @@ export default function BookRoomTab({
                       </div>
 
                       <div className="reservation-info">
-                        <h4>{b.title}</h4>
+                        <h4 title={b.title}>{b.title}</h4>
                         <div className="reservation-meta">
                           <span><DoorOpen size={13} /> {b.roomName}</span>
                           <span><Layers size={13} /> {b.floor}</span>
@@ -576,7 +638,7 @@ export default function BookRoomTab({
                         </div>
                       </div>
 
-                      {!isCancelled && onCancelBooking && (
+                      {!isCancelled && !isCompleted && onCancelBooking && (
                         <div className="reservation-item-footer">
                           <button
                             type="button"
@@ -592,15 +654,20 @@ export default function BookRoomTab({
                   );
                 })}
 
-                {myBookings.length > resPageSize && (
-                  <Pagination
-                    currentPage={resPage}
-                    pageSize={resPageSize}
-                    totalItems={myBookings.length}
-                    itemName="bookings"
-                    onPageChange={setResPage}
-                    showPageSizeSelector={false}
-                  />
+                {/* Navigation to dedicated full paginated My Bookings Tab */}
+                {onNavigateToMyBookings && (
+                  <div className="my-reservations-card__all-footer" style={{ marginTop: '0.85rem', paddingTop: '0.85rem', borderTop: '1px dashed #e2e8f0' }}>
+                    <button
+                      type="button"
+                      className="btn btn--outline btn--sm btn--full"
+                      onClick={onNavigateToMyBookings}
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      title="Open full dedicated My Bookings page"
+                    >
+                      <CalendarCheck2 size={14} />
+                      <span>View All My Bookings ({myBookings.length}) &rarr;</span>
+                    </button>
+                  </div>
                 )}
               </>
             )}

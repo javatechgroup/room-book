@@ -59,6 +59,11 @@ public class FacilityBookingService {
             throw new BookingConflictException("End time must be strictly after start time.");
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        if (request.getStartTime().isBefore(now)) {
+            throw new BookingConflictException("Cannot book a room in the past. Please select a future date and time.");
+        }
+
         // Conflict check
         List<Booking> conflicts = bookingRepository.findConflictingBookings(room.getId(), request.getStartTime(), request.getEndTime());
         if (!conflicts.isEmpty()) {
@@ -155,7 +160,7 @@ public class FacilityBookingService {
         }
 
         Page<Booking> bookingPage = bookingRepository.searchBookings(
-                companyId, roomId, floorFilter, statusFilter, bookerId, startFrom, startTo, sanitizedSearch, pageable);
+                companyId, roomId, floorFilter, statusFilter, bookerId, startFrom, startTo, sanitizedSearch, LocalDateTime.now(), pageable);
 
         List<BookingResponse> content = bookingPage.getContent().stream()
                 .map(this::mapToResponse)
