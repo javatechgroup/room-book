@@ -948,6 +948,18 @@
 .legend-dot--rose { background: #ef4444; }
 .legend-dot--amber { background: #f59e0b; }
 
+.occupancy-matrix-pagination {
+  margin-top: 1.25rem !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+}
+
+[data-theme='dark'] .occupancy-matrix-pagination {
+  border-color: #25334d !important;
+  background: #1e293b !important;
+}
+
 /* ════════════════════ BOOKING MONITOR TOOLBAR FILTERS ════════════════════ */
 .superadmin-date-filter {
   width: 150px !important;

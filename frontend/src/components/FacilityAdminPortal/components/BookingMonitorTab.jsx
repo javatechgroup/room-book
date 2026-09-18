@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   ChevronDown,
 } from 'lucide-react';
+import Pagination from '../../common/Pagination/Pagination';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function BookingMonitorTab({
@@ -40,9 +41,12 @@ export default function BookingMonitorTab({
   pageSize = 10,
   totalCount = 0,
   onPageChange,
+  onPageSizeChange,
 }) {
   const [activeView, setActiveView] = useState('grid'); // 'grid' (Floor Map) | 'list' (Table)
   const [localSearch, setLocalSearch] = useState(search);
+  const [roomPage, setRoomPage] = useState(1);
+  const [roomPageSize, setRoomPageSize] = useState(6);
 
   const now = new Date();
   const currentTimeISO = now.toISOString();
@@ -60,6 +64,11 @@ export default function BookingMonitorTab({
   const handleClearSearch = () => {
     setLocalSearch('');
     if (onSearchChange) onSearchChange('');
+  };
+
+  const handleFloorChange = (newFloor) => {
+    setRoomPage(1);
+    if (onFloorFilterChange) onFloorFilterChange(newFloor);
   };
 
   // Compute live occupancy for each room right now
@@ -87,6 +96,11 @@ export default function BookingMonitorTab({
 
   const filteredRooms = rooms.filter(
     (r) => floorFilter === 'ALL' || r.floor === floorFilter
+  );
+  const totalRooms = filteredRooms.length;
+  const paginatedRooms = filteredRooms.slice(
+    (roomPage - 1) * roomPageSize,
+    roomPage * roomPageSize
   );
 
   return (
@@ -138,7 +152,7 @@ export default function BookingMonitorTab({
             <Layers size={15} className="filter-select-icon" />
             <select
               value={floorFilter}
-              onChange={(e) => onFloorFilterChange(e.target.value)}
+              onChange={(e) => handleFloorChange(e.target.value)}
               className="superadmin-filter-select"
             >
               <option value="ALL">All Office Floors</option>
@@ -220,63 +234,70 @@ export default function BookingMonitorTab({
 
         {activeView === 'grid' ? (
           <div className="occupancy-room-grid">
-            {filteredRooms.map((room) => {
-              const occ = getRoomOccupancyStatus(room);
-              return (
-                <div
-                  key={room.id}
-                  className={`occupancy-card occupancy-card--${occ.color}`}
-                  onClick={() => onInspectRoom && onInspectRoom(room)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="occupancy-card__top">
-                    <span className="floor-badge floor-badge--sm">
-                      <Layers size={11} /> {room.floor}
-                    </span>
-                    <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
-                      <span className="pulse-dot" /> {occ.label}
-                    </span>
-                  </div>
+            {paginatedRooms.length === 0 ? (
+              <div className="occupancy-empty-state" style={{ gridColumn: '1 / -1', padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                <DoorOpen size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
+                <p>No rooms found matching the selected floor filter.</p>
+              </div>
+            ) : (
+              paginatedRooms.map((room) => {
+                const occ = getRoomOccupancyStatus(room);
+                return (
+                  <div
+                    key={room.id}
+                    className={`occupancy-card occupancy-card--${occ.color}`}
+                    onClick={() => onInspectRoom && onInspectRoom(room)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="occupancy-card__top">
+                      <span className="floor-badge floor-badge--sm">
+                        <Layers size={11} /> {room.floor}
+                      </span>
+                      <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
+                        <span className="pulse-dot" /> {occ.label}
+                      </span>
+                    </div>
 
-                  <div className="occupancy-card__title">
-                    <DoorOpen size={16} />
-                    <h4>{room.name}</h4>
-                  </div>
+                    <div className="occupancy-card__title">
+                      <DoorOpen size={16} />
+                      <h4>{room.name}</h4>
+                    </div>
 
-                  <div className="occupancy-card__meta">
-                    <span><Users size={13} /> {room.capacity} seats</span>
-                    <span><Clock size={13} /> {room.location || 'Main Zone'}</span>
-                  </div>
+                    <div className="occupancy-card__meta">
+                      <span><Users size={13} /> {room.capacity} seats</span>
+                      <span><Clock size={13} /> {room.location || 'Main Zone'}</span>
+                    </div>
 
-                  {occ.status === 'OCCUPIED' && occ.booking && (
-                    <div className="occupancy-active-session">
-                      <div className="session-header">
-                        <strong>In Session:</strong>
-                        <span className="session-time">Until {occ.booking.endTime?.substring(11, 16)}</span>
+                    {occ.status === 'OCCUPIED' && occ.booking && (
+                      <div className="occupancy-active-session">
+                        <div className="session-header">
+                          <strong>In Session:</strong>
+                          <span className="session-time">Until {occ.booking.endTime?.substring(11, 16)}</span>
+                        </div>
+                        <div className="session-title">"{occ.booking.title}"</div>
+                        <div className="session-booker">
+                          <User size={12} /> {occ.booking.bookerName}
+                        </div>
                       </div>
-                      <div className="session-title">"{occ.booking.title}"</div>
-                      <div className="session-booker">
-                        <User size={12} /> {occ.booking.bookerName}
+                    )}
+
+                    {occ.status === 'AVAILABLE' && (
+                      <div className="occupancy-vacant-note">
+                        <CheckCircle2 size={13} />
+                        <span>Available for instant reservation</span>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {occ.status === 'AVAILABLE' && (
-                    <div className="occupancy-vacant-note">
-                      <CheckCircle2 size={13} />
-                      <span>Available for instant reservation</span>
-                    </div>
-                  )}
-
-                  {occ.status === 'MAINTENANCE' && (
-                    <div className="occupancy-maintenance-note">
-                      <Wrench size={13} />
-                      <span>Under scheduled facility servicing</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    {occ.status === 'MAINTENANCE' && (
+                      <div className="occupancy-maintenance-note">
+                        <Wrench size={13} />
+                        <span>Under scheduled facility servicing</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         ) : (
           <div className="occupancy-table-responsive table-responsive">
@@ -292,76 +313,100 @@ export default function BookingMonitorTab({
                 </tr>
               </thead>
               <tbody>
-                {filteredRooms.map((room) => {
-                  const occ = getRoomOccupancyStatus(room);
-                  return (
-                    <tr
-                      key={room.id}
-                      onClick={() => onInspectRoom && onInspectRoom(room)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <td className="td-strong">
-                        <div className="entity-cell">
-                          <div className="entity-cell__icon entity-cell__icon--indigo">
-                            <DoorOpen size={15} />
+                {paginatedRooms.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="td-empty">
+                      <DoorOpen size={32} className="empty-icon" />
+                      <p>No rooms found matching the selected floor filter.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedRooms.map((room) => {
+                    const occ = getRoomOccupancyStatus(room);
+                    return (
+                      <tr
+                        key={room.id}
+                        onClick={() => onInspectRoom && onInspectRoom(room)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <td className="td-strong">
+                          <div className="entity-cell">
+                            <div className="entity-cell__icon entity-cell__icon--indigo">
+                              <DoorOpen size={15} />
+                            </div>
+                            <div className="entity-cell__content">
+                              <div className="entity-cell__name">{room.name}</div>
+                              <div className="entity-cell__sub">ID: #{room.id}</div>
+                            </div>
                           </div>
-                          <div className="entity-cell__content">
-                            <div className="entity-cell__name">{room.name}</div>
-                            <div className="entity-cell__sub">ID: #{room.id}</div>
+                        </td>
+                        <td>
+                          <div className="room-floor-tag">
+                            <strong>{room.floor}</strong>
+                            <span>{room.location || 'Main Zone'}</span>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="room-floor-tag">
-                          <strong>{room.floor}</strong>
-                          <span>{room.location || 'Main Zone'}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="capacity-pill">
-                          <Users size={12} /> {room.capacity} seats
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
-                          <span className="pulse-dot" /> {occ.label}
-                        </span>
-                      </td>
-                      <td>
-                        {occ.status === 'OCCUPIED' && occ.booking ? (
-                          <div className="table-active-session">
-                            <strong>"{occ.booking.title}"</strong>
-                            <span>Booked by {occ.booking.bookerName} (until {occ.booking.endTime?.substring(11, 16)})</span>
-                          </div>
-                        ) : occ.status === 'MAINTENANCE' ? (
-                          <span className="table-session-note table-session-note--amber">
-                            <Wrench size={12} /> Facility Servicing
+                        </td>
+                        <td>
+                          <span className="capacity-pill">
+                            <Users size={12} /> {room.capacity} seats
                           </span>
-                        ) : (
-                          <span className="table-session-note table-session-note--green">
-                            <CheckCircle2 size={12} /> Available Now
+                        </td>
+                        <td>
+                          <span className={`occupancy-status-pill occupancy-status-pill--${occ.color}`}>
+                            <span className="pulse-dot" /> {occ.label}
                           </span>
-                        )}
-                      </td>
-                      <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                        <div className="td-actions__group">
-                          <button
-                            type="button"
-                            className="action-btn action-btn--inspect"
-                            onClick={() => onInspectRoom && onInspectRoom(room)}
-                            title="Inspect Room Details"
-                          >
-                            <Eye size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                        <td>
+                          {occ.status === 'OCCUPIED' && occ.booking ? (
+                            <div className="table-active-session">
+                              <strong>"{occ.booking.title}"</strong>
+                              <span>Booked by {occ.booking.bookerName} (until {occ.booking.endTime?.substring(11, 16)})</span>
+                            </div>
+                          ) : occ.status === 'MAINTENANCE' ? (
+                            <span className="table-session-note table-session-note--amber">
+                              <Wrench size={12} /> Facility Servicing
+                            </span>
+                          ) : (
+                            <span className="table-session-note table-session-note--green">
+                              <CheckCircle2 size={12} /> Available Now
+                            </span>
+                          )}
+                        </td>
+                        <td className="td-actions" onClick={(e) => e.stopPropagation()}>
+                          <div className="td-actions__group">
+                            <button
+                              type="button"
+                              className="action-btn action-btn--inspect"
+                              onClick={() => onInspectRoom && onInspectRoom(room)}
+                              title="Inspect Room Details"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
         )}
+
+        {/* Universal Pagination for Real-Time Physical Room Status */}
+        <Pagination
+          currentPage={roomPage}
+          pageSize={roomPageSize}
+          totalItems={totalRooms}
+          itemName="rooms"
+          onPageChange={setRoomPage}
+          onPageSizeChange={(newSize) => {
+            setRoomPageSize(newSize);
+            setRoomPage(1);
+          }}
+          pageSizeOptions={[3, 6, 9, 12, 24]}
+          className="occupancy-matrix-pagination"
+        />
       </div>
 
       {/* Desktop Reservation Log Table */}
@@ -557,34 +602,6 @@ export default function BookingMonitorTab({
           })
         )}
       </div>
-
-      {/* Super Admin Pagination Bar */}
-      {totalPages > 1 && (
-        <div className="superadmin-pagination">
-          <div className="pagination-info">
-            Showing Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount} total bookings)
-          </div>
-          <div className="pagination-buttons">
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Previous
-            </button>
-            <span className="page-indicator">{page}</span>
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

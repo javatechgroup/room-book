@@ -17,6 +17,7 @@ import {
   Search,
   Type,
 } from 'lucide-react';
+import Pagination from '../../common/Pagination/Pagination';
 import { formatDate } from '../../../utils/dateUtils';
 
 const HOURS = ['08', '09', '10', '11', '12', '01', '02', '03', '04', '05', '06', '07'];
@@ -43,6 +44,8 @@ export default function BookRoomTab({
   currentUser,
 }) {
   const [selectedFloor, setSelectedFloor] = useState('ALL');
+  const [resPage, setResPage] = useState(1);
+  const [resPageSize, setResPageSize] = useState(4);
   const [selectedRoomId, setSelectedRoomId] = useState(() => rooms[0]?.id || '');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
 
@@ -539,54 +542,67 @@ export default function BookRoomTab({
                 <p>You haven't reserved any meeting spaces yet. Use the booking form on the left to schedule a room.</p>
               </div>
             ) : (
-              myBookings.map((b) => {
-                const isCancelled = b.status === 'CANCELLED';
-                const startTimeDisplay = b.startTime?.substring(11, 16) || '10:00';
-                const endTimeDisplay = b.endTime?.substring(11, 16) || '11:00';
-                const dateDisplay = formatDate(b.startTime);
+              <>
+                {myBookings.slice((resPage - 1) * resPageSize, resPage * resPageSize).map((b) => {
+                  const isCancelled = b.status === 'CANCELLED';
+                  const startTimeDisplay = b.startTime?.substring(11, 16) || '10:00';
+                  const endTimeDisplay = b.endTime?.substring(11, 16) || '11:00';
+                  const dateDisplay = formatDate(b.startTime);
 
-                return (
-                  <div key={b.id} className={`my-reservation-item ${isCancelled ? 'my-reservation-item--cancelled' : ''}`}>
-                    <div className="reservation-item-top">
-                      <div className="reservation-time-pill">
-                        <Clock size={13} />
-                        <span>{startTimeDisplay} - {endTimeDisplay}</span>
+                  return (
+                    <div key={b.id} className={`my-reservation-item ${isCancelled ? 'my-reservation-item--cancelled' : ''}`}>
+                      <div className="reservation-item-top">
+                        <div className="reservation-time-pill">
+                          <Clock size={13} />
+                          <span>{startTimeDisplay} - {endTimeDisplay}</span>
+                        </div>
+                        {isCancelled ? (
+                          <span className="status-pill status-pill--inactive">
+                            Cancelled
+                          </span>
+                        ) : (
+                          <span className="status-pill status-pill--active">
+                            Confirmed
+                          </span>
+                        )}
                       </div>
-                      {isCancelled ? (
-                        <span className="status-pill status-pill--inactive">
-                          Cancelled
-                        </span>
-                      ) : (
-                        <span className="status-pill status-pill--active">
-                          Confirmed
-                        </span>
+
+                      <div className="reservation-info">
+                        <h4>{b.title}</h4>
+                        <div className="reservation-meta">
+                          <span><DoorOpen size={13} /> {b.roomName}</span>
+                          <span><Layers size={13} /> {b.floor}</span>
+                          <span><Calendar size={13} /> {dateDisplay}</span>
+                        </div>
+                      </div>
+
+                      {!isCancelled && onCancelBooking && (
+                        <div className="reservation-item-footer">
+                          <button
+                            type="button"
+                            className="btn btn--danger btn--xs"
+                            onClick={() => onCancelBooking(b)}
+                            title="Cancel this reservation and release the room"
+                          >
+                            <XCircle size={13} /> Cancel Reservation
+                          </button>
+                        </div>
                       )}
                     </div>
+                  );
+                })}
 
-                    <div className="reservation-info">
-                      <h4>{b.title}</h4>
-                      <div className="reservation-meta">
-                        <span><DoorOpen size={13} /> {b.roomName}</span>
-                        <span><Layers size={13} /> {b.floor}</span>
-                        <span><Calendar size={13} /> {dateDisplay}</span>
-                      </div>
-                    </div>
-
-                    {!isCancelled && onCancelBooking && (
-                      <div className="reservation-item-footer">
-                        <button
-                          type="button"
-                          className="btn btn--danger btn--xs"
-                          onClick={() => onCancelBooking(b)}
-                          title="Cancel this reservation and release the room"
-                        >
-                          <XCircle size={13} /> Cancel Reservation
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+                {myBookings.length > resPageSize && (
+                  <Pagination
+                    currentPage={resPage}
+                    pageSize={resPageSize}
+                    totalItems={myBookings.length}
+                    itemName="bookings"
+                    onPageChange={setResPage}
+                    showPageSizeSelector={false}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>

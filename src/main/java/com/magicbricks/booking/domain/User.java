@@ -10,7 +10,11 @@ import java.time.LocalDateTime;
         @Index(name = "idx_users_role_status_company", columnList = "role, status, company_id"),
         @Index(name = "idx_users_role_company", columnList = "role, company_id"),
         @Index(name = "idx_users_role_fullname", columnList = "role, full_name"),
-        @Index(name = "idx_users_role_email", columnList = "role, email")
+        @Index(name = "idx_users_role_email", columnList = "role, email"),
+        @Index(name = "idx_users_company_role", columnList = "company_id, role"),
+        @Index(name = "idx_users_company_dept", columnList = "company_id, department_id"),
+        @Index(name = "idx_users_department_id", columnList = "department_id"),
+        @Index(name = "idx_users_company_status", columnList = "company_id, status")
     }
 )
 public class User {

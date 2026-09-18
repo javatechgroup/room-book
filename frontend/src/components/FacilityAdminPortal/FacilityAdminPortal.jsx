@@ -765,6 +765,10 @@ export default function FacilityAdminPortal() {
               pageSize={roomPageSize}
               totalCount={totalRoomsCount || rooms.length}
               onPageChange={setRoomPage}
+              onPageSizeChange={(newSize) => {
+                setRoomPageSize(newSize);
+                setRoomPage(1);
+              }}
             />
           )}
 
@@ -792,6 +796,10 @@ export default function FacilityAdminPortal() {
               pageSize={deptPageSize}
               totalCount={totalDeptsCount || departments.length}
               onPageChange={setDeptPage}
+              onPageSizeChange={(newSize) => {
+                setDeptPageSize(newSize);
+                setDeptPage(1);
+              }}
             />
           )}
 
@@ -837,6 +845,10 @@ export default function FacilityAdminPortal() {
               pageSize={empPageSize}
               totalCount={totalEmpsCount || employees.length}
               onPageChange={setEmpPage}
+              onPageSizeChange={(newSize) => {
+                setEmpPageSize(newSize);
+                setEmpPage(1);
+              }}
             />
           )}
 
@@ -876,6 +888,10 @@ export default function FacilityAdminPortal() {
               pageSize={monitorPageSize}
               totalCount={totalBookingsCount || bookings.length}
               onPageChange={setMonitorPage}
+              onPageSizeChange={(newSize) => {
+                setMonitorPageSize(newSize);
+                setMonitorPage(1);
+              }}
             />
           )}
 

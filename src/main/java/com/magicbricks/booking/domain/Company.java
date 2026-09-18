@@ -4,7 +4,13 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "companies")
+@Table(name = "companies", indexes = {
+    @Index(name = "idx_companies_status", columnList = "status"),
+    @Index(name = "idx_companies_name", columnList = "name"),
+    @Index(name = "idx_companies_status_name", columnList = "status, name"),
+    @Index(name = "idx_companies_status_created_at", columnList = "status, created_at"),
+    @Index(name = "idx_companies_id_name", columnList = "id, name")
+})
 public class Company {
 
     @Id

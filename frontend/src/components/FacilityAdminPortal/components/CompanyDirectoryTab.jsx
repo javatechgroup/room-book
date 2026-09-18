@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
   Search,
@@ -12,6 +12,7 @@ import {
   Download,
   ChevronDown,
 } from 'lucide-react';
+import Pagination from '../../common/Pagination/Pagination';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function CompanyDirectoryTab({
@@ -23,6 +24,13 @@ export default function CompanyDirectoryTab({
 }) {
   const [search, setSearch] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('ALL');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Reset to page 1 on filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [search, selectedDepartment]);
 
   const filteredEmployees = employees.filter((emp) => {
     const q = search.toLowerCase().trim();
@@ -39,6 +47,8 @@ export default function CompanyDirectoryTab({
 
     return matchSearch && matchDept;
   });
+
+  const paginatedEmployees = filteredEmployees.slice((page - 1) * pageSize, page * pageSize);
 
   // Calculate floor distribution
   const floorStats = {};
@@ -237,7 +247,7 @@ export default function CompanyDirectoryTab({
                     </td>
                   </tr>
                 ) : (
-                  filteredEmployees.map((emp) => (
+                  paginatedEmployees.map((emp) => (
                     <tr key={emp.id}>
                       <td className="td-strong">
                         <div className="entity-cell">
@@ -286,7 +296,7 @@ export default function CompanyDirectoryTab({
               <p>No employees match your query.</p>
             </div>
           ) : (
-            filteredEmployees.map((emp) => (
+            paginatedEmployees.map((emp) => (
               <div key={emp.id} className="mobile-card">
                 <div className="mobile-card__header">
                   <div className="mobile-card__header-left">
@@ -316,6 +326,19 @@ export default function CompanyDirectoryTab({
             ))
           )}
         </div>
+
+        {/* Universal Pagination */}
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          totalItems={filteredEmployees.length}
+          itemName="staff members"
+          onPageChange={setPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setPage(1);
+          }}
+        />
       </div>
     </div>
   );

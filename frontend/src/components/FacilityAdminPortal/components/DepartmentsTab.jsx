@@ -12,6 +12,7 @@ import {
   ArrowUpDown,
   ChevronRight,
 } from 'lucide-react';
+import Pagination from '../../common/Pagination/Pagination';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function DepartmentsTab({
@@ -31,6 +32,7 @@ export default function DepartmentsTab({
   pageSize = 10,
   totalCount = 0,
   onPageChange,
+  onPageSizeChange,
 }) {
   const [localSearch, setLocalSearch] = useState(search);
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
@@ -315,33 +317,15 @@ export default function DepartmentsTab({
         )}
       </div>
 
-      {/* Super Admin Pagination Bar */}
-      {totalPages > 1 && (
-        <div className="superadmin-pagination">
-          <div className="pagination-info">
-            Showing Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount} total departments)
-          </div>
-          <div className="pagination-buttons">
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Previous
-            </button>
-            <span className="page-indicator">{page}</span>
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Universal Pagination */}
+      <Pagination
+        currentPage={page}
+        pageSize={pageSize}
+        totalItems={totalCount || departments.length}
+        itemName="departments"
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </div>
   );
 }

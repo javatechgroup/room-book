@@ -16,6 +16,7 @@ import {
   ArrowUpDown,
   ChevronDown,
 } from 'lucide-react';
+import Pagination from '../../common/Pagination/Pagination';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function EmployeesTab({
@@ -46,6 +47,7 @@ export default function EmployeesTab({
   pageSize = 10,
   totalCount = 0,
   onPageChange,
+  onPageSizeChange,
 }) {
   const [localSearch, setLocalSearch] = useState(search);
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
@@ -429,33 +431,15 @@ export default function EmployeesTab({
         )}
       </div>
 
-      {/* Super Admin Pagination Bar */}
-      {totalPages > 1 && (
-        <div className="superadmin-pagination">
-          <div className="pagination-info">
-            Showing Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount} total staff members)
-          </div>
-          <div className="pagination-buttons">
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Previous
-            </button>
-            <span className="page-indicator">{page}</span>
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Universal Pagination */}
+      <Pagination
+        currentPage={page}
+        pageSize={pageSize}
+        totalItems={totalCount || employees.length}
+        itemName="staff members"
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </div>
   );
 }

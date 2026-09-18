@@ -17,6 +17,7 @@ import {
   ArrowUpDown,
   ChevronDown,
 } from 'lucide-react';
+import Pagination from '../../common/Pagination/Pagination';
 
 export default function RoomsTab({
   rooms = [],
@@ -45,6 +46,7 @@ export default function RoomsTab({
   pageSize = 10,
   totalCount = 0,
   onPageChange,
+  onPageSizeChange,
 }) {
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'cards'
   const [localSearch, setLocalSearch] = useState(search);
@@ -371,100 +373,122 @@ export default function RoomsTab({
               </tbody>
             </table>
           </div>
+
+          {/* Universal Pagination (Table View) */}
+          <Pagination
+            currentPage={page}
+            pageSize={pageSize}
+            totalItems={totalCount || rooms.length}
+            itemName="rooms"
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
         </div>
       ) : (
         /* Floor-based Cards View */
-        <div className="facility-rooms-card-grid">
-          {rooms.map((room) => {
-            const isMaintenance = room.status === 'MAINTENANCE';
-            const floorDisplay = typeof room.floor === 'string' && room.floor.toLowerCase().includes('floor')
-              ? room.floor
-              : `Floor ${room.floor}`;
+        <div className="facility-rooms-cards-section">
+          <div className="facility-rooms-card-grid">
+            {rooms.map((room) => {
+              const isMaintenance = room.status === 'MAINTENANCE';
+              const floorDisplay = typeof room.floor === 'string' && room.floor.toLowerCase().includes('floor')
+                ? room.floor
+                : `Floor ${room.floor}`;
 
-            return (
-              <div key={room.id} className="facility-room-card" onClick={() => onInspectRoom(room)}>
-                <div className="facility-room-card__header">
-                  <div className="facility-room-card__header-top">
-                    <span className="code-pill">
-                      <Layers size={11} style={{ marginRight: '4px' }} /> {floorDisplay}
-                    </span>
-                    <span className={`status-pill ${isMaintenance ? 'status-pill--inactive' : 'status-pill--active'}`}>
-                      <span className="status-pill__dot" />
-                      {isMaintenance ? 'Maintenance' : 'Available'}
-                    </span>
-                  </div>
-                  <h4 className="facility-room-card__title" title={room.name}>{room.name}</h4>
-                </div>
-
-                <div className="facility-room-card__body">
-                  <div className="room-card-meta">
-                    <div className="room-card-meta__item">
-                      <Users size={13} className="room-card-meta__icon" />
-                      <span>Capacity: <strong>{room.capacity} People</strong></span>
+              return (
+                <div key={room.id} className="facility-room-card" onClick={() => onInspectRoom(room)}>
+                  <div className="facility-room-card__header">
+                    <div className="facility-room-card__header-top">
+                      <span className="code-pill">
+                        <Layers size={11} style={{ marginRight: '4px' }} /> {floorDisplay}
+                      </span>
+                      <span className={`status-pill ${isMaintenance ? 'status-pill--inactive' : 'status-pill--active'}`}>
+                        <span className="status-pill__dot" />
+                        {isMaintenance ? 'Maintenance' : 'Available'}
+                      </span>
                     </div>
-                    {room.location && (
-                      <div className="room-card-meta__item">
-                        <DoorOpen size={13} className="room-card-meta__icon" />
-                        <span>{room.location}</span>
-                      </div>
-                    )}
+                    <h4 className="facility-room-card__title" title={room.name}>{room.name}</h4>
                   </div>
-                  <p className="room-card-desc">
-                    {room.description || 'Standard display setup and conference seating.'}
-                  </p>
-                </div>
 
-                <div className="facility-room-card__footer" onClick={(e) => e.stopPropagation()}>
-                  <div className="facility-room-card__footer-meta">
-                    <span className="room-seats-pill">
-                      <Users size={12} />
-                      <span>{room.capacity} Seats</span>
-                    </span>
+                  <div className="facility-room-card__body">
+                    <div className="room-card-meta">
+                      <div className="room-card-meta__item">
+                        <Users size={13} className="room-card-meta__icon" />
+                        <span>Capacity: <strong>{room.capacity} People</strong></span>
+                      </div>
+                      {room.location && (
+                        <div className="room-card-meta__item">
+                          <DoorOpen size={13} className="room-card-meta__icon" />
+                          <span>{room.location}</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="room-card-desc">
+                      {room.description || 'Standard display setup and conference seating.'}
+                    </p>
                   </div>
-                  <div className="facility-room-card__actions">
-                    <button
-                      type="button"
-                      className="action-btn action-btn--inspect"
-                      onClick={() => onInspectRoom(room)}
-                      title="Inspect Room Specs"
-                      aria-label={`Inspect ${room.name}`}
-                    >
-                      <Eye size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      className="action-btn action-btn--edit"
-                      onClick={() => onOpenEditRoom(room)}
-                      title="Edit Room Details"
-                      aria-label={`Edit ${room.name}`}
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      className={`action-btn ${isMaintenance ? 'action-btn--activate' : 'action-btn--deactivate'}`}
-                      onClick={() => onToggleMaintenance(room.id)}
-                      title={isMaintenance ? 'Mark Available' : 'Set Maintenance'}
-                      aria-label={isMaintenance ? `Mark ${room.name} available` : `Set maintenance for ${room.name}`}
-                    >
-                      {isMaintenance ? <CheckCircle2 size={14} /> : <Wrench size={14} />}
-                    </button>
-                    {!isMaintenance && onBookRoom && (
+
+                  <div className="facility-room-card__footer" onClick={(e) => e.stopPropagation()}>
+                    <div className="facility-room-card__footer-meta">
+                      <span className="room-seats-pill">
+                        <Users size={12} />
+                        <span>{room.capacity} Seats</span>
+                      </span>
+                    </div>
+                    <div className="facility-room-card__actions">
                       <button
                         type="button"
-                        className="action-btn action-btn--book"
-                        onClick={() => onBookRoom(room)}
-                        title="Book Room Now"
-                        aria-label={`Book ${room.name}`}
+                        className="action-btn action-btn--inspect"
+                        onClick={() => onInspectRoom(room)}
+                        title="Inspect Room Specs"
+                        aria-label={`Inspect ${room.name}`}
                       >
-                        <CalendarPlus size={14} />
+                        <Eye size={14} />
                       </button>
-                    )}
+                      <button
+                        type="button"
+                        className="action-btn action-btn--edit"
+                        onClick={() => onOpenEditRoom(room)}
+                        title="Edit Room Details"
+                        aria-label={`Edit ${room.name}`}
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`action-btn ${isMaintenance ? 'action-btn--activate' : 'action-btn--deactivate'}`}
+                        onClick={() => onToggleMaintenance(room.id)}
+                        title={isMaintenance ? 'Mark Available' : 'Set Maintenance'}
+                        aria-label={isMaintenance ? `Mark ${room.name} available` : `Set maintenance for ${room.name}`}
+                      >
+                        {isMaintenance ? <CheckCircle2 size={14} /> : <Wrench size={14} />}
+                      </button>
+                      {!isMaintenance && onBookRoom && (
+                        <button
+                          type="button"
+                          className="action-btn action-btn--book"
+                          onClick={() => onBookRoom(room)}
+                          title="Book Room Now"
+                          aria-label={`Book ${room.name}`}
+                        >
+                          <CalendarPlus size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          {/* Universal Pagination (Cards View) */}
+          <Pagination
+            currentPage={page}
+            pageSize={pageSize}
+            totalItems={totalCount || rooms.length}
+            itemName="rooms"
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
         </div>
       )}
 
@@ -479,130 +503,113 @@ export default function RoomsTab({
             </button>
           </div>
         ) : (
-          rooms.map((room) => {
-            const isSelected = selectedRoomIds.includes(room.id);
-            const isMaintenance = room.status === 'MAINTENANCE';
-            return (
-              <div
-                key={room.id}
-                className={`mobile-card ${isSelected ? 'mobile-card--selected' : ''}`}
-                onClick={() => onInspectRoom(room)}
-              >
-                <div className="mobile-card__header">
-                  <div className="mobile-card__header-left">
-                    <input
-                      type="checkbox"
-                      className="mobile-card-checkbox"
-                      checked={isSelected}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        onToggleSelect(room.id);
-                      }}
-                      aria-label={`Select ${room.name}`}
-                    />
-                    <div className="mobile-card__title-row">
-                      <h4 className="mobile-card__title">{room.name}</h4>
-                      <span className="mobile-card__subtitle">{room.floor} • {room.location || 'General Zone'}</span>
+          <>
+            {rooms.map((room) => {
+              const isSelected = selectedRoomIds.includes(room.id);
+              const isMaintenance = room.status === 'MAINTENANCE';
+              return (
+                <div
+                  key={room.id}
+                  className={`mobile-card ${isSelected ? 'mobile-card--selected' : ''}`}
+                  onClick={() => onInspectRoom(room)}
+                >
+                  <div className="mobile-card__header">
+                    <div className="mobile-card__header-left">
+                      <input
+                        type="checkbox"
+                        className="mobile-card-checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          onToggleSelect(room.id);
+                        }}
+                        aria-label={`Select ${room.name}`}
+                      />
+                      <div className="mobile-card__title-row">
+                        <h4 className="mobile-card__title">{room.name}</h4>
+                        <span className="mobile-card__subtitle">{room.floor} • {room.location || 'General Zone'}</span>
+                      </div>
                     </div>
-                  </div>
-                  <span className={`status-pill ${isMaintenance ? 'status-pill--inactive' : 'status-pill--active'}`}>
-                    {isMaintenance ? 'Maintenance' : 'Available'}
-                  </span>
-                </div>
-
-                <div className="mobile-card__details">
-                  <div className="mobile-card__info-row">
-                    <Users size={14} className="mobile-card__icon" />
-                    <span>Capacity: <strong>{room.capacity} People</strong></span>
-                  </div>
-                  {room.description && (
-                    <div className="mobile-card__info-row">
-                      <span className="mobile-card__text">{room.description}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mobile-card__footer" onClick={(e) => e.stopPropagation()}>
-                  <div className="mobile-card__footer-left">
-                    <span className="code-pill">
-                      <Layers size={11} style={{ marginRight: '4px' }} />
-                      {room.floor}
+                    <span className={`status-pill ${isMaintenance ? 'status-pill--inactive' : 'status-pill--active'}`}>
+                      {isMaintenance ? 'Maintenance' : 'Available'}
                     </span>
                   </div>
-                  <div className="mobile-card__actions">
-                    <button
-                      type="button"
-                      className="action-btn action-btn--inspect"
-                      onClick={() => onInspectRoom(room)}
-                      title="Inspect Room Specs"
-                      aria-label={`Inspect ${room.name}`}
-                    >
-                      <Eye size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      className="action-btn action-btn--edit"
-                      onClick={() => onOpenEditRoom(room)}
-                      title="Edit Room Details"
-                      aria-label={`Edit ${room.name}`}
-                    >
-                      <Edit2 size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      className={`action-btn ${isMaintenance ? 'action-btn--activate' : 'action-btn--deactivate'}`}
-                      onClick={() => onToggleMaintenance(room.id)}
-                      title={isMaintenance ? 'Mark Available' : 'Set Maintenance'}
-                      aria-label={isMaintenance ? `Mark ${room.name} available` : `Set maintenance for ${room.name}`}
-                    >
-                      {isMaintenance ? <CheckCircle2 size={15} /> : <Wrench size={15} />}
-                    </button>
-                    {!isMaintenance && onBookRoom && (
-                      <button
-                        type="button"
-                        className="action-btn action-btn--book"
-                        onClick={() => onBookRoom(room)}
-                        title="Book Room Now"
-                        aria-label={`Book ${room.name}`}
-                      >
-                        <CalendarPlus size={15} />
-                      </button>
+
+                  <div className="mobile-card__details">
+                    <div className="mobile-card__info-row">
+                      <Users size={14} className="mobile-card__icon" />
+                      <span>Capacity: <strong>{room.capacity} People</strong></span>
+                    </div>
+                    {room.description && (
+                      <div className="mobile-card__info-row">
+                        <span className="mobile-card__text">{room.description}</span>
+                      </div>
                     )}
                   </div>
+
+                  <div className="mobile-card__footer" onClick={(e) => e.stopPropagation()}>
+                    <div className="mobile-card__footer-left">
+                      <span className="code-pill">
+                        <Layers size={11} style={{ marginRight: '4px' }} />
+                        {room.floor}
+                      </span>
+                    </div>
+                    <div className="mobile-card__actions">
+                      <button
+                        type="button"
+                        className="action-btn action-btn--inspect"
+                        onClick={() => onInspectRoom(room)}
+                        title="Inspect Room Specs"
+                        aria-label={`Inspect ${room.name}`}
+                      >
+                        <Eye size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="action-btn action-btn--edit"
+                        onClick={() => onOpenEditRoom(room)}
+                        title="Edit Room Details"
+                        aria-label={`Edit ${room.name}`}
+                      >
+                        <Edit2 size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`action-btn ${isMaintenance ? 'action-btn--activate' : 'action-btn--deactivate'}`}
+                        onClick={() => onToggleMaintenance(room.id)}
+                        title={isMaintenance ? 'Mark Available' : 'Set Maintenance'}
+                        aria-label={isMaintenance ? `Mark ${room.name} available` : `Set maintenance for ${room.name}`}
+                      >
+                        {isMaintenance ? <CheckCircle2 size={15} /> : <Wrench size={15} />}
+                      </button>
+                      {!isMaintenance && onBookRoom && (
+                        <button
+                          type="button"
+                          className="action-btn action-btn--book"
+                          onClick={() => onBookRoom(room)}
+                          title="Book Room Now"
+                          aria-label={`Book ${room.name}`}
+                        >
+                          <CalendarPlus size={15} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+
+            <Pagination
+              currentPage={page}
+              pageSize={pageSize}
+              totalItems={totalCount || rooms.length}
+              itemName="rooms"
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
+          </>
         )}
       </div>
-
-      {/* Super Admin Pagination Bar */}
-      {totalPages > 1 && (
-        <div className="superadmin-pagination">
-          <div className="pagination-info">
-            Showing Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount} total rooms)
-          </div>
-          <div className="pagination-buttons">
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Previous
-            </button>
-            <span className="page-indicator">{page}</span>
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

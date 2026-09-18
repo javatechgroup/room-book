@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building, MapPin, Users, ChevronRight } from 'lucide-react';
+import Pagination from '../../common/Pagination/Pagination';
 
 export default function CampusDirectoryTab({
-  rooms,
-  filteredDirectoryRooms,
+  rooms = [],
+  filteredDirectoryRooms = [],
   dirFloorFilter,
   onFloorFilterChange,
   dirSizeFilter,
@@ -11,6 +12,15 @@ export default function CampusDirectoryTab({
   selectedSlot,
   onSelectRoomForBooking,
 }) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+
+  useEffect(() => {
+    setPage(1);
+  }, [dirFloorFilter, dirSizeFilter]);
+
+  const paginatedRooms = filteredDirectoryRooms.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <div className="portal-card directory-panel">
       <div className="directory-toolbar">
@@ -79,7 +89,7 @@ export default function CampusDirectoryTab({
             </p>
           </div>
         ) : (
-          filteredDirectoryRooms.map((r) => {
+          paginatedRooms.map((r) => {
             const isAvail = !r.isUnderMaintenance && !r.occupiedSlots.includes(selectedSlot);
             return (
               <div className="dir-room-card" key={r.id}>
@@ -131,6 +141,20 @@ export default function CampusDirectoryTab({
           })
         )}
       </div>
+
+      {/* Universal Pagination */}
+      <Pagination
+        currentPage={page}
+        pageSize={pageSize}
+        totalItems={filteredDirectoryRooms.length}
+        itemName="rooms"
+        onPageChange={setPage}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setPage(1);
+        }}
+        pageSizeOptions={[6, 12, 24]}
+      />
     </div>
   );
 }
