@@ -54,7 +54,7 @@
 .input-with-icon .input-icon,
 .input-wrap .input-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   color: var(--text-faint);
   pointer-events: none;
   z-index: 2;
@@ -66,7 +66,7 @@
 .input-with-icon input,
 .input-wrap input {
   width: 100%;
-  padding: 12px 42px 12px 42px;
+  padding: 10px 14px 10px 36px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border-input);
   background: var(--bg-input);

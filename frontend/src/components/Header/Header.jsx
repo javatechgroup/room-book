@@ -104,10 +104,10 @@ function Header() {
           <Building2 size={26} className="header__logo-icon" />
           <div className="header__brand-text">
             <span className="header__logo-text">
-              {user?.role === 'SUPER_ADMIN' ? 'Super Admin Portal' : 'Workplace Portal'}
+              {user?.role === 'SUPER_ADMIN' ? 'Super Admin Portal' : user?.role === 'COMPANY_ADMIN' ? 'Facility Admin Portal' : 'Workplace Portal'}
             </span>
             <span className="header__logo-sub">
-              {user?.role === 'SUPER_ADMIN' ? 'Tenant & Access Management' : 'Building A • Room Manager'}
+              {user?.role === 'SUPER_ADMIN' ? 'Tenant & Access Management' : user?.role === 'COMPANY_ADMIN' ? 'Office Facilities & Multi-Floor Spaces' : 'Building A • Room Manager'}
             </span>
           </div>
         </a>
@@ -117,7 +117,7 @@ function Header() {
           <div className="header__nav-top">
             <div className="header__nav-brand">
               <Building2 size={20} className="header__logo-icon" />
-              <span>{user?.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Workplace'}</span>
+              <span>{user?.role === 'SUPER_ADMIN' ? 'Super Admin' : user?.role === 'COMPANY_ADMIN' ? 'Facility Admin' : 'Workplace'}</span>
             </div>
             <button
               type="button"

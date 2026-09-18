@@ -1,15 +1,176 @@
 .footer {
   background: var(--footer-bg);
   color: var(--footer-text);
-  padding: 48px 0 0;
+  padding: 32px 0 0;
   transition: background-color 0.3s ease;
+}
+
+/* ==========================================================================
+   Compact Dashboard Footer (Authenticated Portal State)
+   ========================================================================== */
+.footer--dashboard {
+  padding: 12px 0;
+  border-top: 1px solid var(--border-card, #e2e8f0);
+  background: var(--bg-card, #ffffff);
+  color: var(--text-muted, #64748b);
+  margin-top: auto;
+}
+
+[data-theme='dark'] .footer--dashboard {
+  background: #0b1120;
+  border-top-color: #1e293b;
+  color: #94a3b8;
+}
+
+.footer-dashboard-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.82rem;
+}
+
+.footer-dashboard-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-dashboard-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--text-heading, #0f172a);
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+[data-theme='dark'] .footer-dashboard-logo {
+  color: #f8fafc;
+}
+
+.footer-brand-icon {
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+.footer-brand-icon--sa {
+  color: #8b5cf6;
+}
+
+.footer-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .footer-role-badge {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c084fc;
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.footer-role-badge--superadmin {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+}
+
+[data-theme='dark'] .footer-role-badge--superadmin {
+  background: rgba(168, 85, 247, 0.18);
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.footer-role-badge--admin {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+[data-theme='dark'] .footer-role-badge--admin {
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.footer-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: #059669;
+  font-weight: 550;
+}
+
+[data-theme='dark'] .footer-status-indicator {
+  color: #34d399;
+}
+
+.footer-dashboard-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.footer-dash-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #4f46e5;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.footer-dash-link-btn:hover {
+  background: rgba(99, 102, 241, 0.08);
+  color: #4338ca;
+}
+
+[data-theme='dark'] .footer-dash-link-btn {
+  color: #a5b4fc;
+}
+
+[data-theme='dark'] .footer-dash-link-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  color: #c7d2fe;
+}
+
+.footer-dash-divider {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+}
+
+[data-theme='dark'] .footer-dash-divider {
+  color: #475569;
+}
+
+.footer-dash-copy {
+  color: var(--text-muted, #64748b);
+  font-size: 0.8rem;
 }
 
 .footer__top {
   display: grid;
   grid-template-columns: 1.8fr 1.1fr 1.1fr 1.3fr;
-  gap: 36px;
-  padding-bottom: 40px;
+  gap: 28px;
+  padding-bottom: 28px;
   border-bottom: 1px solid var(--footer-border);
 }
 

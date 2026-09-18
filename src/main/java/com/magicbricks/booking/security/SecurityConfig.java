@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
+                .requestMatchers("/api/facility/**").hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN", "EMPLOYEE")
                 .requestMatchers("/api/company/**").hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()

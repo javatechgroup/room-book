@@ -1,6 +1,8 @@
 package com.magicbricks.booking.repository;
 
 import com.magicbricks.booking.domain.Booking;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,7 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByCompanyId(Long companyId);
     List<Booking> findByBookerId(Long bookerId);
+    List<Booking> findByCompanyIdAndStatus(Long companyId, String status);
 
     @Query("SELECT b FROM Booking b WHERE b.room.id = :roomId AND b.status = 'CONFIRMED' " +
            "AND b.startTime < :endTime AND b.endTime > :startTime")
@@ -26,4 +29,51 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                                        @Param("bookingId") Long bookingId,
                                                        @Param("startTime") LocalDateTime startTime,
                                                        @Param("endTime") LocalDateTime endTime);
+
+    @Query(value = "SELECT b FROM Booking b LEFT JOIN FETCH b.room r LEFT JOIN FETCH b.booker u LEFT JOIN FETCH u.department d " +
+                   "WHERE b.company.id = :companyId " +
+                   "AND (:roomId IS NULL OR r.id = :roomId) " +
+                   "AND (:floor = 'ALL' OR r.floor = :floor) " +
+                   "AND (:status = 'ALL' OR b.status = :status) " +
+                   "AND (:bookerId IS NULL OR u.id = :bookerId) " +
+                   "AND (:startTimeFrom IS NULL OR b.startTime >= :startTimeFrom) " +
+                   "AND (:startTimeTo IS NULL OR b.startTime <= :startTimeTo) " +
+                   "AND (:search IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR LOWER(r.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))",
+           countQuery = "SELECT COUNT(b) FROM Booking b LEFT JOIN b.room r LEFT JOIN b.booker u " +
+                   "WHERE b.company.id = :companyId " +
+                   "AND (:roomId IS NULL OR r.id = :roomId) " +
+                   "AND (:floor = 'ALL' OR r.floor = :floor) " +
+                   "AND (:status = 'ALL' OR b.status = :status) " +
+                   "AND (:bookerId IS NULL OR u.id = :bookerId) " +
+                   "AND (:startTimeFrom IS NULL OR b.startTime >= :startTimeFrom) " +
+                   "AND (:startTimeTo IS NULL OR b.startTime <= :startTimeTo) " +
+                   "AND (:search IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR LOWER(r.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Booking> searchBookings(
+            @Param("companyId") Long companyId,
+            @Param("roomId") Long roomId,
+            @Param("floor") String floor,
+            @Param("status") String status,
+            @Param("bookerId") Long bookerId,
+            @Param("startTimeFrom") LocalDateTime startTimeFrom,
+            @Param("startTimeTo") LocalDateTime startTimeTo,
+            @Param("search") String search,
+            Pageable pageable
+    );
+
+    @Query("SELECT b FROM Booking b WHERE b.company.id = :companyId AND b.status = 'CONFIRMED' " +
+           "AND b.startTime <= :now AND b.endTime >= :now")
+    List<Booking> findCurrentlyActiveBookings(@Param("companyId") Long companyId, @Param("now") LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b WHERE b.company.id = :companyId " +
+           "AND b.startTime >= :dayStart AND b.startTime < :dayEnd")
+    List<Booking> findBookingsForDay(@Param("companyId") Long companyId,
+                                     @Param("dayStart") LocalDateTime dayStart,
+                                     @Param("dayEnd") LocalDateTime dayEnd);
+
+    long countByCompanyId(Long companyId);
+    long countByCompanyIdAndStatus(Long companyId, String status);
 }

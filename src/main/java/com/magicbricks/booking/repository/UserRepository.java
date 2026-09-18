@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByCompanyId(Long companyId);
     List<User> findByCompanyIdAndDepartmentId(Long companyId, Long departmentId);
     List<User> findByRole(Role role);
+    long countByCompanyId(Long companyId);
+    long countByDepartmentId(Long departmentId);
 
     @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.company c " +
                    "WHERE u.role = :role " +
@@ -36,6 +38,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> searchFacilityAdmins(
             @Param("role") Role role,
             @Param("companyId") Long companyId,
+            @Param("status") String status,
+            @Param("search") String search,
+            Pageable pageable
+    );
+
+    @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.company c LEFT JOIN FETCH u.department d " +
+                   "WHERE c.id = :companyId " +
+                   "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+                   "AND (:role IS NULL OR u.role = :role) " +
+                   "AND (:status = 'ALL' OR u.status = :status) " +
+                   "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR (d.name IS NOT NULL AND LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%'))))",
+           countQuery = "SELECT COUNT(u) FROM User u LEFT JOIN u.company c LEFT JOIN u.department d " +
+                   "WHERE c.id = :companyId " +
+                   "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+                   "AND (:role IS NULL OR u.role = :role) " +
+                   "AND (:status = 'ALL' OR u.status = :status) " +
+                   "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                   "     OR (d.name IS NOT NULL AND LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%'))))")
+    Page<User> searchEmployees(
+            @Param("companyId") Long companyId,
+            @Param("departmentId") Long departmentId,
+            @Param("role") Role role,
             @Param("status") String status,
             @Param("search") String search,
             Pageable pageable

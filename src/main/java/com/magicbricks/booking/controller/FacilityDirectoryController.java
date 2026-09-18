@@ -1,0 +1,49 @@
+package com.magicbricks.booking.controller;
+
+import com.magicbricks.booking.common.ApiResponse;
+import com.magicbricks.booking.dto.FacilitySummaryResponse;
+import com.magicbricks.booking.security.UserPrincipal;
+import com.magicbricks.booking.service.FacilityDirectoryService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/facility")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'EMPLOYEE')")
+public class FacilityDirectoryController {
+
+    private final FacilityDirectoryService directoryService;
+
+    public FacilityDirectoryController(FacilityDirectoryService directoryService) {
+        this.directoryService = directoryService;
+    }
+
+    private Long resolveCompanyId(UserPrincipal currentUser, Long requestedCompanyId) {
+        if (currentUser != null && currentUser.getCompanyId() != null) {
+            return currentUser.getCompanyId();
+        }
+        return requestedCompanyId != null ? requestedCompanyId : 1L;
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<ApiResponse<FacilitySummaryResponse>> getSummary(
+            @RequestParam(required = false) Long companyId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long resolvedCompanyId = resolveCompanyId(currentUser, companyId);
+        FacilitySummaryResponse response = directoryService.getFacilitySummary(resolvedCompanyId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Facility summary metrics retrieved"));
+    }
+
+    @GetMapping("/directory")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDirectory(
+            @RequestParam(required = false) Long companyId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long resolvedCompanyId = resolveCompanyId(currentUser, companyId);
+        Map<String, Object> response = directoryService.getCompanyDirectory(resolvedCompanyId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Company directory retrieved"));
+    }
+}

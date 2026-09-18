@@ -6,6 +6,7 @@ import Header from './components/Header/Header';
 import LoginGateway from './components/LoginGateway/LoginGateway';
 import WorkplacePortal from './components/WorkplacePortal/WorkplacePortal';
 import SuperAdminPortal from './components/SuperAdminPortal/SuperAdminPortal';
+import FacilityAdminPortal from './components/FacilityAdminPortal/FacilityAdminPortal';
 import WalkthroughSection from './components/WalkthroughSection/WalkthroughSection';
 import Contact from './components/Contact/Contact';
 import Footer from './components/Footer/Footer';
@@ -23,6 +24,7 @@ function AppContent() {
   }, [openLogin, openConnect]);
 
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isFacilityAdmin = user?.role === 'COMPANY_ADMIN';
 
   return (
     <div className="app">
@@ -33,6 +35,8 @@ function AppContent() {
           <main>
             {isSuperAdmin ? (
               <SuperAdminPortal />
+            ) : isFacilityAdmin ? (
+              <FacilityAdminPortal />
             ) : (
               <WorkplacePortal />
             )}
