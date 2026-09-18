@@ -76,15 +76,15 @@
   --text-link-hover: #1d4ed8;
 
   /* Segmented Control & Navigation Tabs */
-  --tab-track-bg: #f1f5f9;
-  --tab-track-border: #e2e8f0;
-  --tab-track-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
-  --tab-text-idle: #475569;
+  --tab-track-bg: #c8d4e8;
+  --tab-track-border: #a8bcd6;
+  --tab-track-shadow: 0 2px 8px rgba(15, 23, 42, 0.10), inset 0 1px 2px rgba(15, 23, 42, 0.06);
+  --tab-text-idle: #3d526e;
   --tab-text-hover: #0f172a;
-  --tab-bg-hover: rgba(255, 255, 255, 0.6);
+  --tab-bg-hover: rgba(255, 255, 255, 0.7);
   --tab-active-bg: #ffffff;
   --tab-active-text: var(--primary-700);
-  --tab-active-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --tab-active-shadow: 0 2px 8px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.06);
   --tab-badge-bg: #e2e8f0;
   --tab-badge-text: #334155;
   --tab-badge-active-bg: var(--primary-600);
@@ -191,9 +191,9 @@
   --text-link-hover: #bfdbfe;
 
   /* Segmented Control & Navigation Tabs (Dark) */
-  --tab-track-bg: #141d2e;
-  --tab-track-border: #25334d;
-  --tab-track-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  --tab-track-bg: #0a1020;
+  --tab-track-border: #1e2d47;
+  --tab-track-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 3px rgba(0, 0, 0, 0.5);
   --tab-text-idle: #94a3b8;
   --tab-text-hover: #f8fafc;
   --tab-bg-hover: rgba(255, 255, 255, 0.06);
