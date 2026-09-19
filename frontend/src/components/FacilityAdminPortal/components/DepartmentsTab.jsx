@@ -11,6 +11,7 @@ import {
   ArrowDown,
   ArrowUpDown,
   ChevronRight,
+  Eye,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import { formatDate } from '../../../utils/dateUtils';
@@ -28,6 +29,7 @@ export default function DepartmentsTab({
   onOpenEditDepartment,
   onToggleStatus,
   onViewDepartmentEmployees,
+  onInspectDepartment,
   page = 1,
   pageSize = 10,
   totalCount = 0,
@@ -165,7 +167,11 @@ export default function DepartmentsTab({
                   const isActive = dept.status === 'ACTIVE';
 
                   return (
-                    <tr key={dept.id}>
+                    <tr
+                      key={dept.id}
+                      onClick={() => onInspectDepartment && onInspectDepartment(dept)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <td className="td-strong">
                         <div className="entity-cell">
                           <div className="entity-cell__icon entity-cell__icon--purple">
@@ -177,7 +183,7 @@ export default function DepartmentsTab({
                           </div>
                         </div>
                       </td>
-                      <td>
+                      <td onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className="admin-count-pill"
@@ -189,7 +195,7 @@ export default function DepartmentsTab({
                           <ChevronRight size={12} />
                         </button>
                       </td>
-                      <td>
+                      <td onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className={`status-badge-btn ${isActive ? 'status-badge-btn--active' : 'status-badge-btn--inactive'}`}
@@ -203,8 +209,17 @@ export default function DepartmentsTab({
                       <td>
                         <span className="table-date">{formatDate(dept.createdAt)}</span>
                       </td>
-                      <td className="td-actions">
+                      <td className="td-actions" onClick={(e) => e.stopPropagation()}>
                         <div className="td-actions__group">
+                          <button
+                            type="button"
+                            className="action-btn action-btn--inspect"
+                            onClick={() => onInspectDepartment && onInspectDepartment(dept)}
+                            title="Inspect Department Profile"
+                            aria-label={`Inspect ${dept.name}`}
+                          >
+                            <Eye size={14} />
+                          </button>
                           <button
                             type="button"
                             className="action-btn action-btn--edit"
@@ -248,7 +263,12 @@ export default function DepartmentsTab({
           departments.map((dept) => {
             const isActive = dept.status === 'ACTIVE';
             return (
-              <div key={dept.id} className="mobile-card">
+              <div
+                key={dept.id}
+                className="mobile-card"
+                onClick={() => onInspectDepartment && onInspectDepartment(dept)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="mobile-card__header">
                   <div className="mobile-card__header-left">
                     <div className="mobile-card__title-row">
@@ -262,7 +282,7 @@ export default function DepartmentsTab({
                 </div>
 
                 <div className="mobile-card__details">
-                  <div className="mobile-card__info-row">
+                  <div className="mobile-card__info-row" onClick={(e) => e.stopPropagation()}>
                     <Users size={14} className="mobile-card__icon" />
                     <button
                       type="button"
@@ -291,6 +311,15 @@ export default function DepartmentsTab({
                     </button>
                   </div>
                   <div className="mobile-card__actions">
+                    <button
+                      type="button"
+                      className="action-btn action-btn--inspect"
+                      onClick={() => onInspectDepartment && onInspectDepartment(dept)}
+                      title="Inspect Department"
+                      aria-label={`Inspect ${dept.name}`}
+                    >
+                      <Eye size={15} />
+                    </button>
                     <button
                       type="button"
                       className="action-btn action-btn--edit"

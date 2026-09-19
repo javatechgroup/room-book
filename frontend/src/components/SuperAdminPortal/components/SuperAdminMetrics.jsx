@@ -1,7 +1,7 @@
 import React from 'react';
 import { Building2, Users } from 'lucide-react';
 
-export default function SuperAdminMetrics({ companies = [], admins = [] }) {
+export default function SuperAdminMetrics({ companies = [], admins = [], activeTab, onSelectMetric }) {
   const activeCompaniesCount = companies.filter((c) => c.status === 'ACTIVE').length;
   const activeAdminsCount = admins.filter((a) => a.status === 'ACTIVE').length;
   const uniqueCoveredCompanies = new Set(admins.map((a) => a.companyId)).size;
@@ -11,7 +11,19 @@ export default function SuperAdminMetrics({ companies = [], admins = [] }) {
   return (
     <div className="superadmin-metrics-grid">
       {/* Metric 1: Tenant Companies */}
-      <div className="metric-card">
+      <div
+        className={`metric-card ${activeTab === 'companies' ? 'metric-card--active' : ''}`}
+        onClick={() => onSelectMetric && onSelectMetric('companies')}
+        style={{ cursor: onSelectMetric ? 'pointer' : 'default' }}
+        role={onSelectMetric ? 'button' : undefined}
+        tabIndex={onSelectMetric ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (onSelectMetric && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            onSelectMetric('companies');
+          }
+        }}
+      >
         <div className="metric-card__icon metric-card__icon--blue">
           <Building2 size={26} />
         </div>
@@ -28,7 +40,19 @@ export default function SuperAdminMetrics({ companies = [], admins = [] }) {
       </div>
 
       {/* Metric 2: Facility Administrators */}
-      <div className="metric-card">
+      <div
+        className={`metric-card ${activeTab === 'admins' ? 'metric-card--active' : ''}`}
+        onClick={() => onSelectMetric && onSelectMetric('admins')}
+        style={{ cursor: onSelectMetric ? 'pointer' : 'default' }}
+        role={onSelectMetric ? 'button' : undefined}
+        tabIndex={onSelectMetric ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (onSelectMetric && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            onSelectMetric('admins');
+          }
+        }}
+      >
         <div className="metric-card__icon metric-card__icon--purple">
           <Users size={26} />
         </div>

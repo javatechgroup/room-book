@@ -60,7 +60,7 @@ export default function BookingInspectorDrawer({
         <div className="inspector-drawer__body">
           <div className="inspector-hero">
             <div className="inspector-hero__avatar inspector-hero__avatar--booking">
-              <CalendarCheck2 size={30} />
+              <CalendarCheck2 size={22} />
             </div>
             <div className="inspector-hero__info">
               <h2>{booking.title}</h2>
@@ -88,7 +88,7 @@ export default function BookingInspectorDrawer({
                 className="btn btn--danger btn--sm"
                 onClick={() => onCancelBooking(booking)}
               >
-                <XCircle size={14} /> Cancel & Free Room
+                <XCircle size={14} /> Cancel Reservation
               </button>
             </div>
           )}

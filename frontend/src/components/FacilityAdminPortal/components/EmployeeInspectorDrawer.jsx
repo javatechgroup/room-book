@@ -39,7 +39,7 @@ export default function EmployeeInspectorDrawer({
         <div className="inspector-drawer__body">
           <div className="inspector-hero">
             <div className="inspector-hero__avatar inspector-hero__avatar--user">
-              <User size={30} />
+              <User size={22} />
             </div>
             <div className="inspector-hero__info">
               <h2>{employee.fullName}</h2>
@@ -75,11 +75,11 @@ export default function EmployeeInspectorDrawer({
             >
               {isActive ? (
                 <>
-                  <XCircle size={14} /> Suspend Account
+                  <XCircle size={14} /> Suspend Staff
                 </>
               ) : (
                 <>
-                  <CheckCircle2 size={14} /> Activate Account
+                  <CheckCircle2 size={14} /> Activate Staff
                 </>
               )}
             </button>

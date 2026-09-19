@@ -43,4 +43,5 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     long countByCompanyId(Long companyId);
     long countByCompanyIdAndStatus(Long companyId, String status);
+    long countByCompanyIdAndFloor(Long companyId, String floor);
 }

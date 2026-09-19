@@ -17,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.magicbricks.booking.domain.Floor;
+import com.magicbricks.booking.repository.FloorRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,13 +27,16 @@ import java.util.stream.Collectors;
 public class FacilityRoomService {
 
     private final RoomRepository roomRepository;
+    private final FloorRepository floorRepository;
     private final CompanyRepository companyRepository;
     private final AuditLogRepository auditLogRepository;
 
     public FacilityRoomService(RoomRepository roomRepository,
+                               FloorRepository floorRepository,
                                CompanyRepository companyRepository,
                                AuditLogRepository auditLogRepository) {
         this.roomRepository = roomRepository;
+        this.floorRepository = floorRepository;
         this.companyRepository = companyRepository;
         this.auditLogRepository = auditLogRepository;
     }
@@ -173,6 +178,12 @@ public class FacilityRoomService {
 
     @Transactional(readOnly = true)
     public List<String> getDistinctFloors(Long companyId) {
+        List<String> dynamicFloors = floorRepository.findByCompanyIdAndStatus(companyId, "ACTIVE").stream()
+                .map(Floor::getName)
+                .collect(Collectors.toList());
+        if (!dynamicFloors.isEmpty()) {
+            return dynamicFloors;
+        }
         return roomRepository.findDistinctFloorsByCompanyId(companyId);
     }
 

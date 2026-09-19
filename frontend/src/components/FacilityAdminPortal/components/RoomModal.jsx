@@ -1,8 +1,6 @@
 import React from 'react';
 import { X, DoorOpen, Layers, Users, MapPin, AlignLeft, CheckCircle2, Wrench } from 'lucide-react';
 
-const DEFAULT_FLOORS = ['Ground Floor', 'Floor 1', 'Floor 2', 'Floor 3', 'Floor 4', 'Floor 5', 'Executive Floor', 'Basement Level'];
-
 export default function RoomModal({
   isOpen,
   onClose,
@@ -10,12 +8,23 @@ export default function RoomModal({
   form,
   onChange,
   onSubmit,
-  floors = DEFAULT_FLOORS,
+  floors = [],
+  onNavigateToFloors,
 }) {
   if (!isOpen) return null;
 
   const isEdit = Boolean(editingRoom);
-  const floorOptions = Array.from(new Set([...floors, ...DEFAULT_FLOORS]));
+  // Normalize floors (handles array of objects or strings)
+  const normalizedFloors = Array.from(
+    new Set(
+      floors.map((f) => (typeof f === 'string' ? f : f.name)).filter(Boolean)
+    )
+  );
+
+  // If editing an existing room that has a floor not in the list, keep it visible
+  if (form.floor && !normalizedFloors.includes(form.floor)) {
+    normalizedFloors.push(form.floor);
+  }
 
   return (
     <div className="superadmin-modal-overlay" onClick={onClose}>
@@ -56,16 +65,23 @@ export default function RoomModal({
                 <Layers size={16} className="input-icon" />
                 <select
                   id="room-floor"
-                  value={form.floor}
+                  value={form.floor || ''}
                   onChange={(e) => onChange({ ...form, floor: e.target.value })}
                   required
                 >
-                  <option value="" disabled>Select Office Floor</option>
-                  {floorOptions.map((fl) => (
+                  <option value="" disabled>
+                    {normalizedFloors.length > 0 ? 'Select Office Floor' : 'No floors created yet'}
+                  </option>
+                  {normalizedFloors.map((fl) => (
                     <option key={fl} value={fl}>{fl}</option>
                   ))}
                 </select>
               </div>
+              {normalizedFloors.length === 0 && onNavigateToFloors && (
+                <small style={{ color: 'var(--color-primary)', marginTop: '4px', display: 'block', cursor: 'pointer' }} onClick={onNavigateToFloors}>
+                  + Create a floor first in Floors tab
+                </small>
+              )}
             </div>
 
             <div className="form-group">

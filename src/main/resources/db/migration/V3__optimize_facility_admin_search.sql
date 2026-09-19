@@ -1,4 +1,4 @@
-﻿-- Migration V3: Add Composite Performance Indexes for Facility Admin Search & Filtering
+-- Migration V3: Add Composite Performance Indexes for Facility Admin Search & Filtering
 -- Optimizes queries filtering by role, status, company_id, fullName, and email
 
 -- 1. Composite indexes for users filtering

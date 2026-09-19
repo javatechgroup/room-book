@@ -8,6 +8,7 @@ public class FacilitySummaryResponse {
     private long availableRooms;
     private long maintenanceRooms;
     private long occupiedRoomsNow;
+    private long totalFloors;
     private long totalDepartments;
     private long totalEmployees;
     private long todayBookingsCount;
@@ -16,6 +17,9 @@ public class FacilitySummaryResponse {
     private Map<String, Long> departmentHeadcount;
 
     public FacilitySummaryResponse() {}
+
+    public long getTotalFloors() { return totalFloors; }
+    public void setTotalFloors(long totalFloors) { this.totalFloors = totalFloors; }
 
     public long getTotalRooms() { return totalRooms; }
     public void setTotalRooms(long totalRooms) { this.totalRooms = totalRooms; }

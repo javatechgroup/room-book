@@ -5,13 +5,25 @@ import {
   INITIAL_EMPLOYEES,
   INITIAL_BOOKINGS,
   INITIAL_FACILITY_SUMMARY,
+  INITIAL_FACILITY_FLOORS,
 } from '../components/FacilityAdminPortal/data/facilityAdminData';
+
+// Helper: read the stored user session from localStorage
+const getStoredUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('meetspace_user') || 'null');
+  } catch {
+    return null;
+  }
+};
 
 // Fallback in-memory state for offline/demo mode
 let localRooms = [...INITIAL_FACILITY_ROOMS];
 let localDepartments = [...INITIAL_DEPARTMENTS];
 let localEmployees = [...INITIAL_EMPLOYEES];
 let localBookings = [...INITIAL_BOOKINGS];
+let localFloors = INITIAL_FACILITY_FLOORS.map((f) => ({ ...f }));
+
 
 export const facilityApi = {
   // ════════════════════ ROOMS ════════════════════
@@ -64,7 +76,7 @@ export const facilityApi = {
       console.warn('Backend /facility/rooms/floors unreachable, fallback:', e.message);
     }
     const floors = Array.from(new Set(localRooms.map((r) => r.floor).filter(Boolean))).sort();
-    return { success: true, data: floors.length > 0 ? floors : ['Ground Floor', 'Floor 1', 'Floor 2', 'Floor 3', 'Floor 4'] };
+    return { success: true, data: floors.length > 0 ? floors : localFloors.map((f) => f.name) };
   },
 
   async createRoom(roomData) {
@@ -79,10 +91,10 @@ export const facilityApi = {
     }
     const newRoom = {
       id: Date.now(),
-      companyId: 1,
+      companyId: getStoredUser()?.companyId || null,
       name: roomData.name,
       floor: roomData.floor,
-      location: roomData.location || 'Main Wing',
+      location: roomData.location || '',
       capacity: Number(roomData.capacity) || 4,
       description: roomData.description || '',
       status: roomData.status || 'AVAILABLE',
@@ -203,7 +215,7 @@ export const facilityApi = {
     }
     const newDept = {
       id: Date.now(),
-      companyId: 1,
+      companyId: getStoredUser()?.companyId || null,
       name: deptData.name,
       status: deptData.status || 'ACTIVE',
       employeeCount: 0,
@@ -303,9 +315,9 @@ export const facilityApi = {
     const dept = localDepartments.find((d) => d.id === Number(empData.departmentId));
     const newEmp = {
       id: Date.now(),
-      companyId: 1,
+      companyId: getStoredUser()?.companyId || null,
       departmentId: Number(empData.departmentId),
-      departmentName: dept ? dept.name : 'Admin',
+      departmentName: dept ? dept.name : '',
       fullName: empData.fullName,
       email: empData.email,
       role: empData.role || 'EMPLOYEE',
@@ -440,7 +452,9 @@ export const facilityApi = {
     } catch (e) {
       console.warn('Backend /facility/bookings/my-bookings fallback:', e.message);
     }
-    return { success: true, data: localBookings.filter((b) => b.bookerEmail === 'admin@acme.com') };
+    const user = getStoredUser();
+    const email = user?.email || '';
+    return { success: true, data: email ? localBookings.filter((b) => b.bookerEmail === email) : [] };
   },
 
   async getOccupancyForDay(dateStr) {
@@ -474,17 +488,18 @@ export const facilityApi = {
     }
 
     const room = localRooms.find((r) => r.id === Number(bookingData.roomId));
+    const user = getStoredUser();
     const newBooking = {
       id: Date.now(),
-      companyId: 1,
+      companyId: user?.companyId || null,
       roomId: Number(bookingData.roomId),
       roomName: room ? room.name : 'Meeting Room',
-      floor: room ? room.floor : 'Floor 2',
-      location: room ? room.location : 'Main Wing',
-      bookerId: 2,
-      bookerName: 'Acme Admin',
-      bookerEmail: 'admin@acme.com',
-      departmentName: bookingData.department || 'Admin',
+      floor: room ? room.floor : '',
+      location: room ? room.location : '',
+      bookerId: user?.id || null,
+      bookerName: user?.fullName || user?.name || '',
+      bookerEmail: user?.email || '',
+      departmentName: bookingData.department || '',
       title: bookingData.title,
       description: bookingData.description || '',
       startTime: bookingData.startTime,
@@ -591,5 +606,156 @@ export const facilityApi = {
         departmentGroups: grouped,
       },
     };
+  },
+
+  // ════════════════════ FLOORS ════════════════════
+  async getFloorsList(params = {}) {
+    try {
+      const response = await apiClient.get('/facility/floors', { params });
+      if (response.data && response.data.data) {
+        return {
+          success: true,
+          data: response.data.data.content || [],
+          totalElements: response.data.data.totalElements || 0,
+          totalPages: response.data.data.totalPages || 1,
+        };
+      }
+    } catch (e) {
+      console.warn('Backend /facility/floors unreachable, fallback to local store:', e.message);
+    }
+    let list = [...localFloors];
+    if (params.status && params.status !== 'ALL') {
+      list = list.filter((f) => f.status === params.status);
+    }
+    if (params.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          (f.description && f.description.toLowerCase().includes(q))
+      );
+    }
+    return {
+      success: true,
+      data: list,
+      totalElements: list.length,
+      totalPages: 1,
+    };
+  },
+
+  async getAllFloors(companyId) {
+    try {
+      const response = await apiClient.get('/facility/floors/all', {
+        params: companyId ? { companyId } : undefined,
+      });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      console.warn('Backend /facility/floors/all fallback:', e.message);
+    }
+    return { success: true, data: localFloors.filter((f) => f.status === 'ACTIVE') };
+  },
+
+  async getFloorById(id, companyId) {
+    try {
+      const response = await apiClient.get(`/facility/floors/${id}`, {
+        params: companyId ? { companyId } : undefined,
+      });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      console.warn(`Backend /facility/floors/${id} fallback:`, e.message);
+    }
+    const floor = localFloors.find((f) => f.id === Number(id));
+    return { success: Boolean(floor), data: floor };
+  },
+
+  async createFloor(floorData, companyId) {
+    try {
+      const payload = { ...floorData };
+      if (companyId) payload.companyId = companyId;
+      const response = await apiClient.post('/facility/floors', payload);
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      const errMsg = e.response?.data?.message || e.message;
+      return { success: false, error: errMsg };
+    }
+    const newFloor = {
+      id: Date.now(),
+      companyId: companyId || getStoredUser()?.companyId || null,
+      name: floorData.name,
+      floorNumber: floorData.floorNumber != null ? Number(floorData.floorNumber) : 0,
+      description: floorData.description || '',
+      status: floorData.status || 'ACTIVE',
+      roomCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    localFloors.push(newFloor);
+    return { success: true, data: newFloor };
+  },
+
+  async updateFloor(id, floorData, companyId) {
+    try {
+      const payload = { ...floorData };
+      if (companyId) payload.companyId = companyId;
+      const response = await apiClient.put(`/facility/floors/${id}`, payload);
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      const errMsg = e.response?.data?.message || e.message;
+      return { success: false, error: errMsg };
+    }
+    const idx = localFloors.findIndex((f) => f.id === Number(id));
+    if (idx !== -1) {
+      localFloors[idx] = {
+        ...localFloors[idx],
+        ...floorData,
+        updatedAt: new Date().toISOString(),
+      };
+      return { success: true, data: localFloors[idx] };
+    }
+    return { success: false, error: 'Floor not found' };
+  },
+
+  async toggleFloorStatus(id, companyId) {
+    try {
+      const response = await apiClient.patch(`/facility/floors/${id}/status`, null, {
+        params: companyId ? { companyId } : undefined,
+      });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      const errMsg = e.response?.data?.message || e.message;
+      return { success: false, error: errMsg };
+    }
+    const floor = localFloors.find((f) => f.id === Number(id));
+    if (floor) {
+      floor.status = floor.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      return { success: true, data: floor };
+    }
+    return { success: false, error: 'Floor not found' };
+  },
+
+  async deleteFloor(id, companyId) {
+    try {
+      const response = await apiClient.delete(`/facility/floors/${id}`, {
+        params: companyId ? { companyId } : undefined,
+      });
+      if (response.data) {
+        return { success: true };
+      }
+    } catch (e) {
+      const errMsg = e.response?.data?.message || e.message;
+      return { success: false, error: errMsg };
+    }
+    localFloors = localFloors.filter((f) => f.id !== Number(id));
+    return { success: true };
   },
 };

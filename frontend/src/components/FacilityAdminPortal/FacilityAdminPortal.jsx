@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
@@ -15,6 +15,10 @@ import FacilityAdminTabs from './components/FacilityAdminTabs';
 import RoomsTab from './components/RoomsTab';
 import RoomModal from './components/RoomModal';
 import RoomInspectorDrawer from './components/RoomInspectorDrawer';
+import FloorInspectorDrawer from './components/FloorInspectorDrawer';
+import DepartmentInspectorDrawer from './components/DepartmentInspectorDrawer';
+import FloorsTab from './components/FloorsTab';
+import FloorModal from './components/FloorModal';
 import DepartmentsTab from './components/DepartmentsTab';
 import DepartmentModal from './components/DepartmentModal';
 import EmployeesTab from './components/EmployeesTab';
@@ -35,13 +39,30 @@ export default function FacilityAdminPortal() {
 
   // Navigation Tab State
   const [activeTab, setActiveTab] = useState('rooms'); // 'rooms' | 'departments' | 'employees' | 'book-room' | 'monitor' | 'directory'
+  const panelRef = useRef(null);
+
+  const scrollToDataPanelOnMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 900) {
+      setTimeout(() => {
+        if (panelRef.current) {
+          const headerOffset = 75;
+          const elPosition = panelRef.current.getBoundingClientRect().top;
+          const offsetPosition = elPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: 'smooth',
+          });
+        }
+      }, 60);
+    }
+  };
 
   // Summary Metrics State
   const [summary, setSummary] = useState(INITIAL_FACILITY_SUMMARY);
 
   // ════════════════════ PRIMARY DATA STATES ════════════════════
   const [rooms, setRooms] = useState(INITIAL_FACILITY_ROOMS);
-  const [floors, setFloors] = useState(['Ground Floor', 'Floor 1', 'Floor 2', 'Floor 3', 'Floor 4']);
+  const [floors, setFloors] = useState([]);
   const [departments, setDepartments] = useState(INITIAL_DEPARTMENTS);
   const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
   const [bookings, setBookings] = useState(INITIAL_BOOKINGS);
@@ -58,6 +79,14 @@ export default function FacilityAdminPortal() {
   const [roomPageSize, setRoomPageSize] = useState(10);
   const [totalRoomsCount, setTotalRoomsCount] = useState(0);
   const [selectedRoomIds, setSelectedRoomIds] = useState([]);
+
+  // Floors Tab
+  const [floorsList, setFloorsList] = useState([]);
+  const [floorSearch, setFloorSearch] = useState('');
+  const [floorStatusFilter, setFloorStatusFilter] = useState('ALL');
+  const [floorPage, setFloorPage] = useState(1);
+  const [floorPageSize, setFloorPageSize] = useState(10);
+  const [totalFloorsCount, setTotalFloorsCount] = useState(0);
 
   // 2. Departments Tab
   const [deptSearch, setDeptSearch] = useState('');
@@ -90,8 +119,18 @@ export default function FacilityAdminPortal() {
 
   // ════════════════════ DRAWERS & MODALS ════════════════════
   const [drawerRoom, setDrawerRoom] = useState(null);
+  const [drawerFloor, setDrawerFloor] = useState(null);
+  const [drawerDepartment, setDrawerDepartment] = useState(null);
   const [drawerEmployee, setDrawerEmployee] = useState(null);
   const [drawerBooking, setDrawerBooking] = useState(null);
+
+  const closeAllDrawers = () => {
+    setDrawerRoom(null);
+    setDrawerFloor(null);
+    setDrawerDepartment(null);
+    setDrawerEmployee(null);
+    setDrawerBooking(null);
+  };
 
   // Room Modal
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
@@ -104,6 +143,17 @@ export default function FacilityAdminPortal() {
     description: '',
     status: 'AVAILABLE',
   });
+
+  // Floor Modal
+  const [isFloorModalOpen, setIsFloorModalOpen] = useState(false);
+  const [editingFloor, setEditingFloor] = useState(null);
+  const [floorForm, setFloorForm] = useState({
+    name: '',
+    floorNumber: '',
+    description: '',
+    status: 'ACTIVE',
+  });
+  const [floorModalError, setFloorModalError] = useState('');
 
   // Department Modal
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
@@ -139,6 +189,9 @@ export default function FacilityAdminPortal() {
     const res = await facilityApi.getFacilitySummary();
     if (res.success && res.data) {
       setSummary(res.data);
+      if (typeof res.data.totalFloors === 'number') {
+        setTotalFloorsCount(res.data.totalFloors);
+      }
     }
   }, []);
 
@@ -159,11 +212,31 @@ export default function FacilityAdminPortal() {
   }, [roomPage, roomPageSize, roomSearch, roomFloorFilter, roomStatusFilter, roomSort]);
 
   const fetchFloors = useCallback(async () => {
-    const res = await facilityApi.getFloors();
+    const res = await facilityApi.getAllFloors();
     if (res.success && Array.isArray(res.data)) {
-      setFloors(res.data);
+      setFloors(res.data.map((f) => (typeof f === 'string' ? f : f.name)));
+      setTotalFloorsCount((prev) => (prev > 0 ? prev : res.data.length));
+    } else {
+      const fallbackRes = await facilityApi.getFloors();
+      if (fallbackRes.success && Array.isArray(fallbackRes.data)) {
+        setFloors(fallbackRes.data);
+        setTotalFloorsCount((prev) => (prev > 0 ? prev : fallbackRes.data.length));
+      }
     }
   }, []);
+
+  const fetchFloorsList = useCallback(async (overrides = {}) => {
+    const page = overrides.page !== undefined ? overrides.page : floorPage;
+    const size = overrides.size !== undefined ? overrides.size : floorPageSize;
+    const search = overrides.search !== undefined ? overrides.search : floorSearch;
+    const status = overrides.status !== undefined ? overrides.status : floorStatusFilter;
+
+    const res = await facilityApi.getFloorsList({ page, size, search, status });
+    if (res.success && Array.isArray(res.data)) {
+      setFloorsList(res.data);
+      if (typeof res.totalElements === 'number') setTotalFloorsCount(res.totalElements);
+    }
+  }, [floorPage, floorPageSize, floorSearch, floorStatusFilter]);
 
   const fetchDepartments = useCallback(async (overrides = {}) => {
     const page = overrides.page !== undefined ? overrides.page : deptPage;
@@ -234,25 +307,31 @@ export default function FacilityAdminPortal() {
       fetchSummary(),
       fetchRooms(),
       fetchFloors(),
+      fetchFloorsList(),
       fetchDepartments(),
       fetchEmployees(),
       fetchBookings(),
       fetchMyBookings(),
       fetchDirectory(),
     ]);
-  }, [fetchSummary, fetchRooms, fetchFloors, fetchDepartments, fetchEmployees, fetchBookings, fetchMyBookings, fetchDirectory]);
+  }, [fetchSummary, fetchRooms, fetchFloors, fetchFloorsList, fetchDepartments, fetchEmployees, fetchBookings, fetchMyBookings, fetchDirectory]);
 
-  // Initial mount load: only load core metadata (Summary, Floors, and My Bookings count)
+  // Initial mount load: load core metadata (Summary, Floors, Floors List, and My Bookings count)
   useEffect(() => {
     fetchSummary();
     fetchFloors();
+    fetchFloorsList();
     fetchMyBookings();
-  }, [fetchSummary, fetchFloors, fetchMyBookings]);
+  }, [fetchSummary, fetchFloors, fetchFloorsList, fetchMyBookings]);
 
   // On-demand reactive loaders per active tab
   useEffect(() => {
     if (activeTab === 'rooms') fetchRooms();
   }, [activeTab, roomPage, roomPageSize, roomSearch, roomFloorFilter, roomStatusFilter, roomSort, fetchRooms]);
+
+  useEffect(() => {
+    if (activeTab === 'floors') fetchFloorsList();
+  }, [activeTab, floorPage, floorPageSize, floorSearch, floorStatusFilter, fetchFloorsList]);
 
   useEffect(() => {
     if (activeTab === 'departments') fetchDepartments();
@@ -294,7 +373,7 @@ export default function FacilityAdminPortal() {
 
   // ════════════════════ ROOM ACTIONS ════════════════════
   const handleOpenCreateRoom = () => {
-    setDrawerRoom(null);
+    closeAllDrawers();
     setEditingRoom(null);
     setRoomForm({
       name: '',
@@ -308,7 +387,7 @@ export default function FacilityAdminPortal() {
   };
 
   const handleOpenEditRoom = (r) => {
-    setDrawerRoom(null);
+    closeAllDrawers();
     setEditingRoom(r);
     setRoomForm({
       name: r.name,
@@ -357,20 +436,21 @@ export default function FacilityAdminPortal() {
     const targetRoom = rooms.find((r) => r.id === roomId);
     if (!targetRoom) return;
 
-    const nextState = targetRoom.status === 'MAINTENANCE' ? 'AVAILABLE' : 'MAINTENANCE';
+    const isToMaintenance = targetRoom.status !== 'MAINTENANCE';
+    const nextState = isToMaintenance ? 'MAINTENANCE' : 'AVAILABLE';
 
-    if (targetRoom.status === 'AVAILABLE') {
-      const ok = await confirm({
-        title: 'Set Room to Maintenance?',
-        subtitle: 'Facility Hardware & Space Servicing',
-        message: `Are you sure you want to put "${targetRoom.name}" under maintenance? New bookings will be locked until maintenance is cleared.`,
-        targetName: targetRoom.name,
-        targetSub: `${targetRoom.floor} • Capacity: ${targetRoom.capacity} seats`,
-        confirmText: 'Set Maintenance Mode',
-        type: 'warning',
-      });
-      if (!ok) return;
-    }
+    const ok = await confirm({
+      title: isToMaintenance ? 'Set Room to Maintenance?' : 'Make Room Available?',
+      subtitle: 'Facility Hardware & Space Servicing',
+      message: isToMaintenance
+        ? `Are you sure you want to put "${targetRoom.name}" under maintenance? New bookings will be locked until maintenance is cleared.`
+        : `Are you sure you want to activate "${targetRoom.name}" and make it available for bookings?`,
+      targetName: targetRoom.name,
+      targetSub: `${targetRoom.floor} • Capacity: ${targetRoom.capacity} seats`,
+      confirmText: isToMaintenance ? 'Set Maintenance Mode' : 'Make Available',
+      type: isToMaintenance ? 'warning' : 'primary',
+    });
+    if (!ok) return;
 
     const res = await facilityApi.toggleRoomMaintenance(roomId);
     if (res.success) {
@@ -387,6 +467,16 @@ export default function FacilityAdminPortal() {
 
   const handleBulkActivateRooms = async () => {
     if (selectedRoomIds.length === 0) return;
+    const ok = await confirm({
+      title: 'Make Selected Rooms Available?',
+      subtitle: 'Facility Space Management',
+      message: `Are you sure you want to activate ${selectedRoomIds.length} meeting spaces and make them available for bookings?`,
+      targetName: `${selectedRoomIds.length} Rooms Selected`,
+      confirmText: 'Activate Rooms',
+      type: 'primary',
+    });
+    if (!ok) return;
+
     await facilityApi.bulkUpdateRoomStatus(selectedRoomIds, 'AVAILABLE');
     showToast('Bulk Action Complete', `Activated ${selectedRoomIds.length} meeting spaces.`);
     setSelectedRoomIds([]);
@@ -440,11 +530,120 @@ export default function FacilityAdminPortal() {
     showToast('Export Successful', `Exported ${targetList.length} rooms to CSV.`);
   };
 
-  // ════════════════════ DEPARTMENT ACTIONS ════════════════════
+  // ════════════════════ FLOORS CRUD ════════════════════
+  const handleOpenCreateFloor = () => {
+    closeAllDrawers();
+    setEditingFloor(null);
+    setFloorModalError('');
+    setFloorForm({ name: '', floorNumber: '', description: '', status: 'ACTIVE' });
+    setIsFloorModalOpen(true);
+  };
+
+  const handleOpenEditFloor = (floor) => {
+    closeAllDrawers();
+    setEditingFloor(floor);
+    setFloorModalError('');
+    setFloorForm({
+      name: floor.name || '',
+      floorNumber: floor.floorNumber !== null && floor.floorNumber !== undefined ? floor.floorNumber : '',
+      description: floor.description || '',
+      status: floor.status || 'ACTIVE',
+    });
+    setIsFloorModalOpen(true);
+  };
+
+  const handleSaveFloor = async (e) => {
+    e.preventDefault();
+    setFloorModalError('');
+    if (!floorForm.name.trim()) {
+      setFloorModalError('Floor name is required');
+      return;
+    }
+    const payload = {
+      name: floorForm.name.trim(),
+      floorNumber: floorForm.floorNumber !== '' ? Number(floorForm.floorNumber) : null,
+      description: floorForm.description ? floorForm.description.trim() : null,
+      status: floorForm.status || 'ACTIVE',
+    };
+
+    if (editingFloor) {
+      const res = await facilityApi.updateFloor(editingFloor.id, payload);
+      if (res.success) {
+        if (drawerFloor && drawerFloor.id === editingFloor.id) {
+          setDrawerFloor((prev) => (prev ? { ...prev, ...payload } : null));
+        }
+        showToast('Floor Updated', `Floor "${payload.name}" updated successfully.`);
+        setIsFloorModalOpen(false);
+        setEditingFloor(null);
+        refreshAllData();
+      } else {
+        setFloorModalError(res.error || 'Failed to update floor');
+      }
+    } else {
+      const res = await facilityApi.createFloor(payload);
+      if (res.success) {
+        showToast('Floor Created', `New floor "${payload.name}" registered successfully.`);
+        setIsFloorModalOpen(false);
+        setEditingFloor(null);
+        refreshAllData();
+      } else {
+        setFloorModalError(res.error || 'Failed to create floor');
+      }
+    }
+  };
+
+  const handleToggleFloorStatus = async (floor) => {
+    const isDeactivating = floor.status === 'ACTIVE';
+    const nextStatus = isDeactivating ? 'INACTIVE' : 'ACTIVE';
+
+    const ok = await confirm({
+      title: isDeactivating ? 'Deactivate Floor?' : 'Activate Floor?',
+      subtitle: 'Facility Workplace Management',
+      message: isDeactivating
+        ? `Are you sure you want to deactivate "${floor.name}"? Spaces and services on this level will be marked inactive.`
+        : `Are you sure you want to activate "${floor.name}"?`,
+      targetName: floor.name,
+      targetSub: floor.floorNumber !== null && floor.floorNumber !== undefined ? `Level #${floor.floorNumber}` : 'Standard Level',
+      confirmText: isDeactivating ? 'Deactivate Floor' : 'Activate Floor',
+      type: isDeactivating ? 'danger' : 'primary',
+    });
+    if (!ok) return;
+
+    const res = await facilityApi.toggleFloorStatus(floor.id);
+    if (res.success) {
+      if (drawerFloor && drawerFloor.id === floor.id) {
+        setDrawerFloor((prev) => (prev ? { ...prev, status: nextStatus } : null));
+      }
+      showToast('Status Updated', `Floor "${floor.name}" status set to ${nextStatus}.`);
+      refreshAllData();
+    } else {
+      showToast('Action Failed', res.error || 'Could not update floor status', 'error');
+    }
+  };
+
+  const handleDeleteFloor = async (floor) => {
+    const ok = await confirm({
+      title: 'Delete Floor?',
+      subtitle: 'Facility Workplace Management',
+      message: `Are you sure you want to permanently delete "${floor.name}"? This action cannot be undone.`,
+      targetName: floor.name,
+      confirmText: 'Confirm Delete',
+      type: 'danger',
+    });
+    if (!ok) return;
+
+    const res = await facilityApi.deleteFloor(floor.id);
+    if (res.success) {
+      showToast('Floor Deleted', `Floor "${floor.name}" was removed successfully.`);
+      refreshAllData();
+    } else {
+      showToast('Delete Blocked', res.error || 'Could not delete floor', 'error');
+    }
+  };
+
+  // ════════════════════ DEPARTMENTS CRUD ════════════════════
   const handleOpenCreateDepartment = () => {
-    setDrawerRoom(null);
-    setDrawerEmployee(null);
-    setDrawerBooking(null);
+    closeAllDrawers();
     setEditingDept(null);
     setDeptModalError('');
     setDeptForm({ name: '', status: 'ACTIVE' });
@@ -452,9 +651,7 @@ export default function FacilityAdminPortal() {
   };
 
   const handleOpenEditDepartment = (d) => {
-    setDrawerRoom(null);
-    setDrawerEmployee(null);
-    setDrawerBooking(null);
+    closeAllDrawers();
     setEditingDept(d);
     setDeptModalError('');
     setDeptForm({ name: d.name, status: d.status || 'ACTIVE' });
@@ -466,6 +663,9 @@ export default function FacilityAdminPortal() {
     if (editingDept) {
       const res = await facilityApi.updateDepartment(editingDept.id, deptForm);
       if (res.success) {
+        if (drawerDepartment && drawerDepartment.id === editingDept.id) {
+          setDrawerDepartment((prev) => (prev ? { ...prev, ...deptForm } : null));
+        }
         showToast('Department Updated', `Department "${deptForm.name}" updated.`);
         setIsDeptModalOpen(false);
         setEditingDept(null);
@@ -490,14 +690,38 @@ export default function FacilityAdminPortal() {
     const targetDept = departments.find((d) => d.id === deptId);
     if (!targetDept) return;
 
+    const isDeactivating = targetDept.status === 'ACTIVE';
+    const nextStatus = isDeactivating ? 'INACTIVE' : 'ACTIVE';
+
+    const ok = await confirm({
+      title: isDeactivating ? 'Deactivate Department?' : 'Activate Department?',
+      subtitle: 'Department Management',
+      message: isDeactivating
+        ? `Are you sure you want to deactivate "${targetDept.name}"? Staff assignments for this unit will be updated.`
+        : `Are you sure you want to activate "${targetDept.name}"?`,
+      targetName: targetDept.name,
+      targetSub: `ID: #${targetDept.id} • ${targetDept.employeeCount || 0} Staff Members`,
+      confirmText: isDeactivating ? 'Deactivate Department' : 'Activate Department',
+      type: isDeactivating ? 'danger' : 'primary',
+    });
+    if (!ok) return;
+
     const res = await facilityApi.toggleDepartmentStatus(deptId);
     if (res.success) {
+      if (drawerDepartment && drawerDepartment.id === deptId) {
+        setDrawerDepartment((prev) =>
+          prev
+            ? { ...prev, status: nextStatus }
+            : null
+        );
+      }
       showToast('Status Updated', `Department "${targetDept.name}" status updated.`);
       refreshAllData();
     }
   };
 
   const handleViewDepartmentEmployees = (deptId) => {
+    closeAllDrawers();
     setActiveTab('employees');
     setEmpDeptFilter(String(deptId));
     setEmpSearch('');
@@ -506,9 +730,7 @@ export default function FacilityAdminPortal() {
 
   // ════════════════════ EMPLOYEE ACTIONS ════════════════════
   const handleOpenCreateEmployee = () => {
-    setDrawerRoom(null);
-    setDrawerEmployee(null);
-    setDrawerBooking(null);
+    closeAllDrawers();
     setEditingEmp(null);
     setEmpModalError('');
     setEmpForm({
@@ -523,9 +745,7 @@ export default function FacilityAdminPortal() {
   };
 
   const handleOpenEditEmployee = (emp) => {
-    setDrawerRoom(null);
-    setDrawerEmployee(null);
-    setDrawerBooking(null);
+    closeAllDrawers();
     setEditingEmp(emp);
     setEmpModalError('');
     setEmpForm({
@@ -571,23 +791,26 @@ export default function FacilityAdminPortal() {
     const targetEmp = employees.find((e) => e.id === empId);
     if (!targetEmp) return;
 
-    if (targetEmp.status === 'ACTIVE') {
-      const ok = await confirm({
-        title: 'Suspend Staff Account?',
-        subtitle: 'Employee Access Management',
-        message: `Are you sure you want to suspend access for "${targetEmp.fullName}"? They will no longer be able to sign in or book rooms.`,
-        targetName: targetEmp.fullName,
-        targetSub: `${targetEmp.email} • ${targetEmp.departmentName || 'Staff'}`,
-        confirmText: 'Suspend Account',
-        type: 'danger',
-      });
-      if (!ok) return;
-    }
+    const isDeactivating = targetEmp.status === 'ACTIVE';
+    const nextStatus = isDeactivating ? 'INACTIVE' : 'ACTIVE';
+
+    const ok = await confirm({
+      title: isDeactivating ? 'Suspend Staff Account?' : 'Activate Staff Account?',
+      subtitle: 'Employee Access Management',
+      message: isDeactivating
+        ? `Are you sure you want to suspend access for "${targetEmp.fullName}"? They will no longer be able to sign in or book rooms.`
+        : `Are you sure you want to restore active access for "${targetEmp.fullName}"?`,
+      targetName: targetEmp.fullName,
+      targetSub: `${targetEmp.email} • ${targetEmp.departmentName || 'Staff'}`,
+      confirmText: isDeactivating ? 'Suspend Account' : 'Activate Account',
+      type: isDeactivating ? 'danger' : 'primary',
+    });
+    if (!ok) return;
 
     const res = await facilityApi.toggleEmployeeStatus(empId);
     if (res.success) {
       if (drawerEmployee && drawerEmployee.id === empId) {
-        setDrawerEmployee((prev) => (prev ? { ...prev, status: targetEmp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : null));
+        setDrawerEmployee((prev) => (prev ? { ...prev, status: nextStatus } : null));
       }
       showToast('Account Status Updated', `${targetEmp.fullName} status updated.`);
       refreshAllData();
@@ -596,6 +819,16 @@ export default function FacilityAdminPortal() {
 
   const handleBulkActivateEmployees = async () => {
     if (selectedEmpIds.length === 0) return;
+    const ok = await confirm({
+      title: 'Activate Selected Accounts?',
+      subtitle: 'Staff Account Management',
+      message: `Are you sure you want to restore active access for ${selectedEmpIds.length} staff accounts?`,
+      targetName: `${selectedEmpIds.length} Accounts Selected`,
+      confirmText: 'Activate Accounts',
+      type: 'primary',
+    });
+    if (!ok) return;
+
     await facilityApi.bulkUpdateEmployeeStatus(selectedEmpIds, 'ACTIVE');
     showToast('Bulk Action Complete', `Activated ${selectedEmpIds.length} staff accounts.`);
     setSelectedEmpIds([]);
@@ -720,15 +953,18 @@ export default function FacilityAdminPortal() {
           totalRooms={summary.totalRooms || rooms.length}
           availableRooms={summary.availableRooms || 0}
           maintenanceRooms={summary.maintenanceRooms || 0}
+          totalFloors={totalFloorsCount || floorsList.length || floors.length || summary.totalFloors || 0}
           totalDepartments={summary.totalDepartments || departments.length}
           totalEmployees={summary.totalEmployees || employees.length}
           todayBookings={summary.todayBookingsCount || bookings.length}
           activeTab={activeTab}
           onSelectMetric={(tabKey, filters) => {
+            closeAllDrawers();
             setActiveTab(tabKey);
             if (filters?.status && tabKey === 'rooms') {
               setRoomStatusFilter(filters.status);
             }
+            scrollToDataPanelOnMobile();
           }}
         />
 
@@ -736,26 +972,25 @@ export default function FacilityAdminPortal() {
         <FacilityAdminTabs
           activeTab={activeTab}
           onTabChange={(tabKey) => {
+            closeAllDrawers();
             setActiveTab(tabKey);
             if (tabKey === 'employees') {
               setEmpDeptFilter('ALL');
               setEmpSearch('');
               setEmpPage(1);
             }
+            scrollToDataPanelOnMobile();
           }}
           roomsCount={summary.totalRooms || totalRoomsCount || rooms.length}
+          floorsCount={totalFloorsCount || floorsList.length || floors.length || summary.totalFloors || 0}
           departmentsCount={summary.totalDepartments || totalDeptsCount || departments.length}
           employeesCount={summary.totalEmployees || totalCompanyEmployees || totalEmpsCount || employees.length}
           bookingsCount={summary.todayBookingsCount || totalBookingsCount || bookings.length}
           myBookingsCount={myBookings.length}
-          onOpenCreateRoom={handleOpenCreateRoom}
-          onOpenCreateDepartment={handleOpenCreateDepartment}
-          onOpenCreateEmployee={handleOpenCreateEmployee}
-          onOpenBookRoom={() => setActiveTab('book-room')}
         />
 
         {/* Master Content Panel */}
-        <div className="superadmin-panel">
+        <div className="superadmin-panel" ref={panelRef}>
           {/* Tab 1: Room Management */}
           {activeTab === 'rooms' && (
             <RoomsTab
@@ -806,6 +1041,36 @@ export default function FacilityAdminPortal() {
             />
           )}
 
+          {/* Tab: Floors Management */}
+          {activeTab === 'floors' && (
+            <FloorsTab
+              floors={floorsList}
+              search={floorSearch}
+              onSearchChange={(val) => {
+                setFloorSearch(val);
+                setFloorPage(1);
+              }}
+              statusFilter={floorStatusFilter}
+              onStatusFilterChange={(st) => {
+                setFloorStatusFilter(st);
+                setFloorPage(1);
+              }}
+              onOpenCreateFloor={handleOpenCreateFloor}
+              onOpenEditFloor={handleOpenEditFloor}
+              onToggleStatus={handleToggleFloorStatus}
+              onDeleteFloor={handleDeleteFloor}
+              onInspectFloor={setDrawerFloor}
+              page={floorPage}
+              pageSize={floorPageSize}
+              totalCount={totalFloorsCount || floorsList.length}
+              onPageChange={setFloorPage}
+              onPageSizeChange={(newSize) => {
+                setFloorPageSize(newSize);
+                setFloorPage(1);
+              }}
+            />
+          )}
+
           {/* Tab 2: Departments */}
           {activeTab === 'departments' && (
             <DepartmentsTab
@@ -826,6 +1091,7 @@ export default function FacilityAdminPortal() {
               onOpenEditDepartment={handleOpenEditDepartment}
               onToggleStatus={handleToggleDepartmentStatus}
               onViewDepartmentEmployees={handleViewDepartmentEmployees}
+              onInspectDepartment={setDrawerDepartment}
               page={deptPage}
               pageSize={deptPageSize}
               totalCount={totalDeptsCount || departments.length}
@@ -968,6 +1234,21 @@ export default function FacilityAdminPortal() {
         todayBookings={bookings}
       />
 
+      <FloorInspectorDrawer
+        floor={drawerFloor}
+        onClose={() => setDrawerFloor(null)}
+        onEdit={handleOpenEditFloor}
+        onToggleStatus={handleToggleFloorStatus}
+      />
+
+      <DepartmentInspectorDrawer
+        department={drawerDepartment}
+        onClose={() => setDrawerDepartment(null)}
+        onEdit={handleOpenEditDepartment}
+        onToggleStatus={handleToggleDepartmentStatus}
+        onViewEmployees={handleViewDepartmentEmployees}
+      />
+
       <EmployeeInspectorDrawer
         employee={drawerEmployee}
         onClose={() => setDrawerEmployee(null)}
@@ -990,6 +1271,20 @@ export default function FacilityAdminPortal() {
         onChange={setRoomForm}
         onSubmit={handleSaveRoom}
         floors={floors}
+        onNavigateToFloors={() => {
+          setIsRoomModalOpen(false);
+          setActiveTab('floors');
+        }}
+      />
+
+      <FloorModal
+        isOpen={isFloorModalOpen}
+        onClose={() => setIsFloorModalOpen(false)}
+        editingFloor={editingFloor}
+        form={floorForm}
+        onChange={setFloorForm}
+        onSubmit={handleSaveFloor}
+        error={floorModalError}
       />
 
       <DepartmentModal

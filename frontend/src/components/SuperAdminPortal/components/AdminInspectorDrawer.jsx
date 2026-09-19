@@ -163,7 +163,7 @@ export default function AdminInspectorDrawer({
               onClick={() => onEdit(admin)}
             >
               <Edit2 size={14} />
-              <span>Edit Administrator</span>
+              <span>Edit Admin</span>
             </button>
           )}
           {onToggleStatus && (

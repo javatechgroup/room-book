@@ -111,25 +111,7 @@ CREATE TABLE audit_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed initial Super Admin and Test Company Data
-INSERT INTO companies (id, name, company_code, contact_information, address, status)
-VALUES (1, 'Acme Corporation', 'ACME', 'admin@acme.com', '100 Tech Park, Suite 400', 'ACTIVE');
-
-INSERT INTO departments (id, company_id, name, status)
-VALUES (1, 1, 'Admin', 'ACTIVE');
-
--- Password for superadmin & companyadmin & employee is 'password123' hashed with BCrypt ($2a$10$e7v1g5YxVw8N... or standard hash)
--- BCrypt for 'password123': $2a$10$8.UnVuG9HHg7ke3CD4048eT8bW9.2XbUjD1Hh6mU4aW3hE8t7Jz/e
+-- Seed initial Super Admin
 INSERT INTO users (id, company_id, department_id, email, password_hash, full_name, role, status)
-VALUES 
-(1, NULL, NULL, 'superadmin@system.com', '$2a$10$8.UnVuG9HHg7ke3CD4048eT8bW9.2XbUjD1Hh6mU4aW3hE8t7Jz/e', 'System Super Admin', 'SUPER_ADMIN', 'ACTIVE'),
-(2, 1, 1, 'admin@acme.com', '$2a$10$8.UnVuG9HHg7ke3CD4048eT8bW9.2XbUjD1Hh6mU4aW3hE8t7Jz/e', 'Acme Admin', 'COMPANY_ADMIN', 'ACTIVE'),
-(3, 1, 1, 'john.doe@acme.com', '$2a$10$8.UnVuG9HHg7ke3CD4048eT8bW9.2XbUjD1Hh6mU4aW3hE8t7Jz/e', 'John Doe', 'EMPLOYEE', 'ACTIVE');
+VALUES (1, NULL, NULL, 'superadmin@system.com', '$2a$10$8.UnVuG9HHg7ke3CD4048eT8bW9.2XbUjD1Hh6mU4aW3hE8t7Jz/e', 'System Super Admin', 'SUPER_ADMIN', 'ACTIVE');
 
-INSERT INTO booking_policies (id, company_id, max_advance_booking_days, min_booking_duration_minutes, max_booking_duration_hours, cancellation_cutoff_minutes)
-VALUES (1, 1, 30, 30, 4, 30);
-
-INSERT INTO rooms (id, company_id, name, location, floor, capacity, description, status)
-VALUES 
-(1, 1, 'Conference Room A', 'Building 1', '3rd Floor', 10, 'Main conference room with AV equipment', 'AVAILABLE'),
-(2, 1, 'Meeting Room B', 'Building 1', '2nd Floor', 4, 'Small discussion room', 'AVAILABLE');

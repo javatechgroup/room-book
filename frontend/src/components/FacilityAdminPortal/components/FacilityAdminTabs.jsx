@@ -1,18 +1,15 @@
 import React from 'react';
-import { DoorOpen, Building2, Users, CalendarPlus, CalendarCheck2, Activity, BookOpen, Plus } from 'lucide-react';
+import { DoorOpen, Layers, Building2, Users, CalendarPlus, CalendarCheck2, Activity, BookOpen } from 'lucide-react';
 
 export default function FacilityAdminTabs({
   activeTab = 'rooms',
   onTabChange,
   roomsCount = 0,
+  floorsCount = 0,
   departmentsCount = 0,
   employeesCount = 0,
   bookingsCount = 0,
   myBookingsCount = 0,
-  onOpenCreateRoom,
-  onOpenCreateDepartment,
-  onOpenCreateEmployee,
-  onOpenBookRoom,
 }) {
   return (
     <div className="superadmin-tabs-bar">
@@ -21,18 +18,31 @@ export default function FacilityAdminTabs({
           type="button"
           className={`superadmin-tab ${activeTab === 'rooms' ? 'superadmin-tab--active' : ''}`}
           onClick={() => onTabChange && onTabChange('rooms')}
+          title="Room Management"
         >
-          <DoorOpen size={16} />
-          <span>Room Management</span>
+          <DoorOpen size={15} />
+          <span>Rooms</span>
           <span className="tab-count-badge">{roomsCount}</span>
+        </button>
+
+        <button
+          type="button"
+          className={`superadmin-tab ${activeTab === 'floors' ? 'superadmin-tab--active' : ''}`}
+          onClick={() => onTabChange && onTabChange('floors')}
+          title="Building Floors"
+        >
+          <Layers size={15} />
+          <span>Floors</span>
+          <span className="tab-count-badge">{floorsCount}</span>
         </button>
 
         <button
           type="button"
           className={`superadmin-tab ${activeTab === 'departments' ? 'superadmin-tab--active' : ''}`}
           onClick={() => onTabChange && onTabChange('departments')}
+          title="Departments"
         >
-          <Building2 size={16} />
+          <Building2 size={15} />
           <span>Departments</span>
           <span className="tab-count-badge">{departmentsCount}</span>
         </button>
@@ -41,8 +51,9 @@ export default function FacilityAdminTabs({
           type="button"
           className={`superadmin-tab ${activeTab === 'employees' ? 'superadmin-tab--active' : ''}`}
           onClick={() => onTabChange && onTabChange('employees')}
+          title="Employees"
         >
-          <Users size={16} />
+          <Users size={15} />
           <span>Employees</span>
           <span className="tab-count-badge">{employeesCount}</span>
         </button>
@@ -51,17 +62,19 @@ export default function FacilityAdminTabs({
           type="button"
           className={`superadmin-tab ${activeTab === 'book-room' ? 'superadmin-tab--active' : ''}`}
           onClick={() => onTabChange && onTabChange('book-room')}
+          title="Book a Room"
         >
-          <CalendarPlus size={16} />
-          <span>Book a Room</span>
+          <CalendarPlus size={15} />
+          <span>Book Room</span>
         </button>
 
         <button
           type="button"
           className={`superadmin-tab ${activeTab === 'my-bookings' ? 'superadmin-tab--active' : ''}`}
           onClick={() => onTabChange && onTabChange('my-bookings')}
+          title="My Bookings"
         >
-          <CalendarCheck2 size={16} />
+          <CalendarCheck2 size={15} />
           <span>My Bookings</span>
           <span className="tab-count-badge">{myBookingsCount}</span>
         </button>
@@ -70,9 +83,10 @@ export default function FacilityAdminTabs({
           type="button"
           className={`superadmin-tab ${activeTab === 'monitor' ? 'superadmin-tab--active' : ''}`}
           onClick={() => onTabChange && onTabChange('monitor')}
+          title="Live Room Monitor"
         >
-          <Activity size={16} />
-          <span>Live Room Monitor</span>
+          <Activity size={15} />
+          <span>Live Monitor</span>
           <span className="tab-count-badge">{bookingsCount}</span>
         </button>
 
@@ -80,53 +94,11 @@ export default function FacilityAdminTabs({
           type="button"
           className={`superadmin-tab ${activeTab === 'directory' ? 'superadmin-tab--active' : ''}`}
           onClick={() => onTabChange && onTabChange('directory')}
+          title="Company Directory"
         >
-          <BookOpen size={16} />
-          <span>Company Directory</span>
+          <BookOpen size={15} />
+          <span>Directory</span>
         </button>
-      </div>
-
-      <div className="superadmin-quick-actions">
-        {activeTab === 'rooms' && onOpenCreateRoom && (
-          <button
-            type="button"
-            className="btn btn--primary btn--sm"
-            onClick={onOpenCreateRoom}
-          >
-            <Plus size={15} />
-            <span>Create Room</span>
-          </button>
-        )}
-        {activeTab === 'departments' && onOpenCreateDepartment && (
-          <button
-            type="button"
-            className="btn btn--primary btn--sm"
-            onClick={onOpenCreateDepartment}
-          >
-            <Plus size={15} />
-            <span>Add Department</span>
-          </button>
-        )}
-        {activeTab === 'employees' && onOpenCreateEmployee && (
-          <button
-            type="button"
-            className="btn btn--primary btn--sm"
-            onClick={onOpenCreateEmployee}
-          >
-            <Plus size={15} />
-            <span>Add Employee</span>
-          </button>
-        )}
-        {activeTab === 'book-room' && onOpenBookRoom && (
-          <button
-            type="button"
-            className="btn btn--primary btn--sm"
-            onClick={onOpenBookRoom}
-          >
-            <CalendarPlus size={15} />
-            <span>Reserve Slot</span>
-          </button>
-        )}
       </div>
     </div>
   );

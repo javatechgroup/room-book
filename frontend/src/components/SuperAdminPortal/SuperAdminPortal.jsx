@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
@@ -23,6 +23,23 @@ export default function SuperAdminPortal() {
 
   // Navigation Tab State
   const [activeTab, setActiveTab] = useState('companies'); // 'companies' | 'admins' | 'audit'
+  const panelRef = useRef(null);
+
+  const scrollToDataPanelOnMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 900) {
+      setTimeout(() => {
+        if (panelRef.current) {
+          const headerOffset = 75;
+          const elPosition = panelRef.current.getBoundingClientRect().top;
+          const offsetPosition = elPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: 'smooth',
+          });
+        }
+      }, 60);
+    }
+  };
 
   // Primary Data State
   const [companies, setCompanies] = useState(INITIAL_COMPANIES);
@@ -421,6 +438,17 @@ export default function SuperAdminPortal() {
     if (selectedCompanyIds.length === 0) return;
     const targetIds = [...selectedCompanyIds];
 
+    const ok = await confirm({
+      title: 'Bulk Activate Companies?',
+      subtitle: 'Tenant Organization Management',
+      message: `Are you sure you want to activate access for ${targetIds.length} selected tenant companies? Associated administrators and staff will regain operational dashboard access.`,
+      targetName: `${targetIds.length} Companies Selected`,
+      targetSub: 'Status will transition to Active Access',
+      confirmText: 'Activate Selected',
+      type: 'primary',
+    });
+    if (!ok) return;
+
     const res = await companyApi.bulkUpdateCompanyStatus(targetIds, 'ACTIVE');
 
     showToast('Bulk Action Complete', `Activated ${targetIds.length} tenant companies.`);
@@ -512,6 +540,17 @@ export default function SuperAdminPortal() {
   const handleBulkActivateAdmins = async () => {
     if (selectedAdminIds.length === 0) return;
     const targetIds = [...selectedAdminIds];
+
+    const ok = await confirm({
+      title: 'Bulk Activate Administrators?',
+      subtitle: 'Facility Administrator Management',
+      message: `Are you sure you want to restore administrative access for ${targetIds.length} selected facility administrators?`,
+      targetName: `${targetIds.length} Administrators Selected`,
+      targetSub: 'Status will transition to Active Access',
+      confirmText: 'Activate Selected',
+      type: 'primary',
+    });
+    if (!ok) return;
 
     const res = await adminApi.bulkUpdateAdminStatus(targetIds, 'ACTIVE');
 
@@ -741,18 +780,19 @@ export default function SuperAdminPortal() {
     const targetComp = companies.find((c) => c.id === companyId);
     if (!targetComp) return;
 
-    if (targetComp.status === 'ACTIVE') {
-      const ok = await confirm({
-        title: 'Suspend Tenant Organization?',
-        subtitle: 'Company Status Management',
-        message: `Are you sure you want to deactivate "${targetComp.name}"? Facility administrators and employees from this organization will no longer be able to schedule rooms or manage facilities while suspended.`,
-        targetName: targetComp.name,
-        targetSub: `Code: ${targetComp.companyCode} • ID: #${targetComp.id}`,
-        confirmText: 'Suspend Company',
-        type: 'danger',
-      });
-      if (!ok) return;
-    }
+    const isDeactivating = targetComp.status === 'ACTIVE';
+    const ok = await confirm({
+      title: isDeactivating ? 'Suspend Tenant Organization?' : 'Activate Tenant Organization?',
+      subtitle: 'Company Status Management',
+      message: isDeactivating
+        ? `Are you sure you want to deactivate "${targetComp.name}"? Facility administrators and employees from this organization will no longer be able to schedule rooms or manage facilities while suspended.`
+        : `Are you sure you want to activate "${targetComp.name}"? Administrators and staff under this organization will regain operational dashboard access.`,
+      targetName: targetComp.name,
+      targetSub: `Code: ${targetComp.companyCode} • ID: #${targetComp.id}`,
+      confirmText: isDeactivating ? 'Suspend Company' : 'Activate Company',
+      type: isDeactivating ? 'danger' : 'primary',
+    });
+    if (!ok) return;
 
     const res = await companyApi.toggleCompanyStatus(companyId);
     const resolvedStatus = res.success && res.data?.status ? res.data.status : (targetComp.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
@@ -849,18 +889,19 @@ export default function SuperAdminPortal() {
     const targetAdmin = admins.find((a) => a.id === adminId);
     if (!targetAdmin) return;
 
-    if (targetAdmin.status === 'ACTIVE') {
-      const ok = await confirm({
-        title: 'Suspend Administrator Access?',
-        subtitle: 'Facility Administrator Management',
-        message: `Are you sure you want to deactivate administrative access for "${targetAdmin.fullName}"? They will be locked out of the facility management dashboard until reactivated.`,
-        targetName: targetAdmin.fullName,
-        targetSub: `${targetAdmin.email} • ${targetAdmin.companyName || 'Unassigned'}`,
-        confirmText: 'Suspend Access',
-        type: 'danger',
-      });
-      if (!ok) return;
-    }
+    const isDeactivating = targetAdmin.status === 'ACTIVE';
+    const ok = await confirm({
+      title: isDeactivating ? 'Suspend Administrator Access?' : 'Activate Administrator Access?',
+      subtitle: 'Facility Administrator Management',
+      message: isDeactivating
+        ? `Are you sure you want to deactivate administrative access for "${targetAdmin.fullName}"? They will be locked out of the facility management dashboard until reactivated.`
+        : `Are you sure you want to restore administrative access for "${targetAdmin.fullName}"?`,
+      targetName: targetAdmin.fullName,
+      targetSub: `${targetAdmin.email} • ${targetAdmin.companyName || 'Unassigned'}`,
+      confirmText: isDeactivating ? 'Suspend Access' : 'Activate Access',
+      type: isDeactivating ? 'danger' : 'primary',
+    });
+    if (!ok) return;
 
     const res = await adminApi.toggleAdminStatus(adminId);
     const resolvedStatus = res.success && res.data?.status ? res.data.status : (targetAdmin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
@@ -895,12 +936,23 @@ export default function SuperAdminPortal() {
     <div className="superadmin-portal" id="superadmin-console">
       <div className="container">
         {/* Top Focused Metrics */}
-        <SuperAdminMetrics companies={effectiveCompanies} admins={effectiveAdmins} />
+        <SuperAdminMetrics
+          companies={effectiveCompanies}
+          admins={effectiveAdmins}
+          activeTab={activeTab}
+          onSelectMetric={(tabKey) => {
+            handleTabChange(tabKey);
+            scrollToDataPanelOnMobile();
+          }}
+        />
 
         {/* Navigation Tabs */}
         <SuperAdminTabs
           activeTab={activeTab}
-          onTabChange={handleTabChange}
+          onTabChange={(tabKey) => {
+            handleTabChange(tabKey);
+            scrollToDataPanelOnMobile();
+          }}
           companiesCount={effectiveCompanies.length}
           adminsCount={effectiveAdmins.length}
           auditLogsCount={totalAuditLogsCount > 0 ? totalAuditLogsCount : auditLogs.length}
@@ -908,7 +960,8 @@ export default function SuperAdminPortal() {
           onOpenCreateAdmin={handleOpenCreateAdmin}
         />
 
-        {/* Tab 1: Tenant Companies */}
+        <div ref={panelRef}>
+          {/* Tab 1: Tenant Companies */}
         {activeTab === 'companies' && (
           <CompaniesTab
             companies={companies}
@@ -1031,6 +1084,7 @@ export default function SuperAdminPortal() {
             }}
           />
         )}
+        </div>
       </div>
 
       {/* Slide-Over Drawer: Company Inspector */}

@@ -1,6 +1,10 @@
 package com.magicbricks.booking;
 
 import com.magicbricks.booking.auth.LoginRequest;
+import com.magicbricks.booking.domain.Company;
+import com.magicbricks.booking.domain.Role;
+import com.magicbricks.booking.domain.User;
+import com.magicbricks.booking.repository.CompanyRepository;
 import com.magicbricks.booking.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +33,9 @@ public class AuthIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
@@ -37,9 +44,25 @@ public class AuthIntegrationTest {
             user.setPasswordHash(passwordEncoder.encode("password123"));
             userRepository.save(user);
         });
-        userRepository.findByEmail("admin@acme.com").ifPresent(user -> {
-            user.setPasswordHash(passwordEncoder.encode("password123"));
-            userRepository.save(user);
+
+        Company testCompany = companyRepository.findByCompanyCode("TEST_CORP").orElseGet(() -> {
+            Company c = new Company();
+            c.setName("Test Corp");
+            c.setCompanyCode("TEST_CORP");
+            c.setContactInformation("admin@testcorp.com");
+            c.setStatus("ACTIVE");
+            return companyRepository.save(c);
+        });
+
+        userRepository.findByEmail("admin@testcorp.com").orElseGet(() -> {
+            User u = new User();
+            u.setEmail("admin@testcorp.com");
+            u.setPasswordHash(passwordEncoder.encode("password123"));
+            u.setFullName("Test Admin");
+            u.setRole(Role.COMPANY_ADMIN);
+            u.setCompany(testCompany);
+            u.setStatus("ACTIVE");
+            return userRepository.save(u);
         });
     }
 
@@ -62,7 +85,7 @@ public class AuthIntegrationTest {
     @Test
     public void testSuccessfulLoginAsCompanyAdmin() throws Exception {
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail("admin@acme.com");
+        loginRequest.setEmail("admin@testcorp.com");
         loginRequest.setPassword("password123");
 
         mockMvc.perform(post("/api/auth/login")
@@ -70,9 +93,9 @@ public class AuthIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.email").value("admin@acme.com"))
+                .andExpect(jsonPath("$.data.email").value("admin@testcorp.com"))
                 .andExpect(jsonPath("$.data.role").value("COMPANY_ADMIN"))
-                .andExpect(jsonPath("$.data.companyId").value(1));
+                .andExpect(jsonPath("$.data.companyId").exists());
     }
 
     @Test

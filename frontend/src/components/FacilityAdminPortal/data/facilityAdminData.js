@@ -385,6 +385,7 @@ export const INITIAL_FACILITY_SUMMARY = {
   availableRooms: 7,
   maintenanceRooms: 1,
   occupiedRoomsNow: 1,
+  totalFloors: 5,
   totalDepartments: 6,
   totalEmployees: 8,
   todayBookingsCount: 4,
@@ -405,3 +406,11 @@ export const INITIAL_FACILITY_SUMMARY = {
     'People & Culture': 1,
   },
 };
+
+export const INITIAL_FACILITY_FLOORS = [
+  { id: 1, name: 'Ground Floor', floorNumber: 0, description: '', status: 'ACTIVE' },
+  { id: 2, name: 'Floor 1', floorNumber: 1, description: '', status: 'ACTIVE' },
+  { id: 3, name: 'Floor 2', floorNumber: 2, description: '', status: 'ACTIVE' },
+  { id: 4, name: 'Floor 3', floorNumber: 3, description: '', status: 'ACTIVE' },
+  { id: 5, name: 'Floor 4', floorNumber: 4, description: '', status: 'ACTIVE' },
+];

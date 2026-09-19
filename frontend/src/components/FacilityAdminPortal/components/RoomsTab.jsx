@@ -168,6 +168,17 @@ export default function RoomsTab({
             <Download size={14} />
             <span>Export CSV</span>
           </button>
+
+          {onOpenCreateRoom && (
+            <button
+              type="button"
+              className="btn btn--primary btn--sm"
+              onClick={onOpenCreateRoom}
+            >
+              <Plus size={15} />
+              <span>Create Room</span>
+            </button>
+          )}
         </div>
       </div>
 

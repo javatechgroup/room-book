@@ -8,6 +8,7 @@ import com.magicbricks.booking.dto.EmployeeResponse;
 import com.magicbricks.booking.dto.FacilitySummaryResponse;
 import com.magicbricks.booking.repository.BookingRepository;
 import com.magicbricks.booking.repository.DepartmentRepository;
+import com.magicbricks.booking.repository.FloorRepository;
 import com.magicbricks.booking.repository.RoomRepository;
 import com.magicbricks.booking.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -23,17 +24,20 @@ import java.util.stream.Collectors;
 public class FacilityDirectoryService {
 
     private final RoomRepository roomRepository;
+    private final FloorRepository floorRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final FacilityEmployeeService facilityEmployeeService;
 
     public FacilityDirectoryService(RoomRepository roomRepository,
+                                    FloorRepository floorRepository,
                                     DepartmentRepository departmentRepository,
                                     UserRepository userRepository,
                                     BookingRepository bookingRepository,
                                     FacilityEmployeeService facilityEmployeeService) {
         this.roomRepository = roomRepository;
+        this.floorRepository = floorRepository;
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
@@ -47,6 +51,7 @@ public class FacilityDirectoryService {
         long totalRooms = roomRepository.countByCompanyId(companyId);
         long availableRooms = roomRepository.countByCompanyIdAndStatus(companyId, "AVAILABLE");
         long maintenanceRooms = roomRepository.countByCompanyIdAndStatus(companyId, "MAINTENANCE");
+        long totalFloors = floorRepository.countByCompanyId(companyId);
 
         LocalDateTime now = LocalDateTime.now();
         List<Booking> activeNow = bookingRepository.findCurrentlyActiveBookings(companyId, now);
@@ -85,6 +90,7 @@ public class FacilityDirectoryService {
         summary.setAvailableRooms(Math.max(0, availableRooms - occupiedRooms));
         summary.setMaintenanceRooms(maintenanceRooms);
         summary.setOccupiedRoomsNow(occupiedRooms);
+        summary.setTotalFloors(totalFloors);
         summary.setTotalDepartments(totalDepts);
         summary.setTotalEmployees(totalEmps);
         summary.setTodayBookingsCount(todayCount);

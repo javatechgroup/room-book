@@ -45,7 +45,7 @@ export default function RoomInspectorDrawer({
         <div className="inspector-drawer__body">
           <div className="inspector-hero">
             <div className="inspector-hero__avatar inspector-hero__avatar--room">
-              <DoorOpen size={30} />
+              <DoorOpen size={22} />
             </div>
             <div className="inspector-hero__info">
               <h2>{room.name}</h2>
@@ -72,7 +72,7 @@ export default function RoomInspectorDrawer({
                 if (onEdit) onEdit(room);
               }}
             >
-              <Edit2 size={14} /> Edit Details
+              <Edit2 size={14} /> Edit Room
             </button>
             <button
               type="button"
@@ -81,11 +81,11 @@ export default function RoomInspectorDrawer({
             >
               {isMaintenance ? (
                 <>
-                  <CheckCircle2 size={14} /> Mark Available
+                  <CheckCircle2 size={14} /> Make Available
                 </>
               ) : (
                 <>
-                  <Wrench size={14} /> Set Maintenance
+                  <Wrench size={14} /> Maintenance
                 </>
               )}
             </button>
@@ -98,7 +98,7 @@ export default function RoomInspectorDrawer({
                   if (onBookRoom) onBookRoom(room);
                 }}
               >
-                <CalendarPlus size={14} /> Book This Room
+                <CalendarPlus size={14} /> Book Room
               </button>
             )}
           </div>

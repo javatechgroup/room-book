@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, ArrowRight, AlertCircle, Edit2, Calendar } from 'lucide-react';
+import { Mail, Phone, MapPin, ArrowRight, AlertCircle, Edit2, Calendar, CheckCircle2, XCircle } from 'lucide-react';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function CompanyInspectorDrawer({
@@ -167,7 +167,17 @@ export default function CompanyInspectorDrawer({
               }`}
               onClick={() => onToggleStatus(company.id)}
             >
-              {company.status === 'ACTIVE' ? 'Suspend Tenant' : 'Activate Tenant'}
+              {company.status === 'ACTIVE' ? (
+                <>
+                  <XCircle size={14} />
+                  <span>Suspend Tenant</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={14} />
+                  <span>Activate Tenant</span>
+                </>
+              )}
             </button>
           )}
         </div>
