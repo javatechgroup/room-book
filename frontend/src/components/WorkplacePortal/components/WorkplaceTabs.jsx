@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   CalendarCheck2,
   BookmarkCheck,
@@ -13,6 +13,17 @@ export default function WorkplaceTabs({
   bookingsCount = 0,
   isAdmin = false,
 }) {
+  const tabsRef = useRef(null);
+
+  useEffect(() => {
+    if (tabsRef.current) {
+      const activeBtn = tabsRef.current.querySelector('.nav-tab--active');
+      if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [activeTab]);
+
   return (
     <div className="portal-top-bar">
       <div className="portal-title-block">
@@ -21,7 +32,7 @@ export default function WorkplaceTabs({
       </div>
 
       {/* Tab Navigation */}
-      <nav className="portal-nav-tabs" aria-label="Portal Navigation">
+      <nav className="portal-nav-tabs" ref={tabsRef} aria-label="Portal Navigation">
         <button
           type="button"
           className={`nav-tab ${activeTab === 'slot-finder' ? 'nav-tab--active' : ''}`}

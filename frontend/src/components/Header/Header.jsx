@@ -246,6 +246,20 @@ function Header() {
             </button>
           )}
 
+          {/* Mobile Quick Sign Out Button */}
+          {isAuthenticated && (
+            <button
+              type="button"
+              className="header__logout-btn header__logout-btn--mobile"
+              onClick={handleLogout}
+              title="Sign Out"
+              aria-label="Sign Out"
+            >
+              <LogOut size={17} />
+              <span className="mobile-logout-text">Logout</span>
+            </button>
+          )}
+
           {/* Theme Toggle Button */}
           <button
             className="theme-toggle"

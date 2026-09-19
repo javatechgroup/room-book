@@ -16,6 +16,11 @@ apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('meetspace_token');
   if (token && !token.startsWith('demo_token_')) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else if (config.url !== '/auth/login') {
+    // In offline demo session or without a backend JWT, abort call to prevent 403 Forbidden
+    const controller = new AbortController();
+    config.signal = controller.signal;
+    controller.abort('DEMO_SESSION_BYPASS');
   }
   return config;
 }, (error) => Promise.reject(error));

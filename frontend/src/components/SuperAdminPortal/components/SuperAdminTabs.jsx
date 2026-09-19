@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Building2, Users, FileText, Plus } from 'lucide-react';
 
 export default function SuperAdminTabs({
@@ -10,8 +10,19 @@ export default function SuperAdminTabs({
   onOpenCreateCompany,
   onOpenCreateAdmin,
 }) {
+  const tabsRef = useRef(null);
+
+  useEffect(() => {
+    if (tabsRef.current) {
+      const activeBtn = tabsRef.current.querySelector('.superadmin-tab--active');
+      if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [activeTab]);
+
   return (
-    <div className="superadmin-tabs-bar">
+    <div className="superadmin-tabs-bar" ref={tabsRef}>
       <div className="superadmin-tabs">
         <button
           type="button"

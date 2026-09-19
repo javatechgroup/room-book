@@ -17,6 +17,15 @@ const getStoredUser = () => {
   }
 };
 
+// Helper: check if session is running in offline / demo mode
+const isDemoMode = () => {
+  const token = localStorage.getItem('meetspace_token');
+  if (!token || token.startsWith('demo_token_')) return true;
+  const user = getStoredUser();
+  if (user?.isDemoSession) return true;
+  return false;
+};
+
 // Fallback in-memory state for offline/demo mode
 let localRooms = [...INITIAL_FACILITY_ROOMS];
 let localDepartments = [...INITIAL_DEPARTMENTS];
@@ -28,18 +37,22 @@ let localFloors = INITIAL_FACILITY_FLOORS.map((f) => ({ ...f }));
 export const facilityApi = {
   // ════════════════════ ROOMS ════════════════════
   async getRooms(params = {}) {
-    try {
-      const response = await apiClient.get('/facility/rooms', { params });
-      if (response.data && response.data.data) {
-        return {
-          success: true,
-          data: response.data.data.content || [],
-          totalElements: response.data.data.totalElements || 0,
-          totalPages: response.data.data.totalPages || 1,
-        };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/rooms', { params });
+        if (response.data && response.data.data) {
+          return {
+            success: true,
+            data: response.data.data.content || [],
+            totalElements: response.data.data.totalElements || 0,
+            totalPages: response.data.data.totalPages || 1,
+          };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/rooms unreachable, fallback to local store:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/rooms unreachable, fallback to local store:', e.message);
     }
     // Fallback filter & search
     let list = [...localRooms];
@@ -67,13 +80,17 @@ export const facilityApi = {
   },
 
   async getFloors() {
-    try {
-      const response = await apiClient.get('/facility/rooms/floors');
-      if (response.data && response.data.data) {
-        return { success: true, data: response.data.data };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/rooms/floors');
+        if (response.data && response.data.data) {
+          return { success: true, data: response.data.data };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/rooms/floors unreachable, fallback:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/rooms/floors unreachable, fallback:', e.message);
     }
     const floors = Array.from(new Set(localRooms.map((r) => r.floor).filter(Boolean))).sort();
     return { success: true, data: floors.length > 0 ? floors : localFloors.map((f) => f.name) };
@@ -444,13 +461,17 @@ export const facilityApi = {
   },
 
   async getMyBookings() {
-    try {
-      const response = await apiClient.get('/facility/bookings/my-bookings');
-      if (response.data && response.data.data) {
-        return { success: true, data: response.data.data };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/bookings/my-bookings');
+        if (response.data && response.data.data) {
+          return { success: true, data: response.data.data };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/bookings/my-bookings fallback:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/bookings/my-bookings fallback:', e.message);
     }
     const user = getStoredUser();
     const email = user?.email || '';
@@ -458,13 +479,17 @@ export const facilityApi = {
   },
 
   async getOccupancyForDay(dateStr) {
-    try {
-      const response = await apiClient.get('/facility/bookings/occupancy', { params: { date: dateStr } });
-      if (response.data && response.data.data) {
-        return { success: true, data: response.data.data };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/bookings/occupancy', { params: { date: dateStr } });
+        if (response.data && response.data.data) {
+          return { success: true, data: response.data.data };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/bookings/occupancy fallback:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/bookings/occupancy fallback:', e.message);
     }
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
     return {
@@ -532,13 +557,17 @@ export const facilityApi = {
 
   // ════════════════════ DASHBOARD & DIRECTORY ════════════════════
   async getFacilitySummary() {
-    try {
-      const response = await apiClient.get('/facility/summary');
-      if (response.data && response.data.data) {
-        return { success: true, data: response.data.data };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/summary');
+        if (response.data && response.data.data) {
+          return { success: true, data: response.data.data };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/summary fallback:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/summary fallback:', e.message);
     }
     const now = new Date();
     const totalRooms = localRooms.length;
@@ -583,13 +612,17 @@ export const facilityApi = {
   },
 
   async getCompanyDirectory() {
-    try {
-      const response = await apiClient.get('/facility/directory');
-      if (response.data && response.data.data) {
-        return { success: true, data: response.data.data };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/directory');
+        if (response.data && response.data.data) {
+          return { success: true, data: response.data.data };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/directory fallback:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/directory fallback:', e.message);
     }
     const grouped = {};
     localDepartments.forEach((d) => {
@@ -610,18 +643,22 @@ export const facilityApi = {
 
   // ════════════════════ FLOORS ════════════════════
   async getFloorsList(params = {}) {
-    try {
-      const response = await apiClient.get('/facility/floors', { params });
-      if (response.data && response.data.data) {
-        return {
-          success: true,
-          data: response.data.data.content || [],
-          totalElements: response.data.data.totalElements || 0,
-          totalPages: response.data.data.totalPages || 1,
-        };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/floors', { params });
+        if (response.data && response.data.data) {
+          return {
+            success: true,
+            data: response.data.data.content || [],
+            totalElements: response.data.data.totalElements || 0,
+            totalPages: response.data.data.totalPages || 1,
+          };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/floors unreachable, fallback to local store:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/floors unreachable, fallback to local store:', e.message);
     }
     let list = [...localFloors];
     if (params.status && params.status !== 'ALL') {
@@ -644,15 +681,19 @@ export const facilityApi = {
   },
 
   async getAllFloors(companyId) {
-    try {
-      const response = await apiClient.get('/facility/floors/all', {
-        params: companyId ? { companyId } : undefined,
-      });
-      if (response.data && response.data.data) {
-        return { success: true, data: response.data.data };
+    if (!isDemoMode()) {
+      try {
+        const response = await apiClient.get('/facility/floors/all', {
+          params: companyId ? { companyId } : undefined,
+        });
+        if (response.data && response.data.data) {
+          return { success: true, data: response.data.data };
+        }
+      } catch (e) {
+        if (e.response?.status !== 403 && e.response?.status !== 401 && e.message !== 'DEMO_SESSION_BYPASS') {
+          console.warn('Backend /facility/floors/all fallback:', e.message);
+        }
       }
-    } catch (e) {
-      console.warn('Backend /facility/floors/all fallback:', e.message);
     }
     return { success: true, data: localFloors.filter((f) => f.status === 'ACTIVE') };
   },

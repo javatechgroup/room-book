@@ -218,14 +218,13 @@
   border-color: rgba(6, 182, 212, 0.3);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1100px) and (min-width: 769px) {
   .facility-admin-metrics-grid {
-    overflow-x: auto;
-    padding-bottom: 8px;
-    scrollbar-width: thin;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
   }
   .facility-admin-metrics-grid .metric-card {
-    min-width: 200px;
+    min-width: 0;
   }
 }
 
@@ -3900,8 +3899,8 @@
 }
 
 .mobile-card__actions .action-btn {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 8px;
 }
 
@@ -3953,8 +3952,12 @@
 }
 
 @media (max-width: 768px) {
-  /* Hide Desktop Tables and Show Mobile Cards */
+  /* Hide Desktop Tables, View Mode Toggles, and Show Mobile Cards */
   .desktop-table-wrap {
+    display: none !important;
+  }
+
+  .view-mode-toggle {
     display: none !important;
   }
 
@@ -3967,6 +3970,42 @@
   .mobile-only-pagination {
     display: flex !important;
     margin-top: 1rem !important;
+  }
+
+  /* Compact 2-Column Metrics Grid for Mobile */
+  .facility-admin-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+    margin-bottom: 16px;
+    overflow-x: visible;
+  }
+
+  .facility-admin-metrics-grid .metric-card:last-child {
+    grid-column: span 2;
+  }
+
+  .facility-admin-metrics-grid .metric-card {
+    padding: 12px 14px;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .facility-admin-metrics-grid .metric-card__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+
+  .facility-admin-metrics-grid .metric-card__value {
+    font-size: 1.3rem;
+  }
+
+  .facility-admin-metrics-grid .metric-card__label {
+    font-size: 0.68rem;
+  }
+
+  .facility-admin-metrics-grid .metric-card__sub {
+    font-size: 0.68rem;
   }
 
   .status-segment-group {
@@ -3982,19 +4021,53 @@
     justify-content: center;
   }
 
+  /* Tabs Bar with Right Fade Clue */
   .superadmin-tabs-bar {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    position: relative;
+    mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+  }
+
+  .superadmin-tabs-bar::-webkit-scrollbar {
+    display: none;
   }
 
   .superadmin-tabs {
     flex-wrap: nowrap;
+    gap: 6px;
   }
 
   .superadmin-tab {
     white-space: nowrap;
-    padding: 8px 14px;
+    padding: 8px 12px;
     font-size: 0.82rem;
+    flex-shrink: 0;
+  }
+
+  /* Mobile Toolbar Actions Alignment */
+  .superadmin-filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .superadmin-filter-group .btn--primary {
+    flex: 1;
+    min-width: 130px;
+    justify-content: center;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .superadmin-filter-group .export-btn {
+    flex: 0 0 auto;
+    padding: 9px 12px;
   }
 
   /* Slide-Over Drawer on Mobile */
@@ -4017,20 +4090,28 @@
     gap: 6px;
   }
 
+  /* Responsive Drawer Quick Actions */
   .inspector-quick-actions {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 6px;
-    padding: 6px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 10px;
   }
 
   .inspector-quick-actions .btn {
-    flex: 1;
+    flex: 1 1 calc(50% - 4px);
     min-width: 0;
     justify-content: center;
-    padding: 7px 6px;
-    font-size: 0.78rem;
+    padding: 9px 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-height: 40px;
     white-space: nowrap;
+  }
+
+  .inspector-quick-actions .btn:only-child,
+  .inspector-quick-actions .btn--primary:last-child {
+    flex: 1 1 100%;
   }
 
   /* Modals on Mobile: Bottom-Sheet Style */
@@ -4042,8 +4123,10 @@
   .superadmin-modal-card {
     max-width: 100%;
     width: 100%;
-    max-height: 92vh;
+    max-height: min(90dvh, calc(100% - 24px));
     border-radius: 16px 16px 0 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .superadmin-modal-header {
@@ -4067,12 +4150,14 @@
   .superadmin-modal-actions {
     flex-direction: column-reverse;
     gap: 8px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   .superadmin-modal-actions .btn {
     width: 100%;
     justify-content: center;
-    padding: 11px;
+    min-height: 44px;
+    font-size: 0.92rem;
   }
 
   /* Book Room Tab Mobile Layout */
@@ -4122,11 +4207,6 @@
 }
 
 @media (max-width: 480px) {
-  .facility-admin-metrics-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
   .occupancy-matrix-header {
     flex-direction: column;
     align-items: flex-start;

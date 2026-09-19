@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { DoorOpen, Layers, Building2, Users, CalendarPlus, CalendarCheck2, Activity, BookOpen } from 'lucide-react';
 
 export default function FacilityAdminTabs({
@@ -11,8 +11,19 @@ export default function FacilityAdminTabs({
   bookingsCount = 0,
   myBookingsCount = 0,
 }) {
+  const tabsContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (tabsContainerRef.current) {
+      const activeBtn = tabsContainerRef.current.querySelector('.superadmin-tab--active');
+      if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [activeTab]);
+
   return (
-    <div className="superadmin-tabs-bar">
+    <div className="superadmin-tabs-bar" ref={tabsContainerRef}>
       <div className="superadmin-tabs">
         <button
           type="button"

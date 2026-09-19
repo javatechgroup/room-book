@@ -1118,7 +1118,14 @@
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     padding: 6px;
+    mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  }
+
+  .portal-nav-bar::-webkit-scrollbar {
+    display: none;
   }
 
   .nav-tab {
@@ -1126,6 +1133,46 @@
     padding: 8px 12px;
     font-size: 0.8rem;
     white-space: nowrap;
+  }
+
+  .directory-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .dir-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    width: 100%;
+    mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+  }
+
+  .dir-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dir-pill {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .dir-size-select {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dir-size-select select {
+    flex: 1;
+  }
+
+  .door-tablet {
+    min-height: 240px;
+    padding: 16px;
   }
 
   .finder-controls {
