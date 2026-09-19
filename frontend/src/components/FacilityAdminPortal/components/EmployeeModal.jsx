@@ -63,7 +63,7 @@ export default function EmployeeModal({
               <input
                 id="emp-email"
                 type="email"
-                placeholder="jane.smith@acme.com"
+                placeholder="name@company.com"
                 value={form.email}
                 onChange={(e) => onChange({ ...form, email: e.target.value })}
                 required

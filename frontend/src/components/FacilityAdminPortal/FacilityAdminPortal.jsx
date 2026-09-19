@@ -3,13 +3,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
 import { facilityApi } from '../../api/facilityApi';
-import {
-  INITIAL_FACILITY_ROOMS,
-  INITIAL_DEPARTMENTS,
-  INITIAL_EMPLOYEES,
-  INITIAL_BOOKINGS,
-  INITIAL_FACILITY_SUMMARY,
-} from './data/facilityAdminData';
 import FacilityAdminMetrics from './components/FacilityAdminMetrics';
 import FacilityAdminTabs from './components/FacilityAdminTabs';
 import RoomsTab from './components/RoomsTab';
@@ -31,6 +24,20 @@ import BookingInspectorDrawer from './components/BookingInspectorDrawer';
 import CompanyDirectoryTab from './components/CompanyDirectoryTab';
 import { formatDate, formatDateTime } from '../../utils/dateUtils';
 import './FacilityAdminPortal.css';
+
+const DEFAULT_SUMMARY = {
+  totalRooms: 0,
+  availableRooms: 0,
+  maintenanceRooms: 0,
+  occupiedRoomsNow: 0,
+  totalFloors: 0,
+  totalDepartments: 0,
+  totalEmployees: 0,
+  todayBookingsCount: 0,
+  upcomingBookingsCount: 0,
+  floorDistribution: {},
+  departmentHeadcount: {},
+};
 
 export default function FacilityAdminPortal() {
   const { user } = useAuth();
@@ -58,14 +65,14 @@ export default function FacilityAdminPortal() {
   };
 
   // Summary Metrics State
-  const [summary, setSummary] = useState(INITIAL_FACILITY_SUMMARY);
+  const [summary, setSummary] = useState(DEFAULT_SUMMARY);
 
   // ════════════════════ PRIMARY DATA STATES ════════════════════
-  const [rooms, setRooms] = useState(INITIAL_FACILITY_ROOMS);
+  const [rooms, setRooms] = useState([]);
   const [floors, setFloors] = useState([]);
-  const [departments, setDepartments] = useState(INITIAL_DEPARTMENTS);
-  const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
-  const [bookings, setBookings] = useState(INITIAL_BOOKINGS);
+  const [departments, setDepartments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [directoryData, setDirectoryData] = useState({});
 

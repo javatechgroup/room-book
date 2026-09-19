@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
-  LayoutGrid,
   X,
   Mail,
   Lock,
   Eye,
   EyeOff,
   AlertCircle,
-  Check,
-  ShieldCheck,
-  Building,
-  User,
+  Building2,
   ArrowRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { DEMO_ACCOUNTS } from '../../api/authApi';
 import './LoginModal.css';
 
 function LoginModal() {
@@ -26,16 +22,11 @@ function LoginModal() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeDemo, setActiveDemo] = useState(null);
 
-  // Reset form when modal opens/closes
+  // Reset error when modal opens/closes
   useEffect(() => {
     if (isLoginOpen) {
       setError(null);
-      // Pre-fill with default demo account if empty
-      if (!email) {
-        handleSelectDemo(DEMO_ACCOUNTS[0]);
-      }
     }
   }, [isLoginOpen]);
 
@@ -52,19 +43,12 @@ function LoginModal() {
 
   if (!isLoginOpen) return null;
 
-  const handleSelectDemo = (account) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setActiveDemo(account.role);
-    setError(null);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     if (!email || !password) {
-      setError('Please enter both email and password.');
+      setError('Please enter both work email and password.');
       return;
     }
 
@@ -76,7 +60,7 @@ function LoginModal() {
       setError(result.error);
       toast.error('Authentication Failed', result.error || 'Invalid email or password.');
     } else {
-      toast.success('Signed In Successfully', `Welcome back, ${result.user?.name || 'User'}!`);
+      toast.success('Signed In Successfully', `Welcome back, ${result.user?.fullName || result.user?.name || 'User'}!`);
     }
   };
 
@@ -88,83 +72,57 @@ function LoginModal() {
         role="dialog"
         aria-modal="true"
       >
-        {/* Close Button */}
+        {/* Sleek Ghost Close Button */}
         <button
           className="login-modal__close"
           onClick={closeLogin}
           aria-label="Close dialog"
+          type="button"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Modal Header */}
         <div className="login-modal__header">
-          <div className="login-modal__logo">
-            <Building size={28} />
-            <span>Workplace Room Portal</span>
+          <div className="login-modal__icon-badge">
+            <Building2 size={22} />
           </div>
-          <h2 className="login-modal__title">Sign in to Workplace Portal</h2>
+          <h2 className="login-modal__title">Sign in to Workplace</h2>
           <p className="login-modal__subtitle">
-            Access company physical meeting rooms, slot availability, and facility management
+            Enter your credentials to access rooms and schedules
           </p>
-        </div>
-
-        {/* Quick Demo Accounts */}
-        <div className="login-modal__demo-section">
-          <span className="login-modal__demo-label">Quick Demo Logins:</span>
-          <div className="login-modal__demo-chips">
-            {DEMO_ACCOUNTS.map((acc) => {
-              const isSelected = activeDemo === acc.role;
-              return (
-                <button
-                  key={acc.role}
-                  type="button"
-                  className={`demo-chip ${isSelected ? 'demo-chip--selected' : ''}`}
-                  onClick={() => handleSelectDemo(acc)}
-                  title={acc.description}
-                >
-                  <span className="demo-chip__icon">{acc.icon}</span>
-                  <span className="demo-chip__title">{acc.roleLabel}</span>
-                  {isSelected && <Check size={14} className="demo-chip__check" />}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Error Alert */}
         {error && (
           <div className="login-modal__error">
-            <AlertCircle size={18} />
+            <AlertCircle size={16} />
             <span>{error}</span>
           </div>
         )}
 
         {/* Form */}
         <form className="login-modal__form" onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="login-modal__form-group">
             <label htmlFor="login-email">Work Email</label>
             <div className="input-with-icon">
-              <Mail size={18} className="input-icon" />
+              <Mail size={16} className="input-icon" />
               <input
                 id="login-email"
                 type="email"
                 placeholder="name@company.com"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setActiveDemo(null);
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
               />
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="login-modal__form-group">
             <label htmlFor="login-password">Password</label>
             <div className="input-with-icon">
-              <Lock size={18} className="input-icon" />
+              <Lock size={16} className="input-icon" />
               <input
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
@@ -180,7 +138,7 @@ function LoginModal() {
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -194,11 +152,17 @@ function LoginModal() {
               <span className="btn-spinner">Signing in...</span>
             ) : (
               <>
-                Sign In <ArrowRight size={18} />
+                <span>Sign In</span>
+                <ArrowRight size={16} />
               </>
             )}
           </button>
         </form>
+
+        <div className="login-modal__footer-note">
+          <ShieldCheck size={14} />
+          <span>Encrypted workplace access</span>
+        </div>
       </div>
     </div>
   );

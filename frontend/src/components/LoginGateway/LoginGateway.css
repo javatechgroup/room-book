@@ -3,7 +3,7 @@
    ================================================================ */
 
 .login-gateway {
-  min-height: calc(100vh - 70px);
+  min-height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,13 +11,13 @@
     radial-gradient(ellipse 70% 60% at 20% 10%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
     radial-gradient(ellipse 60% 50% at 80% 90%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
     linear-gradient(180deg, var(--bg-body) 0%, var(--bg-surface-alt) 100%);
-  padding: 100px 0 60px;
+  padding: 80px 0 28px;
 }
 
 .login-gateway__container {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  gap: 60px;
+  gap: 48px;
   align-items: center;
   max-width: 1080px;
 }
@@ -26,7 +26,7 @@
 .login-gateway__brand-panel {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 24px;
 }
 
 .brand-badge {
@@ -163,70 +163,6 @@
   color: var(--text-muted);
 }
 
-/* Demo Role Chips */
-.gateway-demo-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
-  background: var(--bg-surface-alt);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-}
-
-.demo-label {
-  font-size: 0.725rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-faint);
-}
-
-.demo-chips {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.demo-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border-card);
-  background: var(--bg-card);
-  color: var(--text-body);
-  font-size: 0.775rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.demo-pill:hover {
-  border-color: var(--primary-400);
-  background: var(--primary-50);
-  color: var(--primary-700);
-}
-
-.demo-pill--selected {
-  border-color: var(--primary-600);
-  background: var(--primary-50);
-  color: var(--primary-700);
-}
-
-[data-theme='dark'] .demo-pill:hover {
-  border-color: #60a5fa;
-  background: rgba(59, 130, 246, 0.15);
-  color: #93c5fd;
-}
-
-[data-theme='dark'] .demo-pill--selected {
-  border-color: #60a5fa;
-  background: rgba(59, 130, 246, 0.22);
-  color: #93c5fd;
-}
 
 /* Error Alert */
 .gateway-error {
@@ -321,16 +257,21 @@
   font-size: 0.95rem;
 }
 
-.gateway-footer-note {
+.gateway-card__footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 0.75rem;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-card);
+  font-size: 0.775rem;
   color: var(--text-faint);
   text-align: center;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-card);
+}
+
+.gateway-card__footer-icon {
+  color: var(--emerald-500);
+  flex-shrink: 0;
 }
 
 /* Gateway Contact Callout */
@@ -406,7 +347,7 @@
 @media (max-width: 900px) {
   .login-gateway {
     min-height: auto;
-    padding: 96px 0 40px;
+    padding: 80px 0 28px;
   }
 
   .login-gateway__container {
@@ -420,7 +361,7 @@
 }
 
 @media (max-width: 768px) {
-  /* Sign-in form is NOT displayed by default in mobile version */
+  /* Sign-in form is NOT displayed by default in mobile version — opens as popup */
   .login-gateway__form-panel {
     display: none !important;
   }
@@ -500,14 +441,6 @@
     margin-bottom: 12px;
   }
 
-  .demo-chips {
-    gap: 6px;
-  }
-
-  .demo-pill {
-    padding: 5px 9px;
-    font-size: 0.725rem;
-  }
 
   .gateway-card {
     padding: 20px 14px;

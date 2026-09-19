@@ -164,7 +164,7 @@ function Contact() {
                         id="company"
                         name="company"
                         type="text"
-                        placeholder="Acme Corporation"
+                        placeholder="Company Name"
                         value={formData.company}
                         onChange={handleChange}
                       />

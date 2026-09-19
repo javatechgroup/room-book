@@ -107,7 +107,7 @@ function Header() {
               {user?.role === 'SUPER_ADMIN' ? 'Super Admin Portal' : user?.role === 'COMPANY_ADMIN' ? 'Facility Admin Portal' : 'Workplace Portal'}
             </span>
             <span className="header__logo-sub">
-              {user?.role === 'SUPER_ADMIN' ? 'Tenant & Access Management' : user?.role === 'COMPANY_ADMIN' ? 'Office Facilities & Multi-Floor Spaces' : 'Building A • Room Manager'}
+              {user?.role === 'SUPER_ADMIN' ? 'Tenant & Access Management' : user?.role === 'COMPANY_ADMIN' ? 'Office Facilities & Multi-Floor Spaces' : 'Meeting Room Booking & Availability'}
             </span>
           </div>
         </a>

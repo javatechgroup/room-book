@@ -146,58 +146,17 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Column 2: Demo Access */}
-          <div className="footer__column">
-            <h4 className="footer__heading">Demo Access</h4>
-            <ul>
-              <li>
-                <a
-                  href="#login-gateway"
-                  onClick={(e) => scrollToSection(e, 'login-gateway')}
-                  title="Role: SUPER_ADMIN (superadmin@system.com)"
-                >
-                  <ShieldCheck size={13} className="footer__link-icon" />
-                  Super Admin
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#login-gateway"
-                  onClick={(e) => scrollToSection(e, 'login-gateway')}
-                  title="Role: COMPANY_ADMIN (admin@acme.com)"
-                >
-                  <Building2 size={13} className="footer__link-icon" />
-                  Facility Admin
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#login-gateway"
-                  onClick={(e) => scrollToSection(e, 'login-gateway')}
-                  title="Role: EMPLOYEE (john.doe@acme.com)"
-                >
-                  <Users size={13} className="footer__link-icon" />
-                  Employee Portal
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Campus Info */}
+          {/* Column 2: Campus Info */}
           <div className="footer__column">
             <h4 className="footer__heading">Campus Information</h4>
             <ul className="footer__info-list">
               <li>
                 <MapPin size={13} className="footer__link-icon" />
-                <span>123 Workplace Plaza, Suite 400</span>
+                <span>Workplace Headquarters</span>
               </li>
               <li>
                 <Mail size={13} className="footer__link-icon" />
                 <a href="mailto:inquiries@roombook.io">inquiries@roombook.io</a>
-              </li>
-              <li>
-                <Phone size={13} className="footer__link-icon" />
-                <a href="tel:+15552345678">+1 (555) 234-5678</a>
               </li>
             </ul>
           </div>
@@ -205,7 +164,7 @@ function Footer() {
 
         {/* Footer Bottom Bar */}
         <div className="footer__bottom">
-          <p>&copy; {currentYear} Workplace Portal • Building A Operations. All rights reserved.</p>
+          <p>&copy; {currentYear} Workplace Room Portal. All rights reserved.</p>
           <button type="button" className="footer__back-to-top" onClick={scrollToTop}>
             <span>Back to top</span>
             <ArrowUp size={13} />

@@ -12,11 +12,29 @@ import {
   RefreshCw,
   Building2,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './WalkthroughSection.css';
 
 export default function WalkthroughSection() {
+  const { openLogin } = useAuth();
   // Interactive state for the live flow simulation
   const [simulationState, setSimulationState] = useState('occupied'); // 'available' or 'occupied'
+
+  const handleScrollToLogin = (e) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      openLogin();
+    } else {
+      const el = document.getElementById('login-gateway');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+          const input = document.getElementById('corp-email');
+          if (input) input.focus();
+        }, 500);
+      }
+    }
+  };
 
   return (
     <section className="walkthrough-section" id="how-it-works">
@@ -189,7 +207,7 @@ export default function WalkthroughSection() {
                       <p className="suggestion-text">
                         The room will be cleaned and ready at 11:30 AM. You can book this slot directly without re-entering details.
                       </p>
-                      <a href="#login-gateway" className="suggestion-action-btn">
+                      <a href="#login-gateway" className="suggestion-action-btn" onClick={handleScrollToLogin}>
                         Select This Slot <ArrowRight size={14} />
                       </a>
                     </div>
@@ -228,7 +246,7 @@ export default function WalkthroughSection() {
                           <span className="status-chip status-chip--free">Available Now</span>
                         </div>
                       </div>
-                      <a href="#login-gateway" className="suggestion-action-btn">
+                      <a href="#login-gateway" className="suggestion-action-btn" onClick={handleScrollToLogin}>
                         Switch Room for 10:00 AM <ArrowRight size={14} />
                       </a>
                     </div>

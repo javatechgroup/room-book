@@ -159,7 +159,7 @@ export default function ContactModal() {
                     id="modal-company"
                     name="company"
                     type="text"
-                    placeholder="Acme Corporation"
+                    placeholder="Company Name"
                     value={formData.company}
                     onChange={handleChange}
                   />

@@ -739,18 +739,7 @@ export default function SuperAdminPortal() {
         setIsCompanyModalOpen(false);
         await refreshAllTabsData();
       } else {
-        if (user?.isDemoSession || !res.error) {
-          if (drawerCompany && drawerCompany.id === editingCompany.id) {
-            setDrawerCompany((prev) => ({ ...prev, ...companyForm }));
-          }
-          showToast('Tenant Updated', `Company details for "${companyForm.name}" updated.`);
-          setCompanyConflictSuggestions([]);
-          setCompanyModalError('');
-          setIsCompanyModalOpen(false);
-          await refreshAllTabsData();
-        } else {
-          showToast('Update Failed', res.error, 'error');
-        }
+        showToast('Update Failed', res.error, 'error');
       }
     } else {
       const res = await companyApi.createCompany(companyForm);
@@ -761,17 +750,9 @@ export default function SuperAdminPortal() {
         setIsCompanyModalOpen(false);
         await refreshAllTabsData();
       } else {
-        if (user?.isDemoSession) {
-          showToast('Tenant Registered (Demo)', `New organization "${companyForm.name}" provisioned.`);
-          setCompanyConflictSuggestions([]);
-          setCompanyModalError('');
-          setIsCompanyModalOpen(false);
-          await refreshAllTabsData();
-        } else {
-          setCompanyConflictSuggestions(res.suggestedCodes || []);
-          setCompanyModalError(res.error || 'Company registration failed');
-          showToast('Registration Conflict', res.error, 'error');
-        }
+        setCompanyConflictSuggestions(res.suggestedCodes || []);
+        setCompanyModalError(res.error || 'Company registration failed');
+        showToast('Registration Conflict', res.error, 'error');
       }
     }
   };
@@ -856,16 +837,7 @@ export default function SuperAdminPortal() {
         setIsAdminModalOpen(false);
         await refreshAllTabsData();
       } else {
-        if (user?.isDemoSession || !res.error) {
-          if (drawerAdmin && drawerAdmin.id === editingAdmin.id) {
-            setDrawerAdmin((prev) => ({ ...prev, ...adminForm }));
-          }
-          showToast('Admin Updated', `Updated account for ${adminForm.fullName}.`);
-          setIsAdminModalOpen(false);
-          await refreshAllTabsData();
-        } else {
-          showToast('Update Failed', res.error, 'error');
-        }
+        showToast('Update Failed', res.error, 'error');
       }
     } else {
       const res = await adminApi.createAdmin(adminForm);
@@ -874,13 +846,7 @@ export default function SuperAdminPortal() {
         setIsAdminModalOpen(false);
         await refreshAllTabsData();
       } else {
-        if (user?.isDemoSession) {
-          showToast('Admin Created (Demo)', `Administrator credentials created for ${adminForm.fullName}.`);
-          setIsAdminModalOpen(false);
-          await refreshAllTabsData();
-        } else {
-          showToast('Creation Failed', res.error, 'error');
-        }
+        showToast('Creation Failed', res.error, 'error');
       }
     }
   };

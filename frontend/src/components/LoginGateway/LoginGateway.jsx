@@ -11,11 +11,9 @@ import {
   Layers,
   Sparkles,
   AlertCircle,
-  Tablet,
   LogIn,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { DEMO_ACCOUNTS } from '../../api/authApi';
 import './LoginGateway.css';
 
 function LoginGateway() {
@@ -25,14 +23,6 @@ function LoginGateway() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeDemo, setActiveDemo] = useState(null);
-
-  const handleSelectDemo = (account) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setActiveDemo(account.role);
-    setError(null);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,7 +51,7 @@ function LoginGateway() {
             <div className="brand-badge">
               <span className="pulse-dot" />
               <Building2 size={15} />
-              <span>Campus Facility Portal • Building A</span>
+              <span>Campus Facility Portal</span>
             </div>
             <h1 className="brand-title">
               Workplace Meeting Room <br />
@@ -91,7 +81,7 @@ function LoginGateway() {
               </div>
               <div>
                 <strong>Multi-Floor Physical Coverage</strong>
-                <p>Floor 1 to Floor 4 spaces including Focus Pods, Team Rooms, and Boardrooms.</p>
+                <p>Spaces across all floors including Focus Pods, Team Rooms, and Boardrooms.</p>
               </div>
             </div>
 
@@ -123,7 +113,7 @@ function LoginGateway() {
             </div>
             <div className="gateway-contact-callout__text">
               <strong>Looking to deploy this room system for your company?</strong>
-              <p>Connect with our corporate solutions team to schedule an enterprise demo or set up for your company.</p>
+              <p>Connect with our corporate solutions team to schedule an enterprise walkthrough or set up for your company.</p>
               <button
                 type="button"
                 className="contact-link"
@@ -149,7 +139,7 @@ function LoginGateway() {
           </div>
         </div>
 
-        {/* Right Side: Professional Corporate Sign-In Form (Desktop default, hidden by default on mobile) */}
+        {/* Right Side: Professional Corporate Sign-In Form */}
         <div className="login-gateway__form-panel">
           <div className="gateway-card">
             <div className="gateway-card__header">
@@ -158,29 +148,7 @@ function LoginGateway() {
                 <span>Workplace Portal</span>
               </div>
               <h2>Sign in to your account</h2>
-              <p>Enter your corporate credentials or use quick demo access below</p>
-            </div>
-
-            {/* Quick Demo Role Chips */}
-            <div className="gateway-demo-section">
-              <span className="demo-label">Quick Demo Access:</span>
-              <div className="demo-chips">
-                {DEMO_ACCOUNTS.map((acc) => {
-                  const isSelected = activeDemo === acc.role;
-                  return (
-                    <button
-                      key={acc.role}
-                      type="button"
-                      className={`demo-pill ${isSelected ? 'demo-pill--selected' : ''}`}
-                      onClick={() => handleSelectDemo(acc)}
-                      title={acc.description}
-                    >
-                      <span className="demo-pill__icon">{acc.icon}</span>
-                      <span className="demo-pill__title">{acc.roleLabel}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <p>Enter your corporate credentials below</p>
             </div>
 
             {/* Error Message */}
@@ -202,10 +170,7 @@ function LoginGateway() {
                     type="email"
                     placeholder="name@company.com"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setActiveDemo(null);
-                    }}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
                   />
@@ -250,6 +215,11 @@ function LoginGateway() {
                 )}
               </button>
             </form>
+
+            <div className="gateway-card__footer">
+              <ShieldCheck size={15} className="gateway-card__footer-icon" />
+              <span>Enterprise 256-bit encryption • Role-based access</span>
+            </div>
           </div>
         </div>
       </div>
