@@ -18,6 +18,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 
 export default function RoomsTab({
   rooms = [],
@@ -49,21 +50,6 @@ export default function RoomsTab({
   onPageSizeChange,
 }) {
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'cards'
-  const [localSearch, setLocalSearch] = useState(search);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  // Debounced Live Search (300ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearch !== search && onSearchChange) {
-        onSearchChange(localSearch);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [localSearch, search, onSearchChange]);
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const isAllSelected = rooms.length > 0 && rooms.every((r) => selectedRoomIds.includes(r.id));
@@ -71,48 +57,15 @@ export default function RoomsTab({
   const availableCount = rooms.filter((r) => r.status === 'AVAILABLE').length;
   const maintenanceCount = rooms.filter((r) => r.status === 'MAINTENANCE').length;
 
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (onSearchChange) onSearchChange(localSearch);
-  };
-
-  const handleClearSearch = () => {
-    setLocalSearch('');
-    if (onSearchChange) onSearchChange('');
-  };
-
   return (
     <div className="superadmin-tab-content">
       {/* SuperAdmin Toolbar */}
       <div className="superadmin-toolbar">
-        <form onSubmit={handleSearchSubmit} className="superadmin-search-form">
-          <div className="superadmin-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search rooms by name, floor, or wing..."
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              className="superadmin-search-input"
-            />
-            {localSearch ? (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            ) : (
-              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
-            )}
-          </div>
-          <button type="submit" className="btn btn--primary btn--sm search-submit-btn">
-            <Search size={14} />
-            <span>Search</span>
-          </button>
-        </form>
+        <SearchInput
+          value={search}
+          onChange={onSearchChange}
+          placeholder="Search rooms by name, floor, or wing..."
+        />
 
         <div className="superadmin-filter-group">
           {/* Floor Dropdown */}
@@ -288,19 +241,19 @@ export default function RoomsTab({
                     <td colSpan={6} className="td-empty">
                       <DoorOpen size={32} className="empty-icon" />
                       <p>
-                        {localSearch || floorFilter !== 'ALL' || statusFilter !== 'ALL'
+                        {search || floorFilter !== 'ALL' || statusFilter !== 'ALL'
                           ? 'No meeting rooms match your active filters.'
                           : 'No meeting rooms configured yet.'}
                       </p>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
-                        {(localSearch || floorFilter !== 'ALL' || statusFilter !== 'ALL') && (
+                        {(search || floorFilter !== 'ALL' || statusFilter !== 'ALL') && (
                           <button
                             type="button"
                             className="btn btn--secondary btn--sm"
                             onClick={() => {
-                              handleClearSearch();
-                              onFloorFilterChange && onFloorFilterChange('ALL');
-                              onStatusFilterChange && onStatusFilterChange('ALL');
+                              if (onSearchChange) onSearchChange('');
+                              if (onFloorFilterChange) onFloorFilterChange('ALL');
+                              if (onStatusFilterChange) onStatusFilterChange('ALL');
                             }}
                           >
                             Reset All Filters

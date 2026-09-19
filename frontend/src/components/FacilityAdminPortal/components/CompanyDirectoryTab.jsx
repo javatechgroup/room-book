@@ -13,6 +13,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function CompanyDirectoryTab({
@@ -177,28 +178,11 @@ export default function CompanyDirectoryTab({
       {/* Searchable Staff Directory Table */}
       <div className="directory-section">
         <div className="superadmin-toolbar" style={{ marginTop: '0.5rem' }}>
-          <div className="superadmin-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search company directory by name, email, or department..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="superadmin-search-input"
-            />
-            {search ? (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={() => setSearch('')}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            ) : (
-              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
-            )}
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search company directory by name, email, or department..."
+          />
 
           <div className="superadmin-filter-group">
             <div className={`superadmin-dropdown-wrap ${selectedDepartment !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>

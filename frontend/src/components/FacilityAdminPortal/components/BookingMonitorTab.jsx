@@ -20,6 +20,7 @@ import {
   Radio,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function BookingMonitorTab({
@@ -45,7 +46,6 @@ export default function BookingMonitorTab({
   onPageSizeChange,
 }) {
   const [activeView, setActiveView] = useState('grid'); // 'grid' (Floor Map) | 'list' (Table)
-  const [localSearch, setLocalSearch] = useState(search);
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
   // 15s real-time heartbeat ticker to dynamically transition meetings from In Progress -> Completed
@@ -66,25 +66,9 @@ export default function BookingMonitorTab({
   const [roomPage, setRoomPage] = useState(1);
   const [roomPageSize, setRoomPageSize] = useState(6);
 
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  // 300ms debounce for live search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearch !== search && onSearchChange) {
-        setBookingPage(1);
-        onSearchChange(localSearch);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [localSearch, search, onSearchChange]);
-
-  const hasActiveFilters = Boolean(localSearch || floorFilter !== 'ALL' || statusFilter !== 'ALL' || dateFilter);
+  const hasActiveFilters = Boolean(search || floorFilter !== 'ALL' || statusFilter !== 'ALL' || dateFilter);
 
   const handleResetFilters = () => {
-    setLocalSearch('');
     setBookingPage(1);
     setRoomPage(1);
     if (onSearchChange) onSearchChange('');
@@ -176,18 +160,6 @@ export default function BookingMonitorTab({
     );
   }, [displayedBookings, bookingPage, bookingPageSize]);
 
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    setBookingPage(1);
-    if (onSearchChange) onSearchChange(localSearch);
-  };
-
-  const handleClearSearch = () => {
-    setLocalSearch('');
-    setBookingPage(1);
-    if (onSearchChange) onSearchChange('');
-  };
-
   const handleFloorChange = (newFloor) => {
     setRoomPage(1);
     setBookingPage(1);
@@ -240,34 +212,14 @@ export default function BookingMonitorTab({
     <div className="superadmin-tab-content">
       {/* SuperAdmin Toolbar */}
       <div className="superadmin-toolbar">
-        <form onSubmit={handleSearchSubmit} className="superadmin-search-form">
-          <div className="superadmin-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search reservations by title, booker, or room..."
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              className="superadmin-search-input"
-            />
-            {localSearch ? (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            ) : (
-              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
-            )}
-          </div>
-          <button type="submit" className="btn btn--primary btn--sm search-submit-btn">
-            <Search size={14} />
-            <span>Search</span>
-          </button>
-        </form>
+        <SearchInput
+          value={search}
+          onChange={(val) => {
+            setBookingPage(1);
+            if (onSearchChange) onSearchChange(val);
+          }}
+          placeholder="Search reservations by title, booker, or room..."
+        />
 
         <div className="superadmin-filter-group">
           {/* Date Picker */}

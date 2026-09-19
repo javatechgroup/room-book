@@ -37,6 +37,7 @@ export default function CompanyInspectorDrawer({
             className="sa-drawer__close"
             onClick={onClose}
             aria-label="Close drawer"
+            title="Close (Esc)"
           >
             &times;
           </button>

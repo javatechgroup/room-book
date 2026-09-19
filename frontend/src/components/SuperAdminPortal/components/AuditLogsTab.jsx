@@ -17,6 +17,7 @@ import {
   Layers,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 import { formatAuditTimestamp, formatDateTime } from '../../../utils/dateUtils';
 
 function formatAuditTarget(entityName, entityType) {
@@ -71,26 +72,7 @@ export default function AuditLogsTab({
   onPageChange,
   onPageSizeChange,
 }) {
-  const [localSearch, setLocalSearch] = useState(search);
   const [selectedLog, setSelectedLog] = useState(null);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (onSearchSubmit) {
-      onSearchSubmit(localSearch);
-    }
-  };
-
-  const handleClearSearch = () => {
-    setLocalSearch('');
-    if (onSearchSubmit) {
-      onSearchSubmit('');
-    }
-  };
 
   const getActionBadgeClass = (action) => {
     if (!action) return 'action-tag';
@@ -122,32 +104,13 @@ export default function AuditLogsTab({
     <div className="superadmin-panel">
       {/* Toolbar: Search, Action Filter, Entity Segment, and CSV Export */}
       <div className="superadmin-toolbar">
-        <form onSubmit={handleSearchSubmit} className="superadmin-search-form">
-          <div className="superadmin-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search audit trail by user, action, resource, or details..."
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              className="superadmin-search-input"
-            />
-            {localSearch && (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            )}
-          </div>
-          <button type="submit" className="btn btn--primary btn--sm search-submit-btn">
-            <Search size={14} />
-            <span>Search</span>
-          </button>
-        </form>
+        <SearchInput
+          value={search}
+          onChange={(val) => {
+            if (onSearchSubmit) onSearchSubmit(val);
+          }}
+          placeholder="Search audit trail by user, action, resource, or details..."
+        />
 
         {/* Action Type Dropdown Filter */}
         <div className={`superadmin-dropdown-wrap ${actionFilter !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>
@@ -265,17 +228,19 @@ export default function AuditLogsTab({
                   <td colSpan="7" className="td-empty">
                     <Clock size={32} className="empty-icon" />
                     <p>No audit log events match your current filter or search criteria.</p>
-                    <button
-                      type="button"
-                      className="btn btn--outline btn--sm"
-                      onClick={() => {
-                        if (onSearchSubmit) onSearchSubmit('');
-                        if (onActionFilterChange) onActionFilterChange('ALL');
-                        if (onEntityTypeFilterChange) onEntityTypeFilterChange('ALL');
-                      }}
-                    >
-                      Reset Filters
-                    </button>
+                    {(search || actionFilter !== 'ALL' || entityTypeFilter !== 'ALL') && (
+                      <button
+                        type="button"
+                        className="btn btn--outline btn--sm"
+                        onClick={() => {
+                          if (onSearchSubmit) onSearchSubmit('');
+                          if (onActionFilterChange) onActionFilterChange('ALL');
+                          if (onEntityTypeFilterChange) onEntityTypeFilterChange('ALL');
+                        }}
+                      >
+                        Reset All Filters & Search
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (

@@ -14,6 +14,7 @@ import {
   Eye,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function DepartmentsTab({
@@ -36,68 +37,20 @@ export default function DepartmentsTab({
   onPageChange,
   onPageSizeChange,
 }) {
-  const [localSearch, setLocalSearch] = useState(search);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearch !== search && onSearchChange) {
-        onSearchChange(localSearch);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [localSearch, search, onSearchChange]);
-
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   const activeCount = departments.filter((d) => d.status === 'ACTIVE').length;
   const inactiveCount = departments.filter((d) => d.status === 'INACTIVE').length;
 
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (onSearchChange) onSearchChange(localSearch);
-  };
-
-  const handleClearSearch = () => {
-    setLocalSearch('');
-    if (onSearchChange) onSearchChange('');
-  };
-
   return (
     <div className="superadmin-tab-content">
       {/* SuperAdmin Toolbar */}
       <div className="superadmin-toolbar">
-        <form onSubmit={handleSearchSubmit} className="superadmin-search-form">
-          <div className="superadmin-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search departments by name..."
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              className="superadmin-search-input"
-            />
-            {localSearch ? (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            ) : (
-              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
-            )}
-          </div>
-          <button type="submit" className="btn btn--primary btn--sm search-submit-btn">
-            <Search size={14} />
-            <span>Search</span>
-          </button>
-        </form>
+        <SearchInput
+          value={search}
+          onChange={onSearchChange}
+          placeholder="Search departments by name..."
+        />
 
         <div className="superadmin-filter-group">
           {/* Status Segmented Buttons */}
@@ -173,17 +126,17 @@ export default function DepartmentsTab({
                   <td colSpan={5} className="td-empty">
                     <Building2 size={32} className="empty-icon" />
                     <p>
-                      {localSearch || statusFilter !== 'ALL'
+                      {search || statusFilter !== 'ALL'
                         ? 'No departments match your active filters.'
                         : 'No departments configured yet.'}
                     </p>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
-                      {(localSearch || statusFilter !== 'ALL') && (
+                      {(search || statusFilter !== 'ALL') && (
                         <button
                           type="button"
                           className="btn btn--secondary btn--sm"
                           onClick={() => {
-                            handleClearSearch();
+                            if (onSearchChange) onSearchChange('');
                             onStatusFilterChange && onStatusFilterChange('ALL');
                           }}
                         >

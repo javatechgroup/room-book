@@ -21,9 +21,30 @@ import './SuperAdminPortal.css';
 export default function SuperAdminPortal() {
   const { user } = useAuth();
 
-  // Navigation Tab State
-  const [activeTab, setActiveTab] = useState('companies'); // 'companies' | 'admins' | 'audit'
+  // Navigation Tab State — initialized from URL parameter if present (?tab=companies)
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      const validTabs = ['companies', 'admins', 'audit'];
+      if (tabParam && validTabs.includes(tabParam)) return tabParam;
+    }
+    return 'companies';
+  });
   const panelRef = useRef(null);
+
+  // Listen to browser Back/Forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab') || 'companies';
+        setActiveTab(tabParam);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const scrollToDataPanelOnMobile = () => {
     if (typeof window !== 'undefined' && window.innerWidth <= 900) {
@@ -80,6 +101,35 @@ export default function SuperAdminPortal() {
   // Slide-Over Detail Drawer States
   const [drawerCompany, setDrawerCompany] = useState(null);
   const [drawerAdmin, setDrawerAdmin] = useState(null);
+
+  const closeAllDrawers = useCallback(() => {
+    setDrawerCompany(null);
+    setDrawerAdmin(null);
+  }, []);
+
+  // Keyboard Shortcuts: '/' to focus active search, 'ESC' to close drawers or blur search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+      if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        const searchInput = document.querySelector('.superadmin-search-input');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      } else if (e.key === 'Escape') {
+        if (drawerCompany || drawerAdmin) {
+          closeAllDrawers();
+        } else if (isInput && document.activeElement?.classList?.contains('superadmin-search-input')) {
+          document.activeElement.blur();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [drawerCompany, drawerAdmin]);
 
   // Company Modal State
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
@@ -356,9 +406,17 @@ export default function SuperAdminPortal() {
     ]);
   }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions, fetchAllGlobalSummary]);
 
-  // Tab switch & on-demand load on click (resets filters so full list is shown)
+  // Tab switch & on-demand load on click (resets filters, syncs URL, closes drawers)
   const handleTabChange = useCallback((tab) => {
+    closeAllDrawers();
     setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tab);
+      window.history.pushState({ tab }, '', url);
+    }
+    scrollToDataPanelOnMobile();
+
     if (tab === 'companies') {
       setSelectedCompanyIds([]);
       setCompanySearch('');
@@ -382,7 +440,7 @@ export default function SuperAdminPortal() {
       fetchAuditLogs({ search: '', action: 'ALL', entityType: 'ALL', page: 1 });
       fetchAuditActions();
     }
-  }, [fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions, fetchAllGlobalSummary]);
+  }, [closeAllDrawers, fetchCompanies, fetchAdmins, fetchAuditLogs, fetchAuditActions, fetchAllGlobalSummary]);
 
   // Reactive data synchronization on filter / page / sort changes
   useEffect(() => {

@@ -17,6 +17,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function EmployeesTab({
@@ -49,22 +50,6 @@ export default function EmployeesTab({
   onPageChange,
   onPageSizeChange,
 }) {
-  const [localSearch, setLocalSearch] = useState(search);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  // Debounced Live Search (300ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearch !== search && onSearchChange) {
-        onSearchChange(localSearch);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [localSearch, search, onSearchChange]);
-
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const isAllSelected = employees.length > 0 && employees.every((e) => selectedEmployeeIds.includes(e.id));
   const activeDept = departments.find((d) => String(d.id) === String(departmentFilter));
@@ -72,48 +57,15 @@ export default function EmployeesTab({
   const activeCount = employees.filter((e) => e.status === 'ACTIVE').length;
   const inactiveCount = employees.filter((e) => e.status === 'INACTIVE').length;
 
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (onSearchChange) onSearchChange(localSearch);
-  };
-
-  const handleClearSearch = () => {
-    setLocalSearch('');
-    if (onSearchChange) onSearchChange('');
-  };
-
   return (
     <div className="superadmin-tab-content">
       {/* SuperAdmin Toolbar */}
       <div className="superadmin-toolbar">
-        <form onSubmit={handleSearchSubmit} className="superadmin-search-form">
-          <div className="superadmin-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search staff by name, email, or department..."
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              className="superadmin-search-input"
-            />
-            {localSearch ? (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            ) : (
-              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
-            )}
-          </div>
-          <button type="submit" className="btn btn--primary btn--sm search-submit-btn">
-            <Search size={14} />
-            <span>Search</span>
-          </button>
-        </form>
+        <SearchInput
+          value={search}
+          onChange={onSearchChange}
+          placeholder="Search staff by name, email, or department..."
+        />
 
         <div className="superadmin-filter-group">
           {/* Department Dropdown */}
@@ -297,11 +249,11 @@ export default function EmployeesTab({
                         : 'No employees match your current search or filter criteria.'}
                     </p>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
-                      {localSearch && (
+                      {search && (
                         <button
                           type="button"
                           className="btn btn--secondary btn--sm"
-                          onClick={handleClearSearch}
+                          onClick={() => onSearchChange && onSearchChange('')}
                         >
                           Clear Search
                         </button>

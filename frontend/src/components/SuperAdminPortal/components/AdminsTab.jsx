@@ -17,6 +17,7 @@ import {
   Filter,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
 
 export default function AdminsTab({
@@ -51,62 +52,20 @@ export default function AdminsTab({
   onPageChange,
   onPageSizeChange,
 }) {
-  const [localSearch, setLocalSearch] = useState(search);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (onSearchSubmit) {
-      onSearchSubmit(localSearch);
-    } else if (onSearchChange) {
-      onSearchChange(localSearch);
-    }
-  };
-
-  const handleClearSearch = () => {
-    setLocalSearch('');
-    if (onSearchSubmit) {
-      onSearchSubmit('');
-    } else if (onSearchChange) {
-      onSearchChange('');
-    }
-  };
-
   const selectedCompanyObj = companies.find((c) => String(c.id) === String(companyFilter));
 
   return (
     <div className="superadmin-panel">
       {/* Toolbar: Search Form with Submit Button, Company Filter, and Status Filter */}
       <div className="superadmin-toolbar">
-        <form onSubmit={handleSearchSubmit} className="superadmin-search-form">
-          <div className="superadmin-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search by administrator name, email, or company..."
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              className="superadmin-search-input"
-            />
-            {localSearch && (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            )}
-          </div>
-          <button type="submit" className="btn btn--primary btn--sm search-submit-btn">
-            <Search size={14} />
-            <span>Search</span>
-          </button>
-        </form>
+        <SearchInput
+          value={search}
+          onChange={(val) => {
+            if (onSearchSubmit) onSearchSubmit(val);
+            else if (onSearchChange) onSearchChange(val);
+          }}
+          placeholder="Search by administrator name, email, or company..."
+        />
 
         {/* Company Filter Dropdown */}
         <div className={`superadmin-dropdown-wrap ${companyFilter !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>
@@ -252,17 +211,20 @@ export default function AdminsTab({
                   <td colSpan="8" className="td-empty">
                     <Users size={32} className="empty-icon" />
                     <p>No Facility Administrators match your search criteria.</p>
-                    <button
-                      type="button"
-                      className="btn btn--outline btn--sm"
-                      onClick={() => {
-                        if (onSearchChange) onSearchChange('');
-                        if (onCompanyFilterChange) onCompanyFilterChange('ALL');
-                        if (onStatusFilterChange) onStatusFilterChange('ALL');
-                      }}
-                    >
-                      Reset Filters
-                    </button>
+                    {(search || companyFilter !== 'ALL' || statusFilter !== 'ALL') && (
+                      <button
+                        type="button"
+                        className="btn btn--outline btn--sm"
+                        onClick={() => {
+                          if (onSearchSubmit) onSearchSubmit('');
+                          else if (onSearchChange) onSearchChange('');
+                          if (onCompanyFilterChange) onCompanyFilterChange('ALL');
+                          if (onStatusFilterChange) onStatusFilterChange('ALL');
+                        }}
+                      >
+                        Reset All Filters & Search
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (

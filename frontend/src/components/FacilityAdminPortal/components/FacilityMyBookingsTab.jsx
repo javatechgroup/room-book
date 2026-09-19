@@ -15,6 +15,7 @@ import {
   Download,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function FacilityMyBookingsTab({
@@ -168,28 +169,11 @@ export default function FacilityMyBookingsTab({
     <div className="superadmin-tab-content">
       {/* Toolbar */}
       <div className="superadmin-toolbar">
-        <div className="superadmin-search-box">
-          <Search size={16} className="search-box-icon" />
-          <input
-            type="text"
-            placeholder="Search my reservations by title, room, or notes..."
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="superadmin-search-input"
-          />
-          {search ? (
-            <button
-              type="button"
-              className="search-clear-btn"
-              onClick={() => handleSearchChange('')}
-              aria-label="Clear search"
-            >
-              &times;
-            </button>
-          ) : (
-            <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
-          )}
-        </div>
+        <SearchInput
+          value={search}
+          onChange={handleSearchChange}
+          placeholder="Search my reservations by title, room, or notes..."
+        />
 
         <div className="superadmin-filter-group">
           {/* Floor Dropdown */}
