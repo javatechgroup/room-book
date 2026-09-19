@@ -32,34 +32,16 @@ export default function CampusDirectoryTab({
           >
             All Floors ({rooms.length})
           </button>
-          <button
-            type="button"
-            className={`dir-pill ${dirFloorFilter === 'floor-4' ? 'dir-pill--active' : ''}`}
-            onClick={() => onFloorFilterChange('floor-4')}
-          >
-            Floor 4 — Executive
-          </button>
-          <button
-            type="button"
-            className={`dir-pill ${dirFloorFilter === 'floor-3' ? 'dir-pill--active' : ''}`}
-            onClick={() => onFloorFilterChange('floor-3')}
-          >
-            Floor 3 — Collaborative Labs
-          </button>
-          <button
-            type="button"
-            className={`dir-pill ${dirFloorFilter === 'floor-2' ? 'dir-pill--active' : ''}`}
-            onClick={() => onFloorFilterChange('floor-2')}
-          >
-            Floor 2 — Team Hub
-          </button>
-          <button
-            type="button"
-            className={`dir-pill ${dirFloorFilter === 'floor-1' ? 'dir-pill--active' : ''}`}
-            onClick={() => onFloorFilterChange('floor-1')}
-          >
-            Floor 1 — Focus Pods
-          </button>
+          {Array.from(new Set(rooms.map((r) => r.floor).filter(Boolean))).sort().map((floor) => (
+            <button
+              key={floor}
+              type="button"
+              className={`dir-pill ${dirFloorFilter === floor ? 'dir-pill--active' : ''}`}
+              onClick={() => onFloorFilterChange(floor)}
+            >
+              {floor}
+            </button>
+          ))}
         </div>
 
         <div className="dir-size-select">

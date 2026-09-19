@@ -17,7 +17,7 @@ import {
   Tag,
 } from 'lucide-react';
 import DoorTabletPreview from './DoorTabletPreview';
-import { TIME_SLOTS, FLOORS } from '../data/workplaceData';
+import { TIME_SLOTS } from '../data/workplaceData';
 
 const isSlotInPast = (dateStr, slotStr) => {
   if (!dateStr || !slotStr) return false;
@@ -100,7 +100,7 @@ export default function SlotFinderTab({
             value={selectedFloor}
             onChange={(e) => onFloorChange(e.target.value)}
           >
-            {FLOORS.map((f) => (
+            {['All Floors', ...Array.from(new Set(rooms.map((r) => r.floor).filter(Boolean))).sort()].map((f) => (
               <option key={f} value={f}>
                 {f}
               </option>

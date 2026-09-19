@@ -97,8 +97,8 @@ export default function WorkplacePortal() {
       floor: floorName || currentRoom.wing,
       date: selectedDate,
       slot: slotTime,
-      purpose: bookingPurpose || 'Internal Meeting',
-      department: department || 'General Team',
+      purpose: bookingPurpose || '',
+      department: department || '',
     };
 
     setRooms((prev) =>
@@ -183,7 +183,7 @@ export default function WorkplacePortal() {
   };
 
   const filteredDirectoryRooms = rooms.filter((room) => {
-    const matchesFloor = dirFloorFilter === 'all' || room.floorCategory === dirFloorFilter;
+    const matchesFloor = dirFloorFilter === 'all' || room.floor === dirFloorFilter;
     const matchesSize = dirSizeFilter === 'all' || room.sizeCategory === dirSizeFilter;
     return matchesFloor && matchesSize;
   });

@@ -10,5 +10,3 @@ export const TIME_SLOTS = [
   '03:30 PM - 04:30 PM',
   '05:00 PM - 06:00 PM',
 ];
-
-export const FLOORS = ['All Floors', 'Floor 1', 'Floor 2', 'Floor 3', 'Floor 4'];
