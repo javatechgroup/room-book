@@ -37,7 +37,7 @@ export default function RoomInspectorDrawer({
             <DoorOpen size={16} />
             <span>Room Specifications</span>
           </div>
-          <button type="button" className="inspector-drawer__close" onClick={onClose} aria-label="Close drawer">
+          <button type="button" className="inspector-drawer__close" onClick={onClose} aria-label="Close drawer" title="Close (Esc)">
             <X size={20} />
           </button>
         </div>

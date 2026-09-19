@@ -95,7 +95,7 @@ export default function RoomsTab({
               onChange={(e) => setLocalSearch(e.target.value)}
               className="superadmin-search-input"
             />
-            {localSearch && (
+            {localSearch ? (
               <button
                 type="button"
                 className="search-clear-btn"
@@ -104,6 +104,8 @@ export default function RoomsTab({
               >
                 &times;
               </button>
+            ) : (
+              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
             )}
           </div>
           <button type="submit" className="btn btn--primary btn--sm search-submit-btn">

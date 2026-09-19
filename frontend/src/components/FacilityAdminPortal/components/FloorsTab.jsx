@@ -75,7 +75,7 @@ export default function FloorsTab({
               onChange={(e) => setLocalSearch(e.target.value)}
               className="superadmin-search-input"
             />
-            {localSearch && (
+            {localSearch ? (
               <button
                 type="button"
                 className="search-clear-btn"
@@ -84,6 +84,8 @@ export default function FloorsTab({
               >
                 &times;
               </button>
+            ) : (
+              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
             )}
           </div>
           <button type="submit" className="btn btn--primary btn--sm search-submit-btn">

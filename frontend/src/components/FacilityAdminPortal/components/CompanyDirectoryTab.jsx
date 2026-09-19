@@ -186,7 +186,7 @@ export default function CompanyDirectoryTab({
               onChange={(e) => setSearch(e.target.value)}
               className="superadmin-search-input"
             />
-            {search && (
+            {search ? (
               <button
                 type="button"
                 className="search-clear-btn"
@@ -195,6 +195,8 @@ export default function CompanyDirectoryTab({
               >
                 &times;
               </button>
+            ) : (
+              <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
             )}
           </div>
 

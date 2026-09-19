@@ -35,6 +35,7 @@ export default function FloorInspectorDrawer({
             className="inspector-drawer__close"
             onClick={onClose}
             aria-label="Close drawer"
+            title="Close (Esc)"
           >
             <X size={20} />
           </button>

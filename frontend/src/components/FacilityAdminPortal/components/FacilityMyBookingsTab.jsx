@@ -177,7 +177,7 @@ export default function FacilityMyBookingsTab({
             onChange={(e) => handleSearchChange(e.target.value)}
             className="superadmin-search-input"
           />
-          {search && (
+          {search ? (
             <button
               type="button"
               className="search-clear-btn"
@@ -186,6 +186,8 @@ export default function FacilityMyBookingsTab({
             >
               &times;
             </button>
+          ) : (
+            <kbd className="search-kbd-hint" title="Press / to focus search">/</kbd>
           )}
         </div>
 
