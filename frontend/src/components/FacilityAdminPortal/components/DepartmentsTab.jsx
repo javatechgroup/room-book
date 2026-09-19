@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Building2,
@@ -37,6 +37,20 @@ export default function DepartmentsTab({
   onPageSizeChange,
 }) {
   const [localSearch, setLocalSearch] = useState(search);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== search && onSearchChange) {
+        onSearchChange(localSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearch, search, onSearchChange]);
+
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   const activeCount = departments.filter((d) => d.status === 'ACTIVE').length;
@@ -156,10 +170,28 @@ export default function DepartmentsTab({
                 <tr>
                   <td colSpan={5} className="td-empty">
                     <Building2 size={32} className="empty-icon" />
-                    <p>No departments match your current filter.</p>
-                    <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateDepartment}>
-                      <Plus size={14} /> Add Department
-                    </button>
+                    <p>
+                      {localSearch || statusFilter !== 'ALL'
+                        ? 'No departments match your active filters.'
+                        : 'No departments configured yet.'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
+                      {(localSearch || statusFilter !== 'ALL') && (
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          onClick={() => {
+                            handleClearSearch();
+                            onStatusFilterChange && onStatusFilterChange('ALL');
+                          }}
+                        >
+                          Reset Filters
+                        </button>
+                      )}
+                      <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateDepartment}>
+                        <Plus size={14} /> Add Department
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : (

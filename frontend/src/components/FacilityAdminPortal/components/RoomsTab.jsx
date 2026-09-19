@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Layers,
@@ -32,8 +32,8 @@ export default function RoomsTab({
   sortDir = 'asc',
   onSort,
   selectedRoomIds = [],
-  onSelectAll,
   onToggleSelect,
+  onSelectAll,
   onOpenCreateRoom,
   onOpenEditRoom,
   onToggleMaintenance,
@@ -50,6 +50,20 @@ export default function RoomsTab({
 }) {
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'cards'
   const [localSearch, setLocalSearch] = useState(search);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  // Debounced Live Search (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== search && onSearchChange) {
+        onSearchChange(localSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearch, search, onSearchChange]);
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const isAllSelected = rooms.length > 0 && rooms.every((r) => selectedRoomIds.includes(r.id));
@@ -271,10 +285,29 @@ export default function RoomsTab({
                   <tr>
                     <td colSpan={6} className="td-empty">
                       <DoorOpen size={32} className="empty-icon" />
-                      <p>No meeting rooms match your current filter.</p>
-                      <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateRoom}>
-                        <Plus size={14} /> Create Room
-                      </button>
+                      <p>
+                        {localSearch || floorFilter !== 'ALL' || statusFilter !== 'ALL'
+                          ? 'No meeting rooms match your active filters.'
+                          : 'No meeting rooms configured yet.'}
+                      </p>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
+                        {(localSearch || floorFilter !== 'ALL' || statusFilter !== 'ALL') && (
+                          <button
+                            type="button"
+                            className="btn btn--secondary btn--sm"
+                            onClick={() => {
+                              handleClearSearch();
+                              onFloorFilterChange && onFloorFilterChange('ALL');
+                              onStatusFilterChange && onStatusFilterChange('ALL');
+                            }}
+                          >
+                            Reset All Filters
+                          </button>
+                        )}
+                        <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateRoom}>
+                          <Plus size={14} /> Create Room
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (

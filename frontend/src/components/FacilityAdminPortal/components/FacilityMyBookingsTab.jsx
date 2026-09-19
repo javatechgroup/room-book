@@ -155,6 +155,15 @@ export default function FacilityMyBookingsTab({
     setPage(1);
   };
 
+  const hasActiveFilters = Boolean(search || floorFilter !== 'ALL' || statusFilter !== 'ALL');
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setFloorFilter('ALL');
+    setStatusFilter('ALL');
+    setPage(1);
+  };
+
   return (
     <div className="superadmin-tab-content">
       {/* Toolbar */}
@@ -272,6 +281,16 @@ export default function FacilityMyBookingsTab({
                   <td colSpan={6} className="td-empty">
                     <CalendarCheck2 size={32} className="empty-icon" />
                     <p>No reservations found matching your selected filter criteria.</p>
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        className="btn btn--outline btn--sm"
+                        style={{ marginTop: '0.75rem' }}
+                        onClick={handleResetFilters}
+                      >
+                        Clear Search & Filters
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -384,6 +403,16 @@ export default function FacilityMyBookingsTab({
           <div className="mobile-empty-state">
             <CalendarCheck2 size={32} className="empty-icon" />
             <p>No reservations found for current filter.</p>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="btn btn--outline btn--sm"
+                style={{ marginTop: '0.75rem' }}
+                onClick={handleResetFilters}
+              >
+                Clear Search & Filters
+              </button>
+            )}
           </div>
         ) : (
           paginatedBookings.map((booking) => {

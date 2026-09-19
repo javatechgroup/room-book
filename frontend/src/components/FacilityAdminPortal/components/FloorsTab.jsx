@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Layers,
@@ -32,6 +32,20 @@ export default function FloorsTab({
   onPageSizeChange,
 }) {
   const [localSearch, setLocalSearch] = useState(search);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== search && onSearchChange) {
+        onSearchChange(localSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearch, search, onSearchChange]);
+
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   const activeCount = floors.filter((f) => f.status === 'ACTIVE').length;
@@ -139,14 +153,28 @@ export default function FloorsTab({
                     <Layers size={32} className="empty-icon" />
                     <p>
                       {localSearch || statusFilter !== 'ALL'
-                        ? 'No floors match your current filter.'
+                        ? 'No office floors match your active filters.'
                         : 'No office floors configured yet.'}
                     </p>
-                    {onOpenCreateFloor && (
-                      <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateFloor}>
-                        <Plus size={14} /> Add Floor
-                      </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
+                      {(localSearch || statusFilter !== 'ALL') && (
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          onClick={() => {
+                            handleClearSearch();
+                            onStatusFilterChange && onStatusFilterChange('ALL');
+                          }}
+                        >
+                          Reset Filters
+                        </button>
+                      )}
+                      {onOpenCreateFloor && (
+                        <button type="button" className="btn btn--outline btn--sm" onClick={onOpenCreateFloor}>
+                          <Plus size={14} /> Add Floor
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (

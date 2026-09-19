@@ -244,6 +244,19 @@ export default function CompanyDirectoryTab({
                     <td colSpan={5} className="td-empty">
                       <Users size={32} className="empty-icon" />
                       <p>No employees match your search query.</p>
+                      {(search || selectedDepartment !== 'ALL') && (
+                        <button
+                          type="button"
+                          className="btn btn--outline btn--sm"
+                          style={{ marginTop: '0.75rem' }}
+                          onClick={() => {
+                            setSearch('');
+                            setSelectedDepartment('ALL');
+                          }}
+                        >
+                          Clear Search & Filters
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ) : (
@@ -294,6 +307,19 @@ export default function CompanyDirectoryTab({
             <div className="mobile-empty-state">
               <Users size={32} className="empty-icon" />
               <p>No employees match your query.</p>
+              {(search || selectedDepartment !== 'ALL') && (
+                <button
+                  type="button"
+                  className="btn btn--outline btn--sm"
+                  style={{ marginTop: '0.75rem' }}
+                  onClick={() => {
+                    setSearch('');
+                    setSelectedDepartment('ALL');
+                  }}
+                >
+                  Clear Search & Filters
+                </button>
+              )}
             </div>
           ) : (
             paginatedEmployees.map((emp) => (

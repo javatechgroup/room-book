@@ -44,25 +44,30 @@ export default function FacilityAdminPortal() {
   const { toast } = useToast();
   const { confirm } = useConfirm();
 
-  // Navigation Tab State
-  const [activeTab, setActiveTab] = useState('rooms'); // 'rooms' | 'departments' | 'employees' | 'book-room' | 'monitor' | 'directory'
+  // Navigation Tab State — initialized from URL parameter if present (?tab=rooms)
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      const validTabs = ['rooms', 'floors', 'departments', 'employees', 'book-room', 'my-bookings', 'monitor', 'directory'];
+      if (tabParam && validTabs.includes(tabParam)) return tabParam;
+    }
+    return 'rooms';
+  });
   const panelRef = useRef(null);
 
-  const scrollToDataPanelOnMobile = () => {
-    if (typeof window !== 'undefined' && window.innerWidth <= 900) {
-      setTimeout(() => {
-        if (panelRef.current) {
-          const headerOffset = 75;
-          const elPosition = panelRef.current.getBoundingClientRect().top;
-          const offsetPosition = elPosition + window.pageYOffset - headerOffset;
-          window.scrollTo({
-            top: Math.max(0, offsetPosition),
-            behavior: 'smooth',
-          });
-        }
-      }, 60);
-    }
-  };
+  // Listen to browser Back/Forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab') || 'rooms';
+        setActiveTab(tabParam);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Summary Metrics State
   const [summary, setSummary] = useState(DEFAULT_SUMMARY);
@@ -138,6 +143,63 @@ export default function FacilityAdminPortal() {
     setDrawerEmployee(null);
     setDrawerBooking(null);
   };
+
+  const scrollToDataPanelOnMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 900) {
+      setTimeout(() => {
+        if (panelRef.current) {
+          const headerOffset = 75;
+          const elPosition = panelRef.current.getBoundingClientRect().top;
+          const offsetPosition = elPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: 'smooth',
+          });
+        }
+      }, 60);
+    }
+  };
+
+  // Centralized tab change that synchronizes with browser URL and history
+  const handleTabChange = useCallback((tabKey) => {
+    closeAllDrawers();
+    setActiveTab(tabKey);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tabKey);
+      window.history.pushState({ tab: tabKey }, '', url);
+    }
+    if (tabKey === 'employees') {
+      setEmpDeptFilter('ALL');
+      setEmpSearch('');
+      setEmpPage(1);
+    }
+    scrollToDataPanelOnMobile();
+  }, []);
+
+  // Keyboard Shortcuts: '/' to focus active search, 'ESC' to close drawers or blur search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+      if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        const searchInput = document.querySelector('.superadmin-search-input');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      } else if (e.key === 'Escape') {
+        if (drawerRoom || drawerFloor || drawerDepartment || drawerEmployee || drawerBooking) {
+          closeAllDrawers();
+        } else if (isInput && document.activeElement?.classList?.contains('superadmin-search-input')) {
+          document.activeElement.blur();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [drawerRoom, drawerFloor, drawerDepartment, drawerEmployee, drawerBooking]);
 
   // Room Modal
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
@@ -966,28 +1028,17 @@ export default function FacilityAdminPortal() {
           todayBookings={summary.todayBookingsCount || bookings.length}
           activeTab={activeTab}
           onSelectMetric={(tabKey, filters) => {
-            closeAllDrawers();
-            setActiveTab(tabKey);
+            handleTabChange(tabKey);
             if (filters?.status && tabKey === 'rooms') {
               setRoomStatusFilter(filters.status);
             }
-            scrollToDataPanelOnMobile();
           }}
         />
 
         {/* Tab Switcher Header */}
         <FacilityAdminTabs
           activeTab={activeTab}
-          onTabChange={(tabKey) => {
-            closeAllDrawers();
-            setActiveTab(tabKey);
-            if (tabKey === 'employees') {
-              setEmpDeptFilter('ALL');
-              setEmpSearch('');
-              setEmpPage(1);
-            }
-            scrollToDataPanelOnMobile();
-          }}
+          onTabChange={handleTabChange}
           roomsCount={summary.totalRooms || totalRoomsCount || rooms.length}
           floorsCount={totalFloorsCount || floorsList.length || floors.length || summary.totalFloors || 0}
           departmentsCount={summary.totalDepartments || totalDeptsCount || departments.length}

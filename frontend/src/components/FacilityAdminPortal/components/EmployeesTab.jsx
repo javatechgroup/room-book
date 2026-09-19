@@ -55,6 +55,16 @@ export default function EmployeesTab({
     setLocalSearch(search);
   }, [search]);
 
+  // Debounced Live Search (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== search && onSearchChange) {
+        onSearchChange(localSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearch, search, onSearchChange]);
+
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const isAllSelected = employees.length > 0 && employees.every((e) => selectedEmployeeIds.includes(e.id));
   const activeDept = departments.find((d) => String(d.id) === String(departmentFilter));
@@ -285,6 +295,15 @@ export default function EmployeesTab({
                         : 'No employees match your current search or filter criteria.'}
                     </p>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                      {localSearch && (
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          onClick={handleClearSearch}
+                        >
+                          Clear Search
+                        </button>
+                      )}
                       {departmentFilter !== 'ALL' && (
                         <button
                           type="button"

@@ -70,6 +70,29 @@ export default function BookingMonitorTab({
     setLocalSearch(search);
   }, [search]);
 
+  // 300ms debounce for live search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== search && onSearchChange) {
+        setBookingPage(1);
+        onSearchChange(localSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearch, search, onSearchChange]);
+
+  const hasActiveFilters = Boolean(localSearch || floorFilter !== 'ALL' || statusFilter !== 'ALL' || dateFilter);
+
+  const handleResetFilters = () => {
+    setLocalSearch('');
+    setBookingPage(1);
+    setRoomPage(1);
+    if (onSearchChange) onSearchChange('');
+    if (onFloorFilterChange) onFloorFilterChange('ALL');
+    if (onStatusFilterChange) onStatusFilterChange('ALL');
+    if (onDateFilterChange) onDateFilterChange('');
+  };
+
   // Dynamic booking state helper
   const getBookingLifecycleState = useCallback((booking) => {
     if (!booking) {
@@ -365,6 +388,19 @@ export default function BookingMonitorTab({
               <div className="occupancy-empty-state" style={{ gridColumn: '1 / -1', padding: '2rem', textAlign: 'center', color: '#64748b' }}>
                 <DoorOpen size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
                 <p>No rooms found matching the selected floor filter.</p>
+                {floorFilter !== 'ALL' && (
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--sm"
+                    style={{ marginTop: '0.75rem' }}
+                    onClick={() => {
+                      setRoomPage(1);
+                      if (onFloorFilterChange) onFloorFilterChange('ALL');
+                    }}
+                  >
+                    Show All Floors
+                  </button>
+                )}
               </div>
             ) : (
               paginatedRooms.map((room) => {
@@ -458,6 +494,19 @@ export default function BookingMonitorTab({
                     <td colSpan={6} className="td-empty">
                       <DoorOpen size={32} className="empty-icon" />
                       <p>No rooms found matching the selected floor filter.</p>
+                      {floorFilter !== 'ALL' && (
+                        <button
+                          type="button"
+                          className="btn btn--outline btn--sm"
+                          style={{ marginTop: '0.75rem' }}
+                          onClick={() => {
+                            setRoomPage(1);
+                            if (onFloorFilterChange) onFloorFilterChange('ALL');
+                          }}
+                        >
+                          Show All Floors
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ) : (
@@ -580,6 +629,16 @@ export default function BookingMonitorTab({
                   <td colSpan={7} className="td-empty">
                     <Activity size={32} className="empty-icon" />
                     <p>No room bookings match the selected date and filter criteria.</p>
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        className="btn btn--outline btn--sm"
+                        style={{ marginTop: '0.75rem' }}
+                        onClick={handleResetFilters}
+                      >
+                        Reset All Filters & Search
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -700,6 +759,16 @@ export default function BookingMonitorTab({
           <div className="mobile-empty-state">
             <Activity size={32} className="empty-icon" />
             <p>No reservations found for current filter.</p>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="btn btn--outline btn--sm"
+                style={{ marginTop: '0.75rem' }}
+                onClick={handleResetFilters}
+              >
+                Reset All Filters & Search
+              </button>
+            )}
           </div>
         ) : (
           paginatedBookings.map((booking) => {
