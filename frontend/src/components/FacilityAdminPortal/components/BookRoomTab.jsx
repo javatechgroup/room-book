@@ -83,7 +83,7 @@ export default function BookRoomTab({
   const [endPeriod, setEndPeriod] = useState(() => getInitialTimes().endPeriod);
 
   const [title, setTitle] = useState('');
-  const [department, setDepartment] = useState('Admin');
+  const [department, setDepartment] = useState('');
   const [attendeesCount, setAttendeesCount] = useState(4);
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

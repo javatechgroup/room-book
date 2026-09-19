@@ -102,7 +102,7 @@ export default function SuperAdminPortal() {
     fullName: '',
     email: '',
     password: '',
-    companyId: 1,
+    companyId: '',
     status: 'ACTIVE',
   });
 
@@ -826,7 +826,7 @@ export default function SuperAdminPortal() {
       fullName: '',
       email: '',
       password: '',
-      companyId: companies[0]?.id || 1,
+      companyId: companies[0]?.id || '',
       status: 'ACTIVE',
     });
     setIsAdminModalOpen(true);

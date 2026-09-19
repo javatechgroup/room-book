@@ -137,7 +137,7 @@ export default function FacilityAdminPortal() {
   const [editingRoom, setEditingRoom] = useState(null);
   const [roomForm, setRoomForm] = useState({
     name: '',
-    floor: 'Floor 1',
+    floor: '',
     location: '',
     capacity: 6,
     description: '',
@@ -170,7 +170,7 @@ export default function FacilityAdminPortal() {
   const [empForm, setEmpForm] = useState({
     fullName: '',
     email: '',
-    departmentId: 1,
+    departmentId: '',
     role: 'EMPLOYEE',
     password: '',
     status: 'ACTIVE',
@@ -377,7 +377,7 @@ export default function FacilityAdminPortal() {
     setEditingRoom(null);
     setRoomForm({
       name: '',
-      floor: floors[0] || 'Floor 1',
+      floor: floors[0] || '',
       location: '',
       capacity: 6,
       description: '',
