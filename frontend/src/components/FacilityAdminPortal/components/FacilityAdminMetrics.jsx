@@ -132,7 +132,7 @@ export default function FacilityAdminMetrics({
             <span className="metric-card__badge-pill">Active</span>
           </div>
           <span className="metric-card__sub">
-            Across {totalDepartments} departments
+            Across {totalDepartments} {totalDepartments === 1 ? 'department' : 'departments'}
           </span>
         </div>
       </div>
