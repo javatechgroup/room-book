@@ -8,14 +8,18 @@
   min-height: calc(100vh - 120px);
 }
 
-/* Top Bar & Nav Tabs */
-.portal-top-bar {
+/* Top Bar & Workplace Header */
+.workplace-top-section {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 24px;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.portal-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .portal-title-block h2 {
@@ -23,111 +27,110 @@
   font-weight: 800;
   color: var(--text-heading);
   letter-spacing: -0.02em;
+  margin: 0;
 }
 
-.portal-nav-tabs {
+/* Tabs Bar (Dedicated Row matching Application Theme) */
+.superadmin-tabs-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.superadmin-tabs {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--tab-track-bg, #e2e8f0);
-  padding: 5px;
-  border-radius: 12px;
+  padding: 4px;
+  border-radius: 10px;
   border: 1px solid var(--tab-track-border, #cbd5e1);
   box-shadow: var(--tab-track-shadow, 0 1px 3px rgba(15, 23, 42, 0.06), inset 0 1px 2px rgba(15, 23, 42, 0.04));
   overflow-x: auto;
-  max-width: 100%;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   flex-wrap: nowrap;
+  width: fit-content;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
-[data-theme='dark'] .portal-nav-tabs {
+[data-theme='dark'] .superadmin-tabs {
   background: var(--tab-track-bg, #0a1020) !important;
   border: 1px solid var(--tab-track-border, #1e2d47) !important;
   box-shadow: var(--tab-track-shadow, 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 3px rgba(0, 0, 0, 0.5)) !important;
 }
 
-[data-theme='dark'] .nav-tab {
-  color: var(--tab-text-idle, #94a3b8);
-}
-
-[data-theme='dark'] .nav-tab:hover {
-  color: var(--tab-text-hover, #f8fafc);
-  background: var(--tab-bg-hover, rgba(255, 255, 255, 0.06));
-}
-
-[data-theme='dark'] .nav-tab--active {
-  background: var(--tab-active-bg, #1e293b) !important;
-  color: var(--tab-active-text, #93c5fd) !important;
-  box-shadow: var(--tab-active-shadow, 0 2px 8px rgba(0, 0, 0, 0.4)) !important;
-}
-
-.portal-nav-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.nav-tab {
+.superadmin-tab {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 7px;
   border: none;
   background: transparent;
-  color: var(--tab-text-idle);
+  color: var(--tab-text-idle, #475569);
   font-family: var(--font-family);
-  font-size: 0.86rem;
-  font-weight: 500;
+  font-size: 0.84rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap !important;
   flex-shrink: 0;
   line-height: 1.25;
 }
 
-.nav-tab span {
-  white-space: nowrap !important;
-  display: inline-block;
+.superadmin-tab:hover {
+  color: var(--tab-text-hover, #0f172a);
+  background: var(--tab-bg-hover, rgba(255, 255, 255, 0.6));
 }
 
-.nav-tab svg {
-  flex-shrink: 0;
+.superadmin-tab--active {
+  background: var(--tab-active-bg, #ffffff) !important;
+  color: var(--tab-active-text, #2563eb) !important;
+  box-shadow: var(--tab-active-shadow, 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06)) !important;
 }
 
-.nav-tab:hover {
-  color: var(--tab-text-hover);
-  background: var(--tab-bg-hover);
+[data-theme='dark'] .superadmin-tab {
+  color: var(--tab-text-idle, #94a3b8);
 }
 
-.nav-tab--active {
-  background: var(--tab-active-bg) !important;
-  color: var(--tab-active-text) !important;
-  box-shadow: var(--tab-active-shadow);
-  font-weight: 600;
+[data-theme='dark'] .superadmin-tab:hover {
+  color: var(--tab-text-hover, #f8fafc);
+  background: var(--tab-bg-hover, rgba(255, 255, 255, 0.06));
 }
 
-.nav-tab--admin {
-  color: var(--tab-text-idle);
+[data-theme='dark'] .superadmin-tab--active {
+  background: var(--tab-active-bg, #1e293b) !important;
+  color: var(--tab-active-text, #93c5fd) !important;
+  box-shadow: var(--tab-active-shadow, 0 2px 8px rgba(0, 0, 0, 0.4)) !important;
 }
 
-.nav-tab .tab-count-badge {
+.tab-count-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 7px;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
   border-radius: 9999px;
-  font-size: 0.72rem;
   font-weight: 600;
   background: var(--tab-badge-bg);
   color: var(--tab-badge-text);
   transition: all 0.2s ease;
 }
 
-.nav-tab--active .tab-count-badge {
-  background: var(--tab-badge-active-bg);
-  color: var(--tab-badge-active-text);
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+.superadmin-tab--active .tab-count-badge {
+  background: var(--primary-100, #dbeafe);
+  color: var(--primary-700, #1d4ed8);
+}
+
+[data-theme='dark'] .superadmin-tab--active .tab-count-badge {
+  background: var(--tab-badge-active-bg, var(--primary-500)) !important;
+  color: var(--tab-badge-active-text, #ffffff) !important;
 }
 
 /* Main Container Card */
@@ -208,7 +211,7 @@
 /* ───────────────── TAB 1: SLOT FINDER ───────────────── */
 .finder-controls {
   display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr 1.2fr;
+  grid-template-columns: 1.1fr 1.3fr 1.2fr 1.3fr;
   gap: 16px;
   padding: 22px 28px;
   background: var(--bg-surface);
@@ -252,6 +255,208 @@
   outline: none;
   border-color: var(--primary-500);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.control-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 26px;
+  margin-bottom: 2px;
+}
+
+.quick-date-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.quick-date-btn {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.725rem;
+  font-weight: 700;
+  border: 1px solid var(--border-card);
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-date-btn:hover {
+  background: var(--bg-card);
+  color: var(--primary-600);
+  border-color: var(--primary-300);
+}
+
+.quick-date-btn--active {
+  background: var(--primary-50);
+  color: var(--primary-700);
+  border-color: var(--primary-400);
+}
+
+[data-theme='dark'] .quick-date-btn--active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* Unified Digital Time Dial */
+.time-dial-container {
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  height: 42px;
+  padding: 0 6px;
+  transition: var(--transition);
+}
+
+.time-dial-container:focus-within {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.time-dial-select {
+  flex: 1;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text-heading) !important;
+  font-family: var(--font-family);
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  text-align: center;
+  padding: 6px 2px !important;
+  outline: none !important;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.time-dial-separator {
+  font-weight: 800;
+  color: var(--text-muted);
+  padding: 0 1px;
+  user-select: none;
+}
+
+/* Room Switcher Strip */
+.room-switcher-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 28px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-card);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.room-switcher-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.775rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.room-switcher-scroll {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.room-switcher-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Floor Group Section in Switcher */
+.room-floor-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px 3px 4px;
+  border-radius: 9999px;
+  background: var(--bg-surface-alt);
+  border: 1px dashed var(--border-card);
+  flex-shrink: 0;
+}
+
+.room-floor-group-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--gray-200);
+  color: var(--text-heading);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .room-floor-group-badge {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+.room-floor-group-items {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-switcher-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  font-family: var(--font-family);
+  background: var(--bg-surface-alt);
+  color: var(--text-body);
+  border: 1px solid var(--border-card);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.room-switcher-pill:hover {
+  background: var(--bg-card);
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+  transform: translateY(-1px);
+}
+
+.room-switcher-pill--active {
+  background: var(--primary-600) !important;
+  color: #ffffff !important;
+  border-color: var(--primary-600) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+.room-switcher-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.room-switcher-capacity {
+  opacity: 0.75;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .finder-meta-strip {
@@ -500,14 +705,14 @@
   gap: 4px;
 }
 
-/* Door Tablet Display Preview */
-.door-tablet-wrapper {
+/* Room Info & Specifications Card (Replaces Door Tablet) */
+.room-info-card-wrapper {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.door-tablet-tag {
+.room-info-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -518,130 +723,208 @@
   color: var(--text-muted);
 }
 
-.door-tablet {
-  background: #0f172a;
-  color: #ffffff;
-  border-radius: 18px;
-  border: 5px solid #1e293b;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3);
+.room-info-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
   padding: 22px;
   display: flex;
   flex-direction: column;
+  gap: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.room-info-card__header {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  min-height: 360px;
-  position: relative;
-  overflow: hidden;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-card);
 }
 
-.door-tablet::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-}
-
-.door-tablet--available::before {
-  background: #10b981;
-  box-shadow: 0 0 10px #10b981;
-}
-
-.door-tablet--occupied::before {
-  background: #ef4444;
-  box-shadow: 0 0 10px #ef4444;
-}
-
-.door-tablet--maintenance::before {
-  background: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b;
-}
-
-.tablet-code {
-  font-size: 0.725rem;
-  font-weight: 800;
-  color: #94a3b8;
-  letter-spacing: 0.06em;
-}
-
-.tablet-room {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #ffffff;
-  margin-top: 2px;
-}
-
-.tablet-loc {
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-.tablet-status-strip {
-  padding: 14px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tablet-badge {
+.room-info-card__code-badge {
   display: inline-block;
-  font-size: 0.725rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 999px;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--gray-100);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
 }
 
-.door-tablet--available .tablet-badge {
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  border: 1px solid #10b981;
-}
-
-.door-tablet--occupied .tablet-badge {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  border: 1px solid #ef4444;
-}
-
-.door-tablet--maintenance .tablet-badge {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fbbf24;
-  border: 1px solid #f59e0b;
-}
-
-.tablet-slot {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #f8fafc;
-}
-
-.tablet-info {
-  font-size: 0.825rem;
-  color: #cbd5e1;
-  line-height: 1.45;
-}
-
-.tablet-info strong {
+[data-theme='dark'] .room-info-card__code-badge {
+  background: #1e293b;
   color: #94a3b8;
 }
 
-.tablet-free-msg {
-  color: #34d399;
+.room-info-card__title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-heading);
+  margin: 0 0 2px;
+  letter-spacing: -0.02em;
 }
 
-.tablet-footer {
+.room-info-card__type {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary-600);
+}
+
+.room-info-card__status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.room-info-card__status-pill--free {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.room-info-card__status-pill--busy {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.room-info-card__status-pill--maint {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Specs 2x2 Grid */
+.room-info-specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.room-info-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+}
+
+.room-info-spec-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.room-info-spec-value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.room-info-spec-value--highlight {
+  color: var(--primary-600);
+}
+
+/* Amenities List */
+.room-info-amenities {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-info-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.room-info-amenity-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.room-info-amenity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-card);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.room-info-amenity-pill svg {
+  color: var(--primary-500);
+}
+
+/* Live Slot Summary */
+.room-info-summary-box {
+  padding: 12px 14px;
+  background: var(--bg-surface-alt);
+  border: 1px dashed var(--border-card);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.room-info-summary-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.775rem;
-  color: #94a3b8;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
 }
 
-.tablet-footer strong {
-  color: #ffffff;
+.room-info-summary-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.room-info-summary-value {
+  color: var(--text-heading);
+  font-weight: 700;
+}
+
+.room-info-summary-row--conflict .room-info-summary-value {
+  color: #ef4444;
+  font-size: 0.76rem;
+  max-width: 65%;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-info-guarantee {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #059669;
+  margin: 4px 0 0;
 }
 
 /* ───────────────── TAB 2: CAMPUS DIRECTORY ───────────────── */

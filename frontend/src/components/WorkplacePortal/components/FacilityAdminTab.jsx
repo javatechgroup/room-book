@@ -33,9 +33,11 @@ export default function FacilityAdminTab({
             }
           >
             <option value={1}>1 Hour Maximum</option>
-            <option value={2}>2 Hours Maximum (Company Standard)</option>
-            <option value={3}>3 Hours Maximum</option>
-            <option value={4}>4 Hours Maximum (Boardrooms only)</option>
+            <option value={2}>2 Hours Maximum</option>
+            <option value={4}>4 Hours Maximum (Half Day)</option>
+            <option value={8}>8 Hours Maximum (Whole Workday)</option>
+            <option value={12}>12 Hours Maximum (Extended Day)</option>
+            <option value={24}>24 Hours Maximum (Full Day / 24h)</option>
           </select>
           <span className="policy-help">Enforced on all employee reservations across office floors.</span>
         </div>

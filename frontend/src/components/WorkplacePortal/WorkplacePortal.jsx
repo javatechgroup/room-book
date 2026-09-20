@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { INITIAL_ROOMS } from './data/workplaceData';
+import { facilityApi } from '../../api/facilityApi';
 import WorkplaceTabs from './components/WorkplaceTabs';
 import SlotFinderTab from './components/SlotFinderTab';
 import CampusDirectoryTab from './components/CampusDirectoryTab';
@@ -11,26 +11,107 @@ import HelpdeskTab from './components/HelpdeskTab';
 import { formatDate } from '../../utils/dateUtils';
 import './WorkplacePortal.css';
 
+const normalizeRoom = (r) => ({
+  id: r.id,
+  name: r.name,
+  code: r.location || `RM-${r.id}`,
+  floor: r.floor || 'Floor 1',
+  wing: r.location || r.floor || 'Main Wing',
+  building: r.building || r.companyName || 'Company HQ',
+  capacity: r.capacity || 6,
+  status: r.status || 'ACTIVE',
+  isUnderMaintenance: r.status === 'MAINTENANCE',
+  description: r.description || '',
+  type: r.capacity <= 4 ? 'Focus Pod' : r.capacity <= 10 ? 'Team Room' : 'Executive Boardroom',
+  sizeCategory: r.capacity <= 4 ? 'small' : r.capacity <= 10 ? 'medium' : 'large',
+  hardware: [
+    { name: 'Screen Display' },
+    { name: 'Video Conf' },
+    ...(r.capacity >= 8 ? [{ name: 'Whiteboard' }] : []),
+  ],
+});
+
+
 export default function WorkplacePortal() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'COMPANY_ADMIN';
+  const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('slot-finder'); // 'slot-finder' | 'directory' | 'my-bookings' | 'admin-console' | 'helpdesk'
-  const [rooms, setRooms] = useState(INITIAL_ROOMS);
+  // Navigation Tab State — initialized from URL parameter if present (?tab=slot-finder)
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      const validTabs = ['slot-finder', 'directory', 'my-bookings', 'admin-console', 'helpdesk'];
+      if (tabParam && validTabs.includes(tabParam)) return tabParam;
+    }
+    return 'slot-finder';
+  });
+
+  const handleTabChange = useCallback((tabKey) => {
+    setActiveTab(tabKey);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tabKey);
+      window.history.pushState({ tab: tabKey }, '', url);
+    }
+  }, []);
+
+  // Listen to browser Back/Forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab') || 'slot-finder';
+        setActiveTab(tabParam);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Global Keyboard Shortcuts: '/' to search, 'ESC' to blur
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+      if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        const searchInput = document.querySelector('.superadmin-search-input, .search-input__field');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      } else if (e.key === 'Escape' && isInput) {
+        document.activeElement.blur();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // ════════════════════ PRIMARY DATA STATES ════════════════════
+  const [rooms, setRooms] = useState([]);
+  const [floors, setFloors] = useState([]);
+  const [dayOccupancy, setDayOccupancy] = useState([]);
+  const [myBookings, setMyBookings] = useState([]);
+  const [isLoadingRooms, setIsLoadingRooms] = useState(true);
+
+  // Slot Finder Controls
   const [selectedFloor, setSelectedFloor] = useState('All Floors');
   const [selectedRoomId, setSelectedRoomId] = useState('');
-  const [selectedSlot, setSelectedSlot] = useState('10:00 AM - 11:00 AM');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [bookingPurpose, setBookingPurpose] = useState('');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useState(() => user?.department || '');
 
-  // Directory filter state
+  // Campus Directory Filters
   const [dirFloorFilter, setDirFloorFilter] = useState('all');
   const [dirSizeFilter, setDirSizeFilter] = useState('all');
+  const [dirSearch, setDirSearch] = useState('');
 
   // Policies (Admin-managed)
   const [policies, setPolicies] = useState({
-    maxSlotHours: 2,
+    maxSlotHours: 8,
     advanceBookingDays: 14,
   });
 
@@ -42,134 +123,157 @@ export default function WorkplacePortal() {
   });
   const [helpdeskSubmitted, setHelpdeskSubmitted] = useState(false);
 
-  // Active reservations
-  const [myBookings, setMyBookings] = useState([]);
-  const { toast } = useToast();
-
-  // Current active room for slot finder
-  const filteredRooms = rooms.filter(
-    (r) => selectedFloor === 'All Floors' || r.floor === selectedFloor
-  );
-  const currentRoom =
-    rooms.find((r) => r.id === selectedRoomId) || filteredRooms[0] || rooms[0] || null;
-
-  const isMaintenance = currentRoom?.isUnderMaintenance || false;
-  const isOccupied = !isMaintenance && (currentRoom?.occupiedSlots || []).includes(selectedSlot);
-  const currentOccupant = currentRoom?.occupiedDetails?.[selectedSlot];
-
-  // Alternative rooms free during this slot
-  const alternativeRooms = currentRoom
-    ? rooms.filter(
-        (r) =>
-          r.id !== currentRoom.id &&
-          !r.isUnderMaintenance &&
-          !r.occupiedSlots.includes(selectedSlot)
-      )
-    : [];
-
-  const isSlotInPast = (dateStr, slotStr) => {
-    if (!dateStr || !slotStr) return false;
+  // ════════════════════ DATA FETCHING ════════════════════
+  const fetchRoomsAndFloors = useCallback(async () => {
+    setIsLoadingRooms(true);
+    const companyId = user?.companyId;
     try {
-      const startTimePart = slotStr.split('-')[0].trim();
-      const [time, period] = startTimePart.split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-      if (period === 'PM' && hours < 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
+      const [roomsRes, floorsRes] = await Promise.all([
+        facilityApi.getRooms({ companyId, pageSize: 100 }),
+        facilityApi.getFloors({ companyId }),
+      ]);
 
-      const [year, month, day] = dateStr.split('-').map(Number);
-      const slotDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
-      return slotDate < new Date();
-    } catch (_) {
-      return false;
+      let loadedRooms = [];
+      if (roomsRes && roomsRes.success && Array.isArray(roomsRes.data)) {
+        loadedRooms = roomsRes.data.map(normalizeRoom);
+      }
+      setRooms(loadedRooms);
+
+      if (floorsRes && floorsRes.success && Array.isArray(floorsRes.data)) {
+        setFloors(floorsRes.data);
+      } else {
+        setFloors([]);
+      }
+
+      if (loadedRooms.length > 0) {
+        setSelectedRoomId((prev) => (loadedRooms.some((r) => r.id === Number(prev)) ? prev : loadedRooms[0].id));
+      } else {
+        setSelectedRoomId('');
+      }
+    } catch (err) {
+      console.warn('Error fetching company rooms and floors from DB:', err);
+      setRooms([]);
+      setFloors([]);
+    } finally {
+      setIsLoadingRooms(false);
+    }
+  }, [user?.companyId]);
+
+  const fetchDayOccupancy = useCallback(async (dateStr) => {
+    const companyId = user?.companyId;
+    try {
+      const res = await facilityApi.getOccupancyForDay(dateStr, { companyId });
+      if (res && res.success && Array.isArray(res.data)) {
+        setDayOccupancy(res.data);
+      } else {
+        setDayOccupancy([]);
+      }
+    } catch (err) {
+      console.warn('Error fetching day occupancy for company:', err);
+      setDayOccupancy([]);
+    }
+  }, [user?.companyId]);
+
+  const fetchMyBookings = useCallback(async () => {
+    const companyId = user?.companyId;
+    try {
+      const res = await facilityApi.getMyBookings({ companyId });
+      if (res && res.success && Array.isArray(res.data)) {
+        setMyBookings(res.data);
+      } else {
+        setMyBookings([]);
+      }
+    } catch (err) {
+      console.warn('Error fetching user bookings for company:', err);
+      setMyBookings([]);
+    }
+  }, [user?.companyId]);
+
+  // Initial load
+  useEffect(() => {
+    fetchRoomsAndFloors();
+    fetchMyBookings();
+  }, [fetchRoomsAndFloors, fetchMyBookings]);
+
+  // Re-fetch occupancy when selectedDate changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchDayOccupancy(selectedDate);
+    }
+  }, [selectedDate, fetchDayOccupancy]);
+
+  // Set default department from user if not set
+  useEffect(() => {
+    if (!department && user?.department) {
+      setDepartment(user.department);
+    }
+  }, [user, department]);
+
+  // ════════════════════ BOOKING ACTIONS ════════════════════
+  const handleBookRoom = async (bookingData) => {
+    try {
+      const res = await facilityApi.createBooking({
+        companyId: user?.companyId,
+        roomId: bookingData.roomId,
+        title: bookingData.title,
+        description: bookingData.description || '',
+        startTime: bookingData.startTime,
+        endTime: bookingData.endTime,
+        department: bookingData.department || department || user?.department || 'General',
+        attendeesCount: bookingData.attendeesCount || 2,
+      });
+
+      if (res && res.success) {
+        toast.success(
+          'Room Reserved Successfully!',
+          `Reserved for ${bookingData.title} (${bookingData.slotTimeText || ''}). Door tablet synchronized.`,
+          5000
+        );
+        // Refresh bookings & occupancy
+        await Promise.all([fetchDayOccupancy(selectedDate), fetchMyBookings()]);
+        return { success: true };
+      } else {
+        toast.error('Reservation Conflict / Error', res?.error || 'Could not complete booking.');
+        return { success: false, error: res?.error };
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Server error reserving room';
+      toast.error('Booking Failed', msg);
+      return { success: false, error: msg };
     }
   };
 
-  const handleBookRoom = (roomId, roomName, slotTime, floorName) => {
-    if (isSlotInPast(selectedDate, slotTime)) {
-      toast.error('Cannot Book Past Slot', 'Please select a future date and time slot.');
-      return;
+  const handleCancelBooking = async (booking) => {
+    const bookingId = booking.id;
+    try {
+      const res = await facilityApi.cancelBooking(bookingId);
+      if (res && res.success) {
+        toast.info(
+          'Slot Released',
+          `Reservation for ${booking.roomName || 'Room'} has been cancelled and is now vacant for colleagues.`
+        );
+        await Promise.all([fetchDayOccupancy(selectedDate), fetchMyBookings()]);
+      } else {
+        toast.error('Cancel Failed', res?.error || 'Could not release slot.');
+      }
+    } catch (err) {
+      toast.error('Cancel Failed', err.message || 'Error releasing slot.');
     }
-
-    const newBooking = {
-      id: 'b-' + Date.now(),
-      roomName,
-      roomId,
-      floor: floorName || currentRoom.wing,
-      date: selectedDate,
-      slot: slotTime,
-      purpose: bookingPurpose || '',
-      department: department || '',
-    };
-
-    setRooms((prev) =>
-      prev.map((r) => {
-        if (r.id === roomId) {
-          return {
-            ...r,
-            occupiedSlots: [...r.occupiedSlots, slotTime],
-            occupiedDetails: {
-              ...r.occupiedDetails,
-              [slotTime]: { team: department, purpose: bookingPurpose },
-            },
-          };
-        }
-        return r;
-      })
-    );
-
-    setMyBookings((prev) => [newBooking, ...prev]);
-
-    toast.success(
-      'Slot Successfully Booked!',
-      `${roomName} reserved for ${slotTime} on ${formatDate(selectedDate)} ("${newBooking.purpose}"). Door tablet updated.`,
-      5000
-    );
   };
 
-  const handleCancelBooking = (booking) => {
-    setRooms((prev) =>
-      prev.map((r) => {
-        if (r.id === booking.roomId) {
-          const updated = { ...r.occupiedDetails };
-          delete updated[booking.slot];
-          return {
-            ...r,
-            occupiedSlots: r.occupiedSlots.filter((s) => s !== booking.slot),
-            occupiedDetails: updated,
-          };
-        }
-        return r;
-      })
-    );
-
-    setMyBookings((prev) => prev.filter((b) => b.id !== booking.id));
-
-    toast.info(
-      'Slot Released',
-      `Reservation for ${booking.roomName} (${booking.slot}) has been cancelled and is now vacant for colleagues.`
-    );
-  };
-
-  const handleToggleMaintenance = (roomId) => {
+  const handleToggleMaintenance = async (roomId) => {
     const targetRoom = rooms.find((r) => r.id === roomId);
     if (!targetRoom) return;
-
-    const nextVal = !targetRoom.isUnderMaintenance;
-
-    setRooms((prev) =>
-      prev.map((r) => (r.id === roomId ? { ...r, isUnderMaintenance: nextVal } : r))
-    );
-
-    if (nextVal) {
-      toast.warning(
-        'Room Set to Maintenance',
-        `${targetRoom.name} is now temporarily offline for maintenance.`
-      );
-    } else {
-      toast.info(
-        'Room Maintenance Cleared',
-        `${targetRoom.name} is now available for booking.`
-      );
+    try {
+      const res = await facilityApi.toggleRoomMaintenance(roomId);
+      if (res && res.success) {
+        setRooms((prev) =>
+          prev.map((r) => (r.id === roomId ? { ...r, isUnderMaintenance: !r.isUnderMaintenance } : r))
+        );
+        toast.info('Room Status Updated', `${targetRoom.name} maintenance status toggled.`);
+      }
+    } catch (err) {
+      toast.error('Update Failed', err.message);
     }
   };
 
@@ -179,14 +283,22 @@ export default function WorkplacePortal() {
     setTimeout(() => {
       setHelpdeskSubmitted(false);
       setHelpdeskForm({ roomName: rooms[0]?.name || '', category: 'Hardware Issue', message: '' });
-    }, 4000);
+      toast.success('Ticket Submitted', 'Facilities operations team has been notified.');
+    }, 1500);
   };
 
-  const filteredDirectoryRooms = rooms.filter((room) => {
-    const matchesFloor = dirFloorFilter === 'all' || room.floor === dirFloorFilter;
-    const matchesSize = dirSizeFilter === 'all' || room.sizeCategory === dirSizeFilter;
-    return matchesFloor && matchesSize;
-  });
+  // Filtered rooms for directory
+  const filteredDirectoryRooms = useMemo(() => {
+    return rooms.filter((room) => {
+      const matchesFloor = dirFloorFilter === 'all' || room.floor === dirFloorFilter;
+      const matchesSize = dirSizeFilter === 'all' || room.sizeCategory === dirSizeFilter;
+      const matchesSearch =
+        !dirSearch ||
+        room.name.toLowerCase().includes(dirSearch.toLowerCase()) ||
+        (room.code && room.code.toLowerCase().includes(dirSearch.toLowerCase()));
+      return matchesFloor && matchesSize && matchesSearch;
+    });
+  }, [rooms, dirFloorFilter, dirSizeFilter, dirSearch]);
 
   return (
     <div className="workplace-portal">
@@ -194,8 +306,8 @@ export default function WorkplacePortal() {
         {/* Navigation Tabs Header */}
         <WorkplaceTabs
           activeTab={activeTab}
-          onTabChange={setActiveTab}
-          bookingsCount={myBookings.length}
+          onTabChange={handleTabChange}
+          bookingsCount={myBookings.filter((b) => b.status === 'CONFIRMED').length}
           isAdmin={isAdmin}
         />
 
@@ -203,34 +315,25 @@ export default function WorkplacePortal() {
         {activeTab === 'slot-finder' && (
           <SlotFinderTab
             rooms={rooms}
-            filteredRooms={filteredRooms}
-            currentRoom={currentRoom}
+            floors={floors}
+            dayOccupancy={dayOccupancy}
             selectedFloor={selectedFloor}
-            onFloorChange={(val) => {
-              setSelectedFloor(val);
-              const firstInFloor = rooms.find(
-                (r) => val === 'All Floors' || r.floor === val
-              );
-              if (firstInFloor) setSelectedRoomId(firstInFloor.id);
-            }}
+            onFloorChange={setSelectedFloor}
             selectedRoomId={selectedRoomId}
             onRoomSelect={setSelectedRoomId}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
-            selectedSlot={selectedSlot}
-            onSlotChange={setSelectedSlot}
             bookingPurpose={bookingPurpose}
             onBookingPurposeChange={setBookingPurpose}
             department={department}
             onDepartmentChange={setDepartment}
-            isMaintenance={isMaintenance}
-            isOccupied={isOccupied}
-            currentOccupant={currentOccupant}
-            alternativeRooms={alternativeRooms}
             policies={policies}
             onBookRoom={handleBookRoom}
             isAdmin={isAdmin}
-            onGoToAdmin={() => setActiveTab('admin-console')}
+            onGoToAdmin={() => handleTabChange('admin-console')}
+            onGoToMyBookings={() => handleTabChange('my-bookings')}
+            currentUser={user}
+            isLoading={isLoadingRooms}
           />
         )}
 
@@ -238,15 +341,17 @@ export default function WorkplacePortal() {
         {activeTab === 'directory' && (
           <CampusDirectoryTab
             rooms={rooms}
+            floors={floors}
             filteredDirectoryRooms={filteredDirectoryRooms}
             dirFloorFilter={dirFloorFilter}
             onFloorFilterChange={setDirFloorFilter}
             dirSizeFilter={dirSizeFilter}
             onSizeFilterChange={setDirSizeFilter}
-            selectedSlot={selectedSlot}
+            search={dirSearch}
+            onSearchChange={setDirSearch}
             onSelectRoomForBooking={(roomId) => {
               setSelectedRoomId(roomId);
-              setActiveTab('slot-finder');
+              handleTabChange('slot-finder');
             }}
           />
         )}
@@ -256,7 +361,7 @@ export default function WorkplacePortal() {
           <MyBookingsTab
             myBookings={myBookings}
             onCancelBooking={handleCancelBooking}
-            onGoToSlotFinder={() => setActiveTab('slot-finder')}
+            onGoToSlotFinder={() => handleTabChange('slot-finder')}
           />
         )}
 

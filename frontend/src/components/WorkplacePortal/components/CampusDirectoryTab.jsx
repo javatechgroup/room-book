@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Building, MapPin, Users, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Building, MapPin, Users, ChevronRight, RotateCcw } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import SearchInput from '../../common/SearchInput/SearchInput';
 
 export default function CampusDirectoryTab({
   rooms = [],
+  floors = [],
   filteredDirectoryRooms = [],
-  dirFloorFilter,
+  dirFloorFilter = 'all',
   onFloorFilterChange,
-  dirSizeFilter,
+  dirSizeFilter = 'all',
   onSizeFilterChange,
+  search = '',
+  onSearchChange,
   selectedSlot,
   onSelectRoomForBooking,
 }) {
@@ -17,14 +21,47 @@ export default function CampusDirectoryTab({
 
   useEffect(() => {
     setPage(1);
-  }, [dirFloorFilter, dirSizeFilter]);
+  }, [dirFloorFilter, dirSizeFilter, search]);
+
+  const directoryFloorOptions = useMemo(() => {
+    const set = new Set();
+    if (Array.isArray(floors)) {
+      floors.forEach((f) => {
+        if (typeof f === 'string' && f.trim()) set.add(f.trim());
+        else if (f && typeof f === 'object' && f.name && typeof f.name === 'string') set.add(f.name.trim());
+      });
+    }
+    if (Array.isArray(rooms)) {
+      rooms.forEach((r) => {
+        if (r.floor && typeof r.floor === 'string' && r.floor.trim()) set.add(r.floor.trim());
+      });
+    }
+    return Array.from(set).sort();
+  }, [floors, rooms]);
 
   const paginatedRooms = filteredDirectoryRooms.slice((page - 1) * pageSize, page * pageSize);
 
+  const isFiltered = dirFloorFilter !== 'all' || dirSizeFilter !== 'all' || Boolean(search);
+
+  const handleResetFilters = () => {
+    if (onFloorFilterChange) onFloorFilterChange('all');
+    if (onSizeFilterChange) onSizeFilterChange('all');
+    if (onSearchChange) onSearchChange('');
+  };
+
   return (
     <div className="portal-card directory-panel">
-      <div className="directory-toolbar">
-        <div className="dir-pills">
+      <div className="directory-toolbar" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 240px', maxWidth: '320px' }}>
+          <SearchInput
+            value={search}
+            onChange={onSearchChange}
+            placeholder="Search rooms or pods..."
+            ariaLabel="Search Campus Rooms"
+          />
+        </div>
+
+        <div className="dir-pills" style={{ display: 'flex', gap: '6px', overflowX: 'auto', flex: '1 1 auto' }}>
           <button
             type="button"
             className={`dir-pill ${dirFloorFilter === 'all' ? 'dir-pill--active' : ''}`}
@@ -32,20 +69,25 @@ export default function CampusDirectoryTab({
           >
             All Floors ({rooms.length})
           </button>
-          {Array.from(new Set(rooms.map((r) => r.floor).filter(Boolean))).sort().map((floor) => (
-            <button
-              key={floor}
-              type="button"
-              className={`dir-pill ${dirFloorFilter === floor ? 'dir-pill--active' : ''}`}
-              onClick={() => onFloorFilterChange(floor)}
-            >
-              {floor}
-            </button>
-          ))}
+          {directoryFloorOptions.map((floor) => {
+            const count = rooms.filter((r) => r.floor === floor).length;
+            return (
+              <button
+                key={floor}
+                type="button"
+                className={`dir-pill ${dirFloorFilter === floor ? 'dir-pill--active' : ''}`}
+                onClick={() => onFloorFilterChange(floor)}
+              >
+                {floor} {count > 0 ? `(${count})` : ''}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="dir-size-select">
-          <label htmlFor="dir-size">Capacity:</label>
+        <div className="dir-size-select" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label htmlFor="dir-size" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+            Capacity:
+          </label>
           <select
             id="dir-size"
             value={dirSizeFilter}
@@ -67,12 +109,22 @@ export default function CampusDirectoryTab({
               No rooms match the selected criteria.
             </p>
             <p className="directory-empty-state__subtitle">
-              Try adjusting your floor or capacity filters or add rooms in the console.
+              Try adjusting your search query, floor, or capacity filters.
             </p>
+            {isFiltered && (
+              <button
+                type="button"
+                className="btn btn--outline btn--sm"
+                onClick={handleResetFilters}
+                style={{ marginTop: '12px' }}
+              >
+                <RotateCcw size={14} /> Reset All Filters
+              </button>
+            )}
           </div>
         ) : (
           paginatedRooms.map((r) => {
-            const isAvail = !r.isUnderMaintenance && !r.occupiedSlots.includes(selectedSlot);
+            const isAvail = !r.isUnderMaintenance && r.status !== 'MAINTENANCE';
             return (
               <div className="dir-room-card" key={r.id}>
                 <div className="dir-room-card__header">
@@ -83,19 +135,19 @@ export default function CampusDirectoryTab({
                   </div>
                   <span
                     className={`status-indicator ${
-                      r.isUnderMaintenance
+                      r.isUnderMaintenance || r.status === 'MAINTENANCE'
                         ? 'status-indicator--maint'
                         : isAvail
                         ? 'status-indicator--free'
                         : 'status-indicator--busy'
                     }`}
                   >
-                    {r.isUnderMaintenance ? 'Maintenance' : isAvail ? 'Vacant' : 'In Session'}
+                    {r.isUnderMaintenance || r.status === 'MAINTENANCE' ? 'Maintenance' : 'Available'}
                   </span>
                 </div>
 
                 <div className="dir-loc">
-                  <MapPin size={13} /> {r.building} • {r.wing}
+                  <MapPin size={13} /> {r.building || 'HQ'} • {r.wing || r.floor}
                 </div>
 
                 <div className="dir-specs">
@@ -103,7 +155,7 @@ export default function CampusDirectoryTab({
                     <Users size={13} /> {r.capacity} Seats
                   </span>
                   <div className="dir-hw-chips">
-                    {r.hardware.map((hw) => (
+                    {(r.hardware || []).map((hw) => (
                       <span className="hw-tag" key={hw.name}>
                         {hw.name}
                       </span>
@@ -113,10 +165,10 @@ export default function CampusDirectoryTab({
 
                 <button
                   type="button"
-                  className="btn btn--outline btn--sm btn--full"
+                  className="btn btn--primary btn--sm btn--full"
                   onClick={() => onSelectRoomForBooking(r.id)}
                 >
-                  Check Slots for this Room <ChevronRight size={14} />
+                  Book this Room <ChevronRight size={14} />
                 </button>
               </div>
             );

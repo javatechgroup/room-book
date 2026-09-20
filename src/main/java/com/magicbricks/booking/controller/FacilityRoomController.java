@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/facility/rooms")
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'EMPLOYEE')")
 public class FacilityRoomController {
 
     private final FacilityRoomService roomService;
@@ -35,6 +35,7 @@ public class FacilityRoomController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponse>> createRoom(
             @Valid @RequestBody RoomRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
@@ -81,6 +82,7 @@ public class FacilityRoomController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponse>> updateRoom(
             @PathVariable Long id,
             @Valid @RequestBody RoomRequest request,
@@ -92,6 +94,7 @@ public class FacilityRoomController {
     }
 
     @PatchMapping("/{id}/maintenance")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponse>> toggleMaintenance(
             @PathVariable Long id,
             @RequestParam(required = false) Long companyId,
@@ -103,6 +106,7 @@ public class FacilityRoomController {
     }
 
     @PatchMapping("/bulk/status")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<List<RoomResponse>>> bulkUpdateStatus(
             @Valid @RequestBody BulkStatusUpdateRequest request,
             @RequestParam(required = false) Long companyId,

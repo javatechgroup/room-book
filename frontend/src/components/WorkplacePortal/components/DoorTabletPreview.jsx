@@ -9,6 +9,7 @@ export default function DoorTabletPreview({
   currentOccupant,
   bookingPurpose,
   department,
+  nextAvailableSlot,
 }) {
   if (!currentRoom) return null;
 
@@ -27,9 +28,9 @@ export default function DoorTabletPreview({
         }`}
       >
         <div className="tablet-header">
-          <span className="tablet-code">{currentRoom.code}</span>
-          <h4 className="tablet-room">{currentRoom.name}</h4>
-          <span className="tablet-loc">{currentRoom.wing}</span>
+          <span className="tablet-code">{currentRoom?.code || 'RM'}</span>
+          <h4 className="tablet-room">{currentRoom?.name || 'Conference Space'}</h4>
+          <span className="tablet-loc">{currentRoom?.wing || currentRoom?.floor || ''}</span>
         </div>
 
         <div className="tablet-status-strip">
@@ -60,7 +61,7 @@ export default function DoorTabletPreview({
 
         <div className="tablet-footer">
           <span>Next Open Window:</span>
-          <strong>{currentRoom.nextAvailableSlot}</strong>
+          <strong>{nextAvailableSlot || currentRoom?.nextAvailableSlot || 'Ready Now'}</strong>
         </div>
       </div>
     </div>

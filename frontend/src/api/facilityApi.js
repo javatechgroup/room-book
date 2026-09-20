@@ -33,9 +33,9 @@ export const facilityApi = {
     };
   },
 
-  async getFloors() {
+  async getFloors(params = {}) {
     try {
-      const response = await apiClient.get('/facility/rooms/floors');
+      const response = await apiClient.get('/facility/rooms/floors', { params });
       if (response.data && response.data.data) {
         return { success: true, data: response.data.data };
       }
@@ -269,9 +269,9 @@ export const facilityApi = {
     };
   },
 
-  async getMyBookings() {
+  async getMyBookings(params = {}) {
     try {
-      const response = await apiClient.get('/facility/bookings/my-bookings');
+      const response = await apiClient.get('/facility/bookings/my-bookings', { params });
       if (response.data && response.data.data) {
         return { success: true, data: response.data.data };
       }
@@ -281,9 +281,9 @@ export const facilityApi = {
     return { success: true, data: [] };
   },
 
-  async getOccupancyForDay(dateStr) {
+  async getOccupancyForDay(dateStr, params = {}) {
     try {
-      const response = await apiClient.get('/facility/bookings/occupancy', { params: { date: dateStr } });
+      const response = await apiClient.get('/facility/bookings/occupancy', { params: { date: dateStr, ...params } });
       if (response.data && response.data.data) {
         return { success: true, data: response.data.data };
       }
