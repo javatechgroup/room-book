@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
+import DatePicker from '../../common/DatePicker/DatePicker';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function BookingMonitorTab({
@@ -223,17 +224,16 @@ export default function BookingMonitorTab({
 
         <div className="superadmin-filter-group">
           {/* Date Picker */}
-          <div className="input-wrap input-wrap--date superadmin-date-filter">
-            <Calendar size={14} className="input-icon" />
-            <input
-              type="date"
+          <div style={{ minWidth: '170px' }}>
+            <DatePicker
               value={dateFilter}
-              onChange={(e) => {
+              onChange={(newDate) => {
                 setBookingPage(1);
-                if (onDateFilterChange) onDateFilterChange(e.target.value);
+                if (onDateFilterChange) onDateFilterChange(newDate);
               }}
-              className="filter-date-input"
-              title="Filter by reservation date"
+              placeholder="All Dates"
+              allowClear={true}
+              compact={true}
             />
           </div>
 

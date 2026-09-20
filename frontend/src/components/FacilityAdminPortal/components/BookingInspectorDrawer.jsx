@@ -13,6 +13,10 @@ import {
   XCircle,
   Ban,
   Radio,
+  Copy,
+  Check,
+  CalendarPlus,
+  Mail,
 } from 'lucide-react';
 import { formatDate } from '../../../utils/dateUtils';
 
@@ -43,6 +47,48 @@ export default function BookingInspectorDrawer({
   };
 
   const state = getBookingState();
+
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopyDetails = () => {
+    const summary = `Meeting: ${booking.title}\nRoom: ${booking.roomName} (${booking.floor})\nDate: ${formatDate(booking.startTime)}\nTime: ${startTime} - ${endTime}\nAttendees: ${booking.attendeesCount || 2}\nReserved By: ${booking.bookerName || 'User'}`;
+    navigator.clipboard?.writeText(summary);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadIcs = () => {
+    try {
+      const pad = (n) => String(n).padStart(2, '0');
+      const formatIcsDate = (isoStr) => {
+        const d = new Date(isoStr);
+        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+      };
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//MeetSpace//Conference Room Reservation//EN',
+        'BEGIN:VEVENT',
+        `SUMMARY:${booking.title}`,
+        `LOCATION:${booking.roomName}, ${booking.floor}`,
+        `DESCRIPTION:${booking.description || 'Meeting reservation'}`,
+        `DTSTART:${formatIcsDate(booking.startTime)}`,
+        `DTEND:${formatIcsDate(booking.endTime)}`,
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+        'END:VCALENDAR',
+      ].join('\r\n');
+
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.setAttribute('download', `${booking.title.replace(/\s+/g, '_')}_Meeting.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (_) {}
+  };
 
   return (
     <div className="inspector-drawer-overlay" onClick={onClose}>
@@ -81,17 +127,36 @@ export default function BookingInspectorDrawer({
             </span>
           </div>
 
-          {state.canCancel && onCancelBooking && (
-            <div className="inspector-quick-actions">
+          {/* Functional Quick Actions Strip */}
+          <div className="inspector-quick-actions">
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={handleCopyDetails}
+              title="Copy meeting summary to clipboard"
+            >
+              {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+              {copied ? 'Copied!' : 'Copy Info'}
+            </button>
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={handleDownloadIcs}
+              title="Export event to Outlook / Apple / Google Calendar"
+            >
+              <CalendarPlus size={14} /> Add to Calendar
+            </button>
+            {state.canCancel && onCancelBooking && (
               <button
                 type="button"
                 className="btn btn--danger btn--sm"
                 onClick={() => onCancelBooking(booking)}
+                title="Release this room slot immediately"
               >
-                <XCircle size={14} /> Cancel Reservation
+                <XCircle size={14} /> Release Slot
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="inspector-section">
             <h4 className="inspector-section__title">Reservation Schedule</h4>

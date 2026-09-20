@@ -53,6 +53,52 @@
   flex-shrink: 0;
 }
 
+.custom-datepicker-trigger--compact {
+  height: 36px;
+  padding: 0 10px;
+  font-size: 0.825rem;
+}
+
+.custom-datepicker-trigger--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.custom-datepicker-value--placeholder {
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+}
+
+.custom-datepicker-trigger__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.custom-datepicker-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.custom-datepicker-clear-btn:hover {
+  background: var(--gray-200, #e2e8f0);
+  color: var(--text-heading, #0f172a);
+}
+
+[data-theme='dark'] .custom-datepicker-clear-btn:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
 .custom-datepicker-day-name {
   font-size: 0.75rem;
   font-weight: 700;

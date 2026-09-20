@@ -18,6 +18,7 @@ import {
   Type,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
+import DatePicker from '../../common/DatePicker/DatePicker';
 import { formatDate } from '../../../utils/dateUtils';
 
 const HOURS = ['08', '09', '10', '11', '12', '01', '02', '03', '04', '05', '06', '07'];
@@ -266,24 +267,12 @@ export default function BookRoomTab({
             {/* Date Picker */}
             <div className="form-group">
               <label htmlFor="booking-date">Reservation Date *</label>
-              <div className="input-wrap">
-                <Calendar size={16} className="input-icon" />
-                <input
-                  id="booking-date"
-                  type="date"
-                  min={new Date().toISOString().split('T')[0]}
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  onClick={(e) => {
-                    try {
-                      if (typeof e.target.showPicker === 'function') {
-                        e.target.showPicker();
-                      }
-                    } catch (_) {}
-                  }}
-                  required
-                />
-              </div>
+              <DatePicker
+                id="booking-date"
+                minDate={new Date().toISOString().split('T')[0]}
+                value={selectedDate}
+                onChange={setSelectedDate}
+              />
             </div>
 
             {/* Flexible Time Slot: Hour & Min Dropdowns */}

@@ -13,7 +13,13 @@ export default function DatePicker({
   value,
   onChange,
   minDate,
+  maxDate,
   id = 'slot-date',
+  placeholder = 'Select date',
+  allowClear = false,
+  compact = false,
+  disabled = false,
+  className = '',
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
@@ -95,33 +101,61 @@ export default function DatePicker({
 
   // Format display string e.g. "Sep 20, 2026"
   const formattedDisplay = React.useMemo(() => {
+    if (!value) return null;
     return selectedDateObj.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     });
-  }, [selectedDateObj]);
+  }, [value, selectedDateObj]);
 
   const pad = (n) => String(n).padStart(2, '0');
   const todayStr = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}-${pad(new Date().getDate())}`;
 
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onChange('');
+    setIsOpen(false);
+  };
+
   return (
-    <div className="custom-datepicker-container" ref={containerRef}>
+    <div className={`custom-datepicker-container ${className}`} ref={containerRef}>
       <button
         type="button"
         id={id}
-        className={`custom-datepicker-trigger ${isOpen ? 'custom-datepicker-trigger--open' : ''}`}
-        onClick={() => setIsOpen((prev) => !prev)}
+        disabled={disabled}
+        className={`custom-datepicker-trigger ${isOpen ? 'custom-datepicker-trigger--open' : ''} ${
+          compact ? 'custom-datepicker-trigger--compact' : ''
+        } ${disabled ? 'custom-datepicker-trigger--disabled' : ''}`}
+        onClick={() => !disabled && setIsOpen((prev) => !prev)}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
       >
         <div className="custom-datepicker-trigger__left">
-          <CalendarIcon size={16} className="custom-datepicker-icon" />
-          <span className="custom-datepicker-value">{formattedDisplay}</span>
+          <CalendarIcon size={compact ? 14 : 16} className="custom-datepicker-icon" />
+          <span className={`custom-datepicker-value ${!formattedDisplay ? 'custom-datepicker-value--placeholder' : ''}`}>
+            {formattedDisplay || placeholder}
+          </span>
         </div>
-        <span className="custom-datepicker-day-name">
-          {selectedDateObj.toLocaleDateString('en-US', { weekday: 'short' })}
-        </span>
+        <div className="custom-datepicker-trigger__right">
+          {allowClear && value && (
+            <span
+              role="button"
+              tabIndex={0}
+              className="custom-datepicker-clear-btn"
+              onClick={handleClear}
+              onKeyDown={(e) => e.key === 'Enter' && handleClear(e)}
+              title="Clear date"
+            >
+              ×
+            </span>
+          )}
+          {value && !compact && (
+            <span className="custom-datepicker-day-name">
+              {selectedDateObj.toLocaleDateString('en-US', { weekday: 'short' })}
+            </span>
+          )}
+        </div>
       </button>
 
       {isOpen && (
