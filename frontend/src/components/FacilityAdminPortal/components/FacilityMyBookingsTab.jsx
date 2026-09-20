@@ -294,14 +294,16 @@ export default function FacilityMyBookingsTab({
                       onClick={() => onInspectBooking && onInspectBooking(booking)}
                     >
                       <td>
-                        <div className="schedule-time-pill">
-                          <Clock size={13} />
-                          <span>{startTimeDisplay} - {endTimeDisplay}</span>
+                        <div className="schedule-time-col">
+                          <div className="schedule-time-pill">
+                            <Clock size={13} />
+                            <span>{startTimeDisplay} - {endTimeDisplay}</span>
+                          </div>
+                          <span className="sub-date">{formatDate(booking.startTime)}</span>
                         </div>
-                        <span className="sub-date">{formatDate(booking.startTime)}</span>
                       </td>
                       <td className="td-strong">
-                        <div className="entity-cell">
+                        <div className="entity-cell entity-cell--single-row">
                           <div className={`entity-cell__icon ${state.key === 'IN_PROGRESS' ? 'entity-cell__icon--blue' : 'entity-cell__icon--blue'}`}>
                             {state.key === 'IN_PROGRESS' ? (
                               <Radio size={15} className="blinking-live-icon" />
@@ -309,20 +311,26 @@ export default function FacilityMyBookingsTab({
                               <CalendarCheck2 size={15} />
                             )}
                           </div>
-                          <div className="entity-cell__content">
-                            <div className="entity-cell__name" title={booking.title}>{booking.title}</div>
-                            <div className="entity-cell__sub" title={booking.description || undefined}>
-                              <span>{booking.departmentName || booking.companyName || 'Corporate'}</span>
-                              {booking.description && <span> • {booking.description}</span>}
-                            </div>
+                          <div className="entity-cell__content entity-cell__content--single-row">
+                            <span className="entity-cell__name" title={booking.title}>{booking.title}</span>
+                            {(booking.departmentName || booking.companyName) && (
+                              <span className="entity-cell__dept-badge">
+                                {booking.departmentName || booking.companyName}
+                              </span>
+                            )}
+                            {booking.description && (
+                              <span className="entity-cell__desc-inline" title={booking.description}>
+                                • {booking.description}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>
                       <td>
-                        <div className="room-floor-tag">
+                        <div className="room-floor-inline">
                           <strong>{booking.roomName}</strong>
-                          <span>
-                            {booking.floor
+                          <span className="room-floor-inline__floor">
+                            • {booking.floor
                               ? booking.floor.toString().toLowerCase().includes('floor')
                                 ? booking.floor
                                 : `Floor ${booking.floor}`

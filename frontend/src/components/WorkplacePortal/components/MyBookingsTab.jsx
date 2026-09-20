@@ -259,15 +259,17 @@ export default function MyBookingsTab({
                       style={{ cursor: 'pointer' }}
                     >
                       <td>
-                        <div className="schedule-time-pill">
-                          <Clock size={13} />
-                          <span>{timeRange}</span>
+                        <div className="schedule-time-col">
+                          <div className="schedule-time-pill">
+                            <Clock size={13} />
+                            <span>{timeRange}</span>
+                          </div>
+                          <span className="sub-date">{formatDate(dateVal)}</span>
                         </div>
-                        <span className="sub-date">{formatDate(dateVal)}</span>
                       </td>
 
                       <td className="td-strong">
-                        <div className="entity-cell">
+                        <div className="entity-cell entity-cell--single-row">
                           <div
                             className={`entity-cell__icon ${
                               state.key === 'IN_PROGRESS' ? 'entity-cell__icon--live' : ''
@@ -279,25 +281,29 @@ export default function MyBookingsTab({
                               <CalendarCheck2 size={15} />
                             )}
                           </div>
-                          <div className="entity-cell__content">
-                            <div className="entity-cell__name" title={b.title || b.purpose}>
+                          <div className="entity-cell__content entity-cell__content--single-row">
+                            <span className="entity-cell__name" title={b.title || b.purpose}>
                               {b.title || b.purpose || 'Meeting'}
-                            </div>
-                            <div className="entity-cell__sub" title={b.description || undefined}>
-                              <span className="entity-cell__dept">{b.departmentName || b.department || 'General'}</span>
-                              {b.description && (
-                                <span className="entity-cell__desc"> • {b.description}</span>
-                              )}
-                            </div>
+                            </span>
+                            {(b.departmentName || b.department) && (
+                              <span className="entity-cell__dept-badge">
+                                {b.departmentName || b.department}
+                              </span>
+                            )}
+                            {b.description && (
+                              <span className="entity-cell__desc-inline" title={b.description}>
+                                • {b.description}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>
 
                       <td>
-                        <div className="room-floor-tag">
+                        <div className="room-floor-inline">
                           <strong>{b.roomName}</strong>
-                          <span>
-                            {b.floor
+                          <span className="room-floor-inline__floor">
+                            • {b.floor
                               ? b.floor.toString().toLowerCase().includes('floor')
                                 ? b.floor
                                 : `Floor ${b.floor}`
