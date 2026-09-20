@@ -1267,37 +1267,66 @@
 }
 
 /* Desktop Table Column Proportions */
+.my-bookings-table {
+  width: 100%;
+  min-width: 880px;
+  border-collapse: collapse;
+}
+
 .my-bookings-table th:nth-child(1),
 .my-bookings-table td:nth-child(1) {
-  width: 175px;
+  width: 155px;
+  min-width: 150px;
 }
 
 .my-bookings-table th:nth-child(2),
 .my-bookings-table td:nth-child(2) {
-  width: 28%;
+  width: auto;
+  min-width: 200px;
 }
 
 .my-bookings-table th:nth-child(3),
 .my-bookings-table td:nth-child(3) {
-  width: 22%;
+  width: 160px;
+  min-width: 140px;
 }
 
 .my-bookings-table th:nth-child(4),
 .my-bookings-table td:nth-child(4) {
-  width: 105px;
+  width: 95px;
+  min-width: 90px;
   text-align: center;
 }
 
 .my-bookings-table th:nth-child(5),
 .my-bookings-table td:nth-child(5) {
   width: 140px;
+  min-width: 135px;
   text-align: center;
 }
 
-.my-bookings-table th:nth-child(6),
-.my-bookings-table td:nth-child(6) {
-  width: 130px;
-  text-align: right;
+.my-bookings-table td:nth-child(5) .status-pill {
+  display: inline-flex;
+  margin: 0 auto;
+}
+
+.bookings-panel .my-bookings-table th:nth-child(6),
+.bookings-panel .my-bookings-table td:nth-child(6),
+.my-bookings-table th.th-actions,
+.my-bookings-table td.td-actions {
+  width: 150px !important;
+  min-width: 145px !important;
+  text-align: right !important;
+  padding-right: 14px !important;
+  padding-left: 6px !important;
+  overflow: visible !important;
+}
+
+.my-bookings-table .action-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .schedule-time-pill {
@@ -1359,6 +1388,26 @@
 .entity-cell__sub {
   font-size: 0.75rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-cell__dept {
+  font-weight: 500;
+  color: var(--text-secondary, #475569);
+  flex-shrink: 0;
+}
+
+.entity-cell__desc {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .room-floor-tag {
@@ -1382,8 +1431,68 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  width: 100%;
+  gap: 6px;
+  width: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Reschedule / Editing Mode Banner in Slot Finder */
+.editing-booking-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #60a5fa;
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+[data-theme='dark'] .editing-booking-banner {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.3) 0%, rgba(37, 99, 235, 0.2) 100%);
+  border-color: #2563eb;
+}
+
+.editing-booking-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.editing-booking-banner__badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.editing-booking-banner__text strong {
+  display: block;
+  font-size: 0.92rem;
+  color: #1e3a8a;
+  margin-bottom: 2px;
+}
+
+[data-theme='dark'] .editing-booking-banner__text strong {
+  color: #bfdbfe;
+}
+
+.editing-booking-banner__text p {
+  font-size: 0.8rem;
+  color: #2563eb;
+  margin: 0;
+}
+
+[data-theme='dark'] .editing-booking-banner__text p {
+  color: #93c5fd;
 }
 
 .action-btn {

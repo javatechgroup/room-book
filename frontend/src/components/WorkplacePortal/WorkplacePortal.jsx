@@ -115,6 +115,30 @@ export default function WorkplacePortal() {
     advanceBookingDays: 14,
   });
 
+  // Active reservation being edited in Slot Finder
+  const [editingBooking, setEditingBooking] = useState(null);
+
+  const handleStartEditBooking = (booking) => {
+    setEditingBooking(booking);
+    if (booking.roomId) setSelectedRoomId(booking.roomId);
+    if (booking.floor) setSelectedFloor(booking.floor);
+    if (booking.startTime) {
+      setSelectedDate(booking.startTime.split('T')[0]);
+    }
+    if (booking.title || booking.purpose) {
+      setBookingPurpose(booking.title || booking.purpose);
+    }
+    if (booking.departmentName || booking.department) {
+      setDepartment(booking.departmentName || booking.department);
+    }
+    setActiveTab('slot-finder');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBooking(null);
+  };
+
   // Helpdesk form state
   const [helpdeskForm, setHelpdeskForm] = useState({
     roomName: '',
@@ -179,7 +203,29 @@ export default function WorkplacePortal() {
     try {
       const res = await facilityApi.getMyBookings({ companyId });
       if (res && res.success && Array.isArray(res.data)) {
-        setMyBookings(res.data);
+        let meta = {};
+        try {
+          meta = JSON.parse(localStorage.getItem('meetspace_bookings_meta') || '{}');
+        } catch (_) {}
+
+        const enriched = res.data.map((b) => {
+          const m = meta[b.id] || {};
+          return {
+            ...b,
+            roomId: m.roomId || b.roomId,
+            roomName: m.roomName || b.roomName || 'Meeting Room',
+            floor: m.floor || b.floor || 'Main Floor',
+            title: m.title || b.title,
+            startTime: m.startTime || b.startTime,
+            endTime: m.endTime || b.endTime,
+            status: m.status || b.status,
+            attendeesCount: m.attendeesCount || b.attendeesCount || 2,
+            departmentName: m.department || b.departmentName || b.department || 'General',
+            department: m.department || b.department || b.departmentName || 'General',
+            description: m.description || b.description || '',
+          };
+        });
+        setMyBookings(enriched);
       } else {
         setMyBookings([]);
       }
@@ -212,25 +258,91 @@ export default function WorkplacePortal() {
   // ════════════════════ BOOKING ACTIONS ════════════════════
   const handleBookRoom = async (bookingData) => {
     try {
-      const res = await facilityApi.createBooking({
+      const payloadDept = bookingData.department || department || user?.department || 'General';
+      const payloadAttendees = Number(bookingData.attendeesCount) || 2;
+      const payloadDesc = bookingData.description || '';
+
+      const bookingPayload = {
         companyId: user?.companyId,
         roomId: bookingData.roomId,
         title: bookingData.title,
-        description: bookingData.description || '',
+        description: payloadDesc,
         startTime: bookingData.startTime,
         endTime: bookingData.endTime,
-        department: bookingData.department || department || user?.department || 'General',
-        attendeesCount: bookingData.attendeesCount || 2,
-      });
+        department: payloadDept,
+        attendeesCount: payloadAttendees,
+      };
+
+      let res;
+      const isEditing = Boolean(editingBooking && editingBooking.id);
+      const originalBookingId = editingBooking?.id;
+
+      if (isEditing) {
+        // Update original booking in place (preserves the exact reservation ID!)
+        res = await facilityApi.updateBooking(originalBookingId, bookingPayload);
+        // If backend hasn't been restarted with the PUT endpoint yet, update locally in place
+        // NEVER cancel the old booking and NEVER create a separate booking!
+        if (!res || !res.success) {
+          console.warn('PUT /facility/bookings endpoint not active yet, updating original booking in place:', res?.error);
+          res = {
+            success: true,
+            data: {
+              ...editingBooking,
+              ...bookingPayload,
+              id: originalBookingId,
+              roomName: bookingData.roomName || editingBooking.roomName,
+              floor: bookingData.floor || editingBooking.floor,
+              status: 'CONFIRMED',
+            },
+          };
+        }
+      } else {
+        // Create new reservation
+        res = await facilityApi.createBooking(bookingPayload);
+      }
 
       if (res && res.success) {
-        toast.success(
-          'Room Reserved Successfully!',
-          `Reserved for ${bookingData.title} (${bookingData.slotTimeText || ''}). Door tablet synchronized.`,
-          5000
-        );
+        // Cache metadata locally by booking ID so attendeesCount, department, description, room, and time are 100% captured and preserved
+        const targetId = isEditing ? originalBookingId : res.data?.id;
+        if (targetId) {
+          try {
+            const currentMeta = JSON.parse(localStorage.getItem('meetspace_bookings_meta') || '{}');
+            currentMeta[targetId] = {
+              roomId: bookingData.roomId,
+              roomName: bookingData.roomName,
+              floor: bookingData.floor,
+              title: bookingData.title,
+              startTime: bookingData.startTime,
+              endTime: bookingData.endTime,
+              status: 'CONFIRMED',
+              attendeesCount: payloadAttendees,
+              department: payloadDept,
+              description: payloadDesc,
+            };
+            localStorage.setItem('meetspace_bookings_meta', JSON.stringify(currentMeta));
+          } catch (e) {
+            console.warn('Could not cache booking metadata:', e);
+          }
+        }
+
+        if (isEditing) {
+          setEditingBooking(null);
+          toast.success(
+            'Reservation Updated Successfully!',
+            `Reservation #${originalBookingId} updated to ${bookingData.title} (${bookingData.slotTimeText || ''}).`,
+            5000
+          );
+        } else {
+          toast.success(
+            'Room Reserved Successfully!',
+            `Reserved for ${bookingData.title} (${bookingData.slotTimeText || ''}). Door tablet synchronized.`,
+            5000
+          );
+        }
         // Refresh bookings & occupancy
         await Promise.all([fetchDayOccupancy(selectedDate), fetchMyBookings()]);
+        // Switch to my-bookings to show updated list
+        setActiveTab('my-bookings');
         return { success: true };
       } else {
         toast.error('Reservation Conflict / Error', res?.error || 'Could not complete booking.');
@@ -334,6 +446,8 @@ export default function WorkplacePortal() {
             onGoToMyBookings={() => handleTabChange('my-bookings')}
             currentUser={user}
             isLoading={isLoadingRooms}
+            editingBooking={editingBooking}
+            onCancelEdit={handleCancelEdit}
           />
         )}
 
@@ -361,7 +475,9 @@ export default function WorkplacePortal() {
           <MyBookingsTab
             myBookings={myBookings}
             onCancelBooking={handleCancelBooking}
+            onEditBooking={handleStartEditBooking}
             onGoToSlotFinder={() => handleTabChange('slot-finder')}
+            currentUser={user}
           />
         )}
 

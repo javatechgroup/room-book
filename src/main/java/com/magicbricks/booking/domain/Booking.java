@@ -43,6 +43,12 @@ public class Booking {
 
     private String status = "CONFIRMED";
 
+    @Column(name = "department")
+    private String department;
+
+    @Column(name = "attendees_count")
+    private Integer attendeesCount;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -77,6 +83,12 @@ public class Booking {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+
+    public Integer getAttendeesCount() { return attendeesCount; }
+    public void setAttendeesCount(Integer attendeesCount) { this.attendeesCount = attendeesCount; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
+  Edit2,
   CalendarPlus,
   Radio,
   Download,
@@ -23,6 +24,7 @@ export default function FacilityMyBookingsTab({
   floors = [],
   onInspectBooking,
   onCancelBooking,
+  onEditBooking,
   onOpenBookRoom,
   onExportCSV,
 }) {
@@ -309,18 +311,27 @@ export default function FacilityMyBookingsTab({
                           </div>
                           <div className="entity-cell__content">
                             <div className="entity-cell__name" title={booking.title}>{booking.title}</div>
-                            <div className="entity-cell__sub">ID: #{booking.id}</div>
+                            <div className="entity-cell__sub" title={booking.description || undefined}>
+                              <span>{booking.departmentName || booking.companyName || 'Corporate'}</span>
+                              {booking.description && <span> • {booking.description}</span>}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div className="room-floor-tag">
                           <strong>{booking.roomName}</strong>
-                          <span>{booking.floor}</span>
+                          <span>
+                            {booking.floor
+                              ? booking.floor.toString().toLowerCase().includes('floor')
+                                ? booking.floor
+                                : `Floor ${booking.floor}`
+                              : booking.location || 'Main Floor'}
+                          </span>
                         </div>
                       </td>
                       <td>
-                        <span className="capacity-pill">
+                        <span className="capacity-pill" title={`${booking.attendeesCount || 2} Attendees`}>
                           <Users size={12} /> {booking.attendeesCount || 2}
                         </span>
                       </td>
@@ -343,18 +354,31 @@ export default function FacilityMyBookingsTab({
                               title="Inspect Reservation Details"
                               aria-label={`Inspect ${booking.title}`}
                             >
-                              <Eye size={14} />
+                              <Eye size={15} />
                             </button>
                           )}
-                          {state.canCancel && onCancelBooking && (
+                          {onEditBooking && (
+                            <button
+                              type="button"
+                              className="action-btn action-btn--edit"
+                              onClick={() => onEditBooking(booking)}
+                              disabled={!state.canCancel}
+                              title={state.canCancel ? 'Edit & Reschedule Reservation' : 'Cannot edit past or cancelled reservation'}
+                              aria-label={`Edit ${booking.title}`}
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                          )}
+                          {onCancelBooking && (
                             <button
                               type="button"
                               className="action-btn action-btn--deactivate"
                               onClick={() => onCancelBooking(booking)}
-                              title="Cancel Reservation & Free Room"
+                              disabled={!state.canCancel}
+                              title={state.canCancel ? 'Cancel Reservation & Free Room' : 'Cannot cancel past or cancelled reservation'}
                               aria-label={`Cancel ${booking.title}`}
                             >
-                              <XCircle size={14} />
+                              <XCircle size={15} />
                             </button>
                           )}
                         </div>

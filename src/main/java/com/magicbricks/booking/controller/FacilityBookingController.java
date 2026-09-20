@@ -58,6 +58,18 @@ public class FacilityBookingController {
         return ResponseEntity.ok(ApiResponse.success(response, "Reservation cancelled and room slot released"));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<BookingResponse>> updateBooking(
+            @PathVariable Long id,
+            @Valid @RequestBody BookingRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long resolvedCompanyId = resolveCompanyId(currentUser, request.getCompanyId());
+        Long userId = currentUser != null ? currentUser.getId() : 1L;
+        boolean isAdmin = currentUser != null && (currentUser.getRole() == Role.SUPER_ADMIN || currentUser.getRole() == Role.COMPANY_ADMIN);
+        BookingResponse response = bookingService.updateBooking(id, request, resolvedCompanyId, userId, isAdmin);
+        return ResponseEntity.ok(ApiResponse.success(response, "Reservation updated successfully"));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<BookingResponse>>> getBookings(
             @RequestParam(defaultValue = "1") int page,

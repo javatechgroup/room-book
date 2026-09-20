@@ -13,10 +13,7 @@ import {
   XCircle,
   Ban,
   Radio,
-  Copy,
-  Check,
-  CalendarPlus,
-  Mail,
+  Edit2,
 } from 'lucide-react';
 import { formatDate } from '../../../utils/dateUtils';
 
@@ -24,71 +21,30 @@ export default function BookingInspectorDrawer({
   booking,
   onClose,
   onCancelBooking,
+  onEditBooking,
 }) {
   if (!booking) return null;
 
-  const now = new Date();
-  const startTime = booking.startTime?.substring(11, 16);
-  const endTime = booking.endTime?.substring(11, 16);
+  const startTime = booking.startTime ? booking.startTime.substring(11, 16) : '—';
+  const endTime = booking.endTime ? booking.endTime.substring(11, 16) : '—';
 
   const getBookingState = () => {
     if (booking.status === 'CANCELLED') {
-      return { key: 'CANCELLED', label: 'Cancelled Reservation', badgeClass: 'status-badge--inactive', canCancel: false };
+      return { key: 'CANCELLED', label: 'Cancelled', badgeClass: 'status-badge--cancelled', canCancel: false };
     }
     const end = new Date(booking.endTime);
     const start = new Date(booking.startTime);
-    if (now > end) {
-      return { key: 'COMPLETED', label: 'Completed Session', badgeClass: 'status-badge--completed', canCancel: false };
+    const now = new Date();
+    if (end < now) {
+      return { key: 'COMPLETED', label: 'Completed', badgeClass: 'status-badge--completed', canCancel: false };
     }
-    if (now >= start && now <= end) {
-      return { key: 'IN_PROGRESS', label: 'In Progress (Active Now)', badgeClass: 'status-badge--live', canCancel: true };
+    if (start <= now && end > now) {
+      return { key: 'IN_PROGRESS', label: 'In Progress (Live)', badgeClass: 'status-badge--live', canCancel: true };
     }
     return { key: 'CONFIRMED', label: 'Confirmed Reservation', badgeClass: 'status-badge--active', canCancel: true };
   };
 
   const state = getBookingState();
-
-  const [copied, setCopied] = React.useState(false);
-
-  const handleCopyDetails = () => {
-    const summary = `Meeting: ${booking.title}\nRoom: ${booking.roomName} (${booking.floor})\nDate: ${formatDate(booking.startTime)}\nTime: ${startTime} - ${endTime}\nAttendees: ${booking.attendeesCount || 2}\nReserved By: ${booking.bookerName || 'User'}`;
-    navigator.clipboard?.writeText(summary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleDownloadIcs = () => {
-    try {
-      const pad = (n) => String(n).padStart(2, '0');
-      const formatIcsDate = (isoStr) => {
-        const d = new Date(isoStr);
-        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
-      };
-
-      const icsContent = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//MeetSpace//Conference Room Reservation//EN',
-        'BEGIN:VEVENT',
-        `SUMMARY:${booking.title}`,
-        `LOCATION:${booking.roomName}, ${booking.floor}`,
-        `DESCRIPTION:${booking.description || 'Meeting reservation'}`,
-        `DTSTART:${formatIcsDate(booking.startTime)}`,
-        `DTEND:${formatIcsDate(booking.endTime)}`,
-        'STATUS:CONFIRMED',
-        'END:VEVENT',
-        'END:VCALENDAR',
-      ].join('\r\n');
-
-      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.setAttribute('download', `${booking.title.replace(/\s+/g, '_')}_Meeting.ics`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (_) {}
-  };
 
   return (
     <div className="inspector-drawer-overlay" onClick={onClose}>
@@ -128,30 +84,28 @@ export default function BookingInspectorDrawer({
           </div>
 
           {/* Functional Quick Actions Strip */}
-          <div className="inspector-quick-actions">
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              onClick={handleCopyDetails}
-              title="Copy meeting summary to clipboard"
-            >
-              {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
-              {copied ? 'Copied!' : 'Copy Info'}
-            </button>
-            <button
-              type="button"
-              className="btn btn--outline btn--sm"
-              onClick={handleDownloadIcs}
-              title="Export event to Outlook / Apple / Google Calendar"
-            >
-              <CalendarPlus size={14} /> Add to Calendar
-            </button>
+          <div className="inspector-quick-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '14px' }}>
+            {state.canCancel && onEditBooking && (
+              <button
+                type="button"
+                className="btn btn--primary btn--sm"
+                onClick={() => {
+                  onEditBooking(booking);
+                  onClose();
+                }}
+                title="Edit this reservation and select a new slot in Book a Slot tab"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Edit2 size={14} /> Edit & Pick New Slot
+              </button>
+            )}
             {state.canCancel && onCancelBooking && (
               <button
                 type="button"
                 className="btn btn--danger btn--sm"
                 onClick={() => onCancelBooking(booking)}
                 title="Release this room slot immediately"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               >
                 <XCircle size={14} /> Release Slot
               </button>
@@ -205,7 +159,7 @@ export default function BookingInspectorDrawer({
                 <span className="meta-label">
                   <Building2 size={14} /> Department
                 </span>
-                <span className="meta-value">{booking.departmentName || 'Admin'}</span>
+                <span className="meta-value">{booking.departmentName || booking.department || 'General'}</span>
               </div>
             </div>
           </div>

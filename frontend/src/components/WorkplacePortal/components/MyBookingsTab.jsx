@@ -41,6 +41,7 @@ const formatTimeRange = (startISO, endISO, slotFallback) => {
 export default function MyBookingsTab({
   myBookings = [],
   onCancelBooking,
+  onEditBooking,
   onGoToSlotFinder,
 }) {
   const [page, setPage] = useState(1);
@@ -232,7 +233,8 @@ export default function MyBookingsTab({
         <>
           {/* Desktop Table View (Matches Image 1) */}
           <div className="desktop-table-wrap">
-            <table className="superadmin-table my-bookings-table">
+            <div className="table-responsive">
+              <table className="superadmin-table my-bookings-table">
               <thead>
                 <tr>
                   <th>Time & Date</th>
@@ -281,8 +283,11 @@ export default function MyBookingsTab({
                             <div className="entity-cell__name" title={b.title || b.purpose}>
                               {b.title || b.purpose || 'Meeting'}
                             </div>
-                            <div className="entity-cell__sub">
-                              {b.departmentName || b.department || 'General'}
+                            <div className="entity-cell__sub" title={b.description || undefined}>
+                              <span className="entity-cell__dept">{b.departmentName || b.department || 'General'}</span>
+                              {b.description && (
+                                <span className="entity-cell__desc"> • {b.description}</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -291,12 +296,18 @@ export default function MyBookingsTab({
                       <td>
                         <div className="room-floor-tag">
                           <strong>{b.roomName}</strong>
-                          <span>{b.floor || b.location || 'Main Floor'}</span>
+                          <span>
+                            {b.floor
+                              ? b.floor.toString().toLowerCase().includes('floor')
+                                ? b.floor
+                                : `Floor ${b.floor}`
+                              : b.location || 'Main Floor'}
+                          </span>
                         </div>
                       </td>
 
                       <td>
-                        <span className="capacity-pill">
+                        <span className="capacity-pill" title={`${b.attendeesCount || 2} Attendees`}>
                           <Users size={12} /> {b.attendeesCount || 2}
                         </span>
                       </td>
@@ -325,8 +336,13 @@ export default function MyBookingsTab({
                           <button
                             type="button"
                             className="action-btn action-btn--edit"
-                            onClick={() => setSelectedBooking(b)}
-                            title="Edit Reservation Details"
+                            onClick={() => onEditBooking && onEditBooking(b)}
+                            disabled={!state.canCancel}
+                            title={
+                              state.canCancel
+                                ? 'Edit & Reschedule in Book a Slot'
+                                : 'Cannot edit past or cancelled reservation'
+                            }
                             aria-label={`Edit ${b.title || b.purpose}`}
                           >
                             <Edit2 size={15} />
@@ -352,6 +368,7 @@ export default function MyBookingsTab({
                 })}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* Mobile Card List (< 768px) */}
@@ -392,10 +409,16 @@ export default function MyBookingsTab({
                       <Users size={14} />
                       <span>Attendees: <strong>{b.attendeesCount || 2} People</strong></span>
                     </div>
-                    {b.department && (
+                    {(b.department || b.departmentName) && (
                       <div className="mobile-card__info-row">
                         <Tag size={14} />
                         <span>Department: {b.departmentName || b.department}</span>
+                      </div>
+                    )}
+                    {b.description && (
+                      <div className="mobile-card__info-row">
+                        <FileText size={14} />
+                        <span>Notes: {b.description}</span>
                       </div>
                     )}
                   </div>
@@ -419,8 +442,13 @@ export default function MyBookingsTab({
                       <button
                         type="button"
                         className="action-btn action-btn--edit"
-                        onClick={() => setSelectedBooking(b)}
-                        title="Edit Reservation Details"
+                        onClick={() => onEditBooking && onEditBooking(b)}
+                        disabled={!state.canCancel}
+                        title={
+                          state.canCancel
+                            ? 'Edit & Reschedule in Book a Slot'
+                            : 'Cannot edit slot'
+                        }
                         aria-label="Edit reservation details"
                       >
                         <Edit2 size={15} />
@@ -465,6 +493,10 @@ export default function MyBookingsTab({
           onCancelBooking={(bookingToCancel) => {
             onCancelBooking(bookingToCancel);
             setSelectedBooking(null);
+          }}
+          onEditBooking={(bookingToEdit) => {
+            setSelectedBooking(null);
+            if (onEditBooking) onEditBooking(bookingToEdit);
           }}
         />
       )}

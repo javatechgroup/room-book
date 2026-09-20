@@ -84,6 +84,12 @@ public class FacilityBookingService {
         booking.setStartTime(request.getStartTime());
         booking.setEndTime(request.getEndTime());
         booking.setStatus("CONFIRMED");
+        if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
+            booking.setDepartment(request.getDepartment().trim());
+        } else if (booker.getDepartment() != null) {
+            booking.setDepartment(booker.getDepartment().getName());
+        }
+        booking.setAttendeesCount(request.getAttendeesCount() != null ? request.getAttendeesCount() : 2);
 
         Booking saved = bookingRepository.save(booking);
 
@@ -121,6 +127,69 @@ public class FacilityBookingService {
         audit.setEntityType("BOOKING");
         audit.setEntityId(updated.getId());
         audit.setNewValue("Cancelled Booking #" + updated.getId() + " for Room: " + updated.getRoom().getName());
+        audit.setTimestamp(LocalDateTime.now());
+        auditLogRepository.save(audit);
+
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public BookingResponse updateBooking(Long bookingId, BookingRequest request, Long companyId, Long currentUserId, boolean isSuperAdminOrFacilityAdmin) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .filter(b -> b.getCompany().getId().equals(companyId))
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
+
+        if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
+            throw new UnauthorizedAccessException("You are only authorized to update bookings made by yourself.");
+        }
+
+        Room room = roomRepository.findById(request.getRoomId())
+                .filter(r -> r.getCompany().getId().equals(companyId))
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + request.getRoomId()));
+
+        if ("MAINTENANCE".equalsIgnoreCase(room.getStatus())) {
+            throw new BookingConflictException("Room '" + room.getName() + "' is currently under maintenance and unavailable for booking.");
+        }
+
+        if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().isEqual(request.getEndTime())) {
+            throw new BookingConflictException("End time must be strictly after start time.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (request.getStartTime().isBefore(now)) {
+            throw new BookingConflictException("Cannot reschedule to a past date and time. Please select a future slot.");
+        }
+
+        // Conflict check excluding the booking itself
+        List<Booking> conflicts = bookingRepository.findConflictingBookingsExcludingSelf(room.getId(), bookingId, request.getStartTime(), request.getEndTime());
+        if (!conflicts.isEmpty()) {
+            Booking conflict = conflicts.get(0);
+            throw new BookingConflictException("Time slot overlaps with an existing confirmed reservation ('"
+                    + conflict.getTitle() + "' by " + conflict.getBooker().getFullName() + "). Please choose another slot.");
+        }
+
+        booking.setRoom(room);
+        booking.setTitle(request.getTitle().trim());
+        booking.setDescription(request.getDescription());
+        booking.setStartTime(request.getStartTime());
+        booking.setEndTime(request.getEndTime());
+        booking.setStatus("CONFIRMED");
+        if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
+            booking.setDepartment(request.getDepartment().trim());
+        }
+        if (request.getAttendeesCount() != null) {
+            booking.setAttendeesCount(request.getAttendeesCount());
+        }
+
+        Booking updated = bookingRepository.save(booking);
+
+        AuditLog audit = new AuditLog();
+        audit.setUserId(currentUserId);
+        audit.setCompanyId(companyId);
+        audit.setAction("UPDATE_BOOKING");
+        audit.setEntityType("BOOKING");
+        audit.setEntityId(updated.getId());
+        audit.setNewValue("Updated Booking #" + updated.getId() + " for Room: " + room.getName() + " on " + room.getFloor() + " from " + updated.getStartTime() + " to " + updated.getEndTime() + " ('" + updated.getTitle() + "')");
         audit.setTimestamp(LocalDateTime.now());
         auditLogRepository.save(audit);
 
@@ -224,6 +293,12 @@ public class FacilityBookingService {
         res.setStartTime(booking.getStartTime());
         res.setEndTime(booking.getEndTime());
         res.setStatus(booking.getStatus());
+        res.setAttendeesCount(booking.getAttendeesCount() != null ? booking.getAttendeesCount() : 2);
+        if (booking.getDepartment() != null && !booking.getDepartment().trim().isEmpty()) {
+            res.setDepartmentName(booking.getDepartment());
+        } else if (booking.getBooker() != null && booking.getBooker().getDepartment() != null) {
+            res.setDepartmentName(booking.getBooker().getDepartment().getName());
+        }
         res.setCreatedAt(booking.getCreatedAt());
         res.setUpdatedAt(booking.getUpdatedAt());
         return res;

@@ -306,6 +306,19 @@ export const facilityApi = {
     return { success: false, error: 'Failed to create booking' };
   },
 
+  async updateBooking(bookingId, bookingData) {
+    try {
+      const response = await apiClient.put(`/facility/bookings/${bookingId}`, bookingData);
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      const errMsg = e.response?.data?.message || e.message;
+      return { success: false, error: errMsg };
+    }
+    return { success: false, error: 'Failed to update booking' };
+  },
+
   async cancelBooking(bookingId) {
     try {
       const response = await apiClient.patch(`/facility/bookings/${bookingId}/cancel`);

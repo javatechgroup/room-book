@@ -214,8 +214,9 @@
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  width: 100%;
+  width: auto;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ================================================================

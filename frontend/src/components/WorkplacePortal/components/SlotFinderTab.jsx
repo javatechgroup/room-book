@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar,
   Clock,
@@ -84,6 +84,8 @@ export default function SlotFinderTab({
   onGoToMyBookings,
   currentUser,
   isLoading = false,
+  editingBooking = null,
+  onCancelEdit,
 }) {
   // Time and duration selection
   const [startHour, setStartHour] = useState(() => getInitialUpcomingTime().hour);
@@ -95,6 +97,28 @@ export default function SlotFinderTab({
   const [sizeFilter, setSizeFilter] = useState('all');
   const [roomSearch, setRoomSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Synchronize time and duration when editing an existing reservation
+  useEffect(() => {
+    if (editingBooking && editingBooking.startTime && editingBooking.endTime) {
+      try {
+        const s = new Date(editingBooking.startTime);
+        const e = new Date(editingBooking.endTime);
+        let h = s.getHours();
+        const p = h >= 12 ? 'PM' : 'AM';
+        let h12 = h % 12;
+        if (h12 === 0) h12 = 12;
+        setStartHour(String(h12).padStart(2, '0'));
+        setStartMin(String(s.getMinutes()).padStart(2, '0'));
+        setStartPeriod(p);
+
+        const diffMins = Math.round((e.getTime() - s.getTime()) / (60 * 1000));
+        if (diffMins > 0) setDurationMinutes(diffMins);
+        if (editingBooking.attendeesCount) setAttendeesCount(editingBooking.attendeesCount);
+        if (editingBooking.description) setDescription(editingBooking.description);
+      } catch (_) {}
+    }
+  }, [editingBooking]);
 
   // Time String Calculations
   const to24Hour = (hStr, mStr, pStr) => {
@@ -287,6 +311,8 @@ export default function SlotFinderTab({
     setIsSubmitting(true);
     const result = await onBookRoom({
       roomId: currentRoom.id,
+      roomName: currentRoom.name,
+      floor: currentRoom.floor || currentRoom.wing || 'Main Floor',
       title: bookingPurpose || `${currentRoom.name} Meeting`,
       description,
       startTime: startTimeStr,
@@ -331,6 +357,29 @@ export default function SlotFinderTab({
 
   return (
     <div className="portal-card">
+      {/* ───────────────── EDITING / RESCHEDULE BANNER ───────────────── */}
+      {editingBooking && (
+        <div className="editing-booking-banner">
+          <div className="editing-booking-banner__content">
+            <span className="editing-booking-banner__badge">Rescheduling</span>
+            <div className="editing-booking-banner__text">
+              <strong>Updating Reservation #{editingBooking.id}: "{editingBooking.title || editingBooking.purpose || 'Meeting'}"</strong>
+              <p>Pick a new time slot, date, or room. Confirming will save your changes and release the previous slot.</p>
+            </div>
+          </div>
+          {onCancelEdit && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={onCancelEdit}
+              style={{ flexShrink: 0 }}
+            >
+              Cancel Editing
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ───────────────── CONTROLS BAR ───────────────── */}
       <div className="finder-controls">
         {/* Floor Selection */}
@@ -840,7 +889,11 @@ export default function SlotFinderTab({
                     style={{ minWidth: '240px' }}
                   >
                     <CalendarCheck2 size={18} />
-                    {isSubmitting ? 'Reserving Room...' : `Confirm Room Booking for ${formattedTimeRange}`}
+                    {isSubmitting
+                      ? 'Saving Reservation...'
+                      : editingBooking
+                      ? `Update Reservation for ${formattedTimeRange}`
+                      : `Confirm Room Booking for ${formattedTimeRange}`}
                   </button>
                 </div>
               </form>
