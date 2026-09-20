@@ -48,16 +48,18 @@ export default function RoomInfoCard({
   return (
     <div className="room-info-card-wrapper">
       <span className="room-info-tag">
-        <Info size={14} /> Room Details & Specifications
+        <Info size={13} /> Room Details & Specs
       </span>
 
       <div className="room-info-card">
         {/* Header with Room Identity */}
         <div className="room-info-card__header">
-          <div>
-            <div className="room-info-card__code-badge">{currentRoom.code || `RM-${currentRoom.id}`}</div>
+          <div className="room-info-card__header-left">
+            <div className="room-info-card__meta-line">
+              <span className="room-info-card__code-badge">{currentRoom.code || `RM-${currentRoom.id}`}</span>
+              <span className="room-info-card__type">{currentRoom.type || 'Meeting Space'}</span>
+            </div>
             <h3 className="room-info-card__title">{currentRoom.name}</h3>
-            <span className="room-info-card__type">{currentRoom.type || 'Meeting Space'}</span>
           </div>
           <span
             className={`room-info-card__status-pill ${
@@ -70,15 +72,15 @@ export default function RoomInfoCard({
           >
             {isMaintenance ? (
               <>
-                <Wrench size={13} /> Offline
+                <Wrench size={12} /> Offline
               </>
             ) : isOccupied ? (
               <>
-                <AlertTriangle size={13} /> Reserved
+                <AlertTriangle size={12} /> Reserved
               </>
             ) : (
               <>
-                <CheckCircle2 size={13} /> Available
+                <CheckCircle2 size={12} /> Available
               </>
             )}
           </span>
@@ -88,25 +90,25 @@ export default function RoomInfoCard({
         <div className="room-info-specs-grid">
           <div className="room-info-spec-item">
             <span className="room-info-spec-label">
-              <Users size={14} /> Capacity
+              <Users size={12} /> Capacity
             </span>
             <strong className="room-info-spec-value">{currentRoom.capacity} People</strong>
           </div>
           <div className="room-info-spec-item">
             <span className="room-info-spec-label">
-              <Building2 size={14} /> Floor
+              <Building2 size={12} /> Floor
             </span>
             <strong className="room-info-spec-value">{currentRoom.floor || 'Floor 1'}</strong>
           </div>
           <div className="room-info-spec-item">
             <span className="room-info-spec-label">
-              <MapPin size={14} /> Wing / Zone
+              <MapPin size={12} /> Wing / Zone
             </span>
             <strong className="room-info-spec-value">{currentRoom.wing || 'Main Wing'}</strong>
           </div>
           <div className="room-info-spec-item">
             <span className="room-info-spec-label">
-              <Clock size={14} /> Next Free
+              <Clock size={12} /> Next Free
             </span>
             <strong className="room-info-spec-value room-info-spec-value--highlight">
               {isOccupied ? (nextAvailableSlot ? nextAvailableSlot.split(' - ')[0] : 'Later') : 'Available Now'}
@@ -116,7 +118,7 @@ export default function RoomInfoCard({
 
         {/* Equipment & Amenities */}
         <div className="room-info-amenities">
-          <span className="room-info-section-title">Included Technology & Amenities</span>
+          <span className="room-info-section-title">Amenities & Tech</span>
           <div className="room-info-amenity-pills">
             {hardwareList.map((hw, idx) => (
               <span key={idx} className="room-info-amenity-pill">
@@ -125,10 +127,10 @@ export default function RoomInfoCard({
               </span>
             ))}
             <span className="room-info-amenity-pill">
-              <Sparkles size={14} /> High-Speed Wi-Fi
+              <Sparkles size={12} /> Wi-Fi
             </span>
             <span className="room-info-amenity-pill">
-              <Sparkles size={14} /> Power Ports
+              <Sparkles size={12} /> Power
             </span>
           </div>
         </div>
@@ -141,15 +143,15 @@ export default function RoomInfoCard({
           </div>
           {isOccupied && currentOccupant && (
             <div className="room-info-summary-row room-info-summary-row--conflict">
-              <span className="room-info-summary-label">Current Reservation:</span>
-              <span className="room-info-summary-value">
+              <span className="room-info-summary-label">Current:</span>
+              <span className="room-info-summary-value" title={`${currentOccupant.team} — "${currentOccupant.purpose}"`}>
                 {currentOccupant.team} — "{currentOccupant.purpose}"
               </span>
             </div>
           )}
           {!isOccupied && !isMaintenance && (
             <p className="room-info-guarantee">
-              <CheckCircle2 size={14} /> Guaranteed conflict-free slot for {currentRoom.name}
+              <CheckCircle2 size={13} /> Guaranteed conflict-free slot for {currentRoom.name}
             </p>
           )}
         </div>
