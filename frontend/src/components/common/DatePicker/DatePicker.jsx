@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import './DatePicker.css';
 
 const MONTH_NAMES = [
@@ -15,7 +15,7 @@ export default function DatePicker({
   minDate,
   maxDate,
   id = 'slot-date',
-  placeholder = 'Select date',
+  placeholder = 'Select reservation date',
   allowClear = false,
   compact = false,
   disabled = false,
@@ -25,7 +25,7 @@ export default function DatePicker({
   const containerRef = useRef(null);
 
   // Parse current selected date
-  const selectedDateObj = React.useMemo(() => {
+  const selectedDateObj = useMemo(() => {
     if (!value) return new Date();
     const [y, m, d] = value.split('-').map(Number);
     return new Date(y, m - 1, d);
@@ -35,7 +35,7 @@ export default function DatePicker({
   const [viewYear, setViewYear] = useState(() => selectedDateObj.getFullYear());
   const [viewMonth, setViewMonth] = useState(() => selectedDateObj.getMonth());
 
-  // Keep view synchronized when value changes externally (e.g. Quick buttons)
+  // Keep view synchronized when value changes externally
   useEffect(() => {
     setViewYear(selectedDateObj.getFullYear());
     setViewMonth(selectedDateObj.getMonth());
@@ -59,7 +59,8 @@ export default function DatePicker({
   const [minY, minM, minD] = minDateStr.split('-').map(Number);
   const minDateMidnight = new Date(minY, minM - 1, minD);
 
-  const prevMonth = () => {
+  const prevMonth = (e) => {
+    e.stopPropagation();
     if (viewMonth === 0) {
       setViewMonth(11);
       setViewYear((y) => y - 1);
@@ -68,7 +69,8 @@ export default function DatePicker({
     }
   };
 
-  const nextMonth = () => {
+  const nextMonth = (e) => {
+    e.stopPropagation();
     if (viewMonth === 11) {
       setViewMonth(0);
       setViewYear((y) => y + 1);
@@ -89,7 +91,8 @@ export default function DatePicker({
     setIsOpen(false);
   };
 
-  const handleSelectToday = () => {
+  const handleSelectToday = (e) => {
+    if (e) e.stopPropagation();
     const today = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const isoStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
@@ -99,18 +102,39 @@ export default function DatePicker({
     setIsOpen(false);
   };
 
-  // Format display string e.g. "Sep 20, 2026"
-  const formattedDisplay = React.useMemo(() => {
+  const handleSelectTomorrow = (e) => {
+    if (e) e.stopPropagation();
+    const tmrw = new Date();
+    tmrw.setDate(tmrw.getDate() + 1);
+    const pad = (n) => String(n).padStart(2, '0');
+    const isoStr = `${tmrw.getFullYear()}-${pad(tmrw.getMonth() + 1)}-${pad(tmrw.getDate())}`;
+    onChange(isoStr);
+    setViewYear(tmrw.getFullYear());
+    setViewMonth(tmrw.getMonth());
+    setIsOpen(false);
+  };
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const todayDate = new Date();
+  const todayStr = `${todayDate.getFullYear()}-${pad(todayDate.getMonth() + 1)}-${pad(todayDate.getDate())}`;
+  const tmrwDate = new Date();
+  tmrwDate.setDate(tmrwDate.getDate() + 1);
+  const tmrwStr = `${tmrwDate.getFullYear()}-${pad(tmrwDate.getMonth() + 1)}-${pad(tmrwDate.getDate())}`;
+
+  const isTodaySelected = value === todayStr;
+  const isTomorrowSelected = value === tmrwStr;
+
+  // Format display string e.g. "Sun, Sep 20, 2026"
+  const formattedDisplay = useMemo(() => {
     if (!value) return null;
-    return selectedDateObj.toLocaleDateString('en-US', {
+    const weekday = selectedDateObj.toLocaleDateString('en-US', { weekday: 'short' });
+    const monthDayYear = selectedDateObj.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     });
+    return `${weekday}, ${monthDayYear}`;
   }, [value, selectedDateObj]);
-
-  const pad = (n) => String(n).padStart(2, '0');
-  const todayStr = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}-${pad(new Date().getDate())}`;
 
   const handleClear = (e) => {
     e.stopPropagation();
@@ -132,7 +156,9 @@ export default function DatePicker({
         aria-expanded={isOpen}
       >
         <div className="custom-datepicker-trigger__left">
-          <CalendarIcon size={compact ? 14 : 16} className="custom-datepicker-icon" />
+          <div className="custom-datepicker-icon-box">
+            <CalendarIcon size={compact ? 13 : 15} />
+          </div>
           <span className={`custom-datepicker-value ${!formattedDisplay ? 'custom-datepicker-value--placeholder' : ''}`}>
             {formattedDisplay || placeholder}
           </span>
@@ -150,39 +176,58 @@ export default function DatePicker({
               ×
             </span>
           )}
-          {value && !compact && (
-            <span className="custom-datepicker-day-name">
-              {selectedDateObj.toLocaleDateString('en-US', { weekday: 'short' })}
-            </span>
-          )}
+          <ChevronDown
+            size={15}
+            className={`custom-datepicker-chevron ${isOpen ? 'custom-datepicker-chevron--open' : ''}`}
+          />
         </div>
       </button>
 
       {isOpen && (
         <div className="custom-datepicker-dropdown" role="dialog" aria-modal="false">
+          {/* Quick Preset Chips */}
+          <div className="custom-datepicker-quick-bar">
+            <button
+              type="button"
+              className={`quick-pill ${isTodaySelected ? 'quick-pill--active' : ''}`}
+              onClick={handleSelectToday}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              className={`quick-pill ${isTomorrowSelected ? 'quick-pill--active' : ''}`}
+              onClick={handleSelectTomorrow}
+            >
+              Tomorrow
+            </button>
+          </div>
+
           {/* Header with Month/Year & Navigation */}
           <div className="custom-datepicker-header">
+            <button
+              type="button"
+              className="custom-datepicker-nav-btn"
+              onClick={prevMonth}
+              aria-label="Previous Month"
+              title="Previous month"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
             <span className="custom-datepicker-title">
-              {MONTH_NAMES[viewMonth]} <strong style={{ color: 'var(--text-heading)' }}>{viewYear}</strong>
+              {MONTH_NAMES[viewMonth]} <strong>{viewYear}</strong>
             </span>
-            <div className="custom-datepicker-nav">
-              <button
-                type="button"
-                className="custom-datepicker-nav-btn"
-                onClick={prevMonth}
-                aria-label="Previous Month"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                type="button"
-                className="custom-datepicker-nav-btn"
-                onClick={nextMonth}
-                aria-label="Next Month"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
+
+            <button
+              type="button"
+              className="custom-datepicker-nav-btn"
+              onClick={nextMonth}
+              aria-label="Next Month"
+              title="Next month"
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
 
           {/* Weekday Labels */}
@@ -220,13 +265,16 @@ export default function DatePicker({
                   key={`day-${day}`}
                   type="button"
                   disabled={isPast}
+                  onClick={() => !isPast && handleSelectDay(day)}
                   className={`custom-datepicker-day ${
                     isSelected ? 'custom-datepicker-day--selected' : ''
                   } ${isToday && !isSelected ? 'custom-datepicker-day--today' : ''} ${
                     isPast ? 'custom-datepicker-day--disabled' : ''
                   }`}
+                  title={isPast ? 'Past date cannot be reserved' : undefined}
                 >
-                  {day}
+                  <span>{day}</span>
+                  {isToday && !isSelected && <span className="today-dot" />}
                 </button>
               );
             })}
@@ -239,24 +287,6 @@ export default function DatePicker({
                 {i + 1}
               </span>
             ))}
-          </div>
-
-          {/* Footer Shortcuts */}
-          <div className="custom-datepicker-footer">
-            <button
-              type="button"
-              className="custom-datepicker-today-btn"
-              onClick={handleSelectToday}
-            >
-              Jump to Today
-            </button>
-            <button
-              type="button"
-              className="custom-datepicker-close-btn"
-              onClick={() => setIsOpen(false)}
-            >
-              Close
-            </button>
           </div>
         </div>
       )}
