@@ -822,8 +822,8 @@ export default function SlotFinderTab({
                 </div>
               </div>
 
-              <form onSubmit={handleBookSubmit} className="booking-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '14px' }}>
+              <form onSubmit={handleBookSubmit} className="booking-form-inner">
+                <div className="booking-form-grid-row">
                   <div className="input-group">
                     <label htmlFor="bp-title">
                       <FileText size={13} /> Meeting Title / Purpose *
@@ -854,7 +854,7 @@ export default function SlotFinderTab({
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '14px' }}>
+                <div className="booking-form-grid-row booking-form-grid-row--secondary">
                   <div className="input-group">
                     <label htmlFor="bp-attendees">
                       <Users size={13} /> Attendees (Max: {currentRoom?.capacity || 20})
@@ -884,7 +884,7 @@ export default function SlotFinderTab({
                   </div>
                 </div>
 
-                <div className="booking-action-bar" style={{ marginTop: '10px' }}>
+                <div className="booking-action-bar">
                   <div className="perks-list">
                     <span>
                       <Check size={14} /> Zero overlap guaranteed
@@ -898,9 +898,8 @@ export default function SlotFinderTab({
                   </div>
                   <button
                     type="submit"
-                    className="btn btn--primary btn--lg"
+                    className="btn btn--primary btn--lg booking-submit-btn"
                     disabled={isSubmitting}
-                    style={{ minWidth: '240px' }}
                   >
                     <CalendarCheck2 size={18} />
                     {isSubmitting

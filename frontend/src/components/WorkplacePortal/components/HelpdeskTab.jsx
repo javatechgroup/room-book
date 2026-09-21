@@ -72,7 +72,7 @@ export default function HelpdeskTab({
             />
           </div>
 
-          <button type="submit" className="btn btn--primary btn--lg">
+          <button type="submit" className="btn btn--primary btn--lg helpdesk-submit-btn">
             <Send size={16} /> Submit Facility Ticket
           </button>
         </form>

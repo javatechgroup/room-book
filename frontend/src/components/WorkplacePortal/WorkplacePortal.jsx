@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import { facilityApi } from '../../api/facilityApi';
 import WorkplaceTabs from './components/WorkplaceTabs';
 import SlotFinderTab from './components/SlotFinderTab';
@@ -36,6 +37,7 @@ export default function WorkplacePortal() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'COMPANY_ADMIN';
   const { toast } = useToast();
+  const { confirm } = useConfirm();
 
   // Navigation Tab State — initialized from URL parameter if present (?tab=slot-finder)
   const [activeTab, setActiveTab] = useState(() => {
@@ -370,20 +372,45 @@ export default function WorkplacePortal() {
   };
 
   const handleCancelBooking = async (booking) => {
+    if (!booking) return false;
+
+    const bookingTitle = booking.title || booking.purpose || 'Meeting Reservation';
+    const roomName = booking.roomName || 'Meeting Room';
+    const timeInfo = booking.startTime && booking.endTime
+      ? `${booking.startTime.substring(11, 16)} - ${booking.endTime.substring(11, 16)}`
+      : booking.slot || '';
+    const targetSub = [roomName, booking.floor, timeInfo].filter(Boolean).join(' • ');
+
+    const ok = await confirm({
+      title: 'Release Room Slot?',
+      subtitle: 'Slot Release Confirmation',
+      message: `Are you sure you want to release the slot for "${bookingTitle}" in ${roomName}? This will cancel your reservation and make the room immediately available to other colleagues.`,
+      targetName: bookingTitle,
+      targetSub: targetSub,
+      confirmText: 'Release Slot',
+      cancelText: 'Keep Reservation',
+      type: 'danger',
+    });
+
+    if (!ok) return false;
+
     const bookingId = booking.id;
     try {
       const res = await facilityApi.cancelBooking(bookingId);
       if (res && res.success) {
         toast.info(
           'Slot Released',
-          `Reservation for ${booking.roomName || 'Room'} has been cancelled and is now vacant for colleagues.`
+          `Reservation for ${roomName} has been cancelled and is now vacant for colleagues.`
         );
         await Promise.all([fetchDayOccupancy(selectedDate), fetchMyBookings()]);
+        return true;
       } else {
         toast.error('Cancel Failed', res?.error || 'Could not release slot.');
+        return false;
       }
     } catch (err) {
       toast.error('Cancel Failed', err.message || 'Error releasing slot.');
+      return false;
     }
   };
 

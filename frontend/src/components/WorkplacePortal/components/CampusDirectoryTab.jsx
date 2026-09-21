@@ -52,8 +52,8 @@ export default function CampusDirectoryTab({
 
   return (
     <div className="portal-card directory-panel">
-      <div className="directory-toolbar" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 240px', maxWidth: '320px' }}>
+      <div className="directory-toolbar">
+        <div className="dir-search-wrap">
           <SearchInput
             value={search}
             onChange={onSearchChange}
@@ -62,7 +62,7 @@ export default function CampusDirectoryTab({
           />
         </div>
 
-        <div className="dir-pills" style={{ display: 'flex', gap: '6px', overflowX: 'auto', flex: '1 1 auto' }}>
+        <div className="dir-pills">
           <button
             type="button"
             className={`dir-pill ${dirFloorFilter === 'all' ? 'dir-pill--active' : ''}`}
@@ -85,7 +85,7 @@ export default function CampusDirectoryTab({
           })}
         </div>
 
-        <div className="dir-size-select" style={{ display: 'flex', alignItems: 'center', minWidth: '220px' }}>
+        <div className="dir-size-select">
           <Select
             id="dir-size"
             size="sm"

@@ -13,6 +13,7 @@ import {
   Tag,
   CalendarPlus,
   DoorOpen,
+  FileText,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
@@ -496,9 +497,11 @@ export default function MyBookingsTab({
         <BookingInspectorDrawer
           booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
-          onCancelBooking={(bookingToCancel) => {
-            onCancelBooking(bookingToCancel);
-            setSelectedBooking(null);
+          onCancelBooking={async (bookingToCancel) => {
+            const success = await onCancelBooking(bookingToCancel);
+            if (success) {
+              setSelectedBooking(null);
+            }
           }}
           onEditBooking={(bookingToEdit) => {
             setSelectedBooking(null);

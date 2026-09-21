@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import {
   CalendarCheck2,
   BookmarkCheck,
@@ -13,27 +13,15 @@ export default function WorkplaceTabs({
   bookingsCount = 0,
   isAdmin = false,
 }) {
-  const tabsRef = useRef(null);
-
-  useEffect(() => {
-    if (tabsRef.current) {
-      const activeBtn = tabsRef.current.querySelector('.superadmin-tab--active');
-      if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
-        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-      }
-    }
-  }, [activeTab]);
 
   return (
     <div className="workplace-top-section">
-      {/* Line 1: Portal Title & Badge */}
       <div className="portal-title-block">
         <span className="section-tag">Workplace Portal</span>
         <h2 className="portal-main-heading">Physical Room & Slot Manager</h2>
       </div>
 
-      {/* Line 2: Dedicated Navigation Tabs Bar (Consistent Application Theme) */}
-      <div className="superadmin-tabs-bar" ref={tabsRef}>
+      <div className="superadmin-tabs-bar">
         <nav className="superadmin-tabs" aria-label="Workplace Navigation">
           <button
             type="button"

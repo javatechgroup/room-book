@@ -965,24 +965,38 @@ export default function FacilityAdminPortal() {
   };
 
   const handleCancelBooking = async (booking) => {
+    if (!booking) return false;
+
+    const bookingTitle = booking.title || booking.purpose || 'Meeting Reservation';
+    const roomName = booking.roomName || 'Room';
+    const timeInfo = booking.startTime && booking.endTime
+      ? `${booking.startTime.substring(11, 16)} - ${booking.endTime.substring(11, 16)}`
+      : booking.slot || '';
+    const targetSub = [roomName, booking.floor, timeInfo].filter(Boolean).join(' • ');
+
     const ok = await confirm({
-      title: 'Cancel Room Reservation?',
-      subtitle: 'Meeting Slot Cancellation',
-      message: `Are you sure you want to cancel the reservation "${booking.title}" in ${booking.roomName}? This will immediately release the slot for other colleagues.`,
-      targetName: booking.title,
-      targetSub: `${booking.roomName} (${booking.floor}) • ${booking.startTime?.substring(11, 16)} - ${booking.endTime?.substring(11, 16)}`,
-      confirmText: 'Cancel Reservation',
+      title: 'Release Room Slot?',
+      subtitle: 'Slot Release Confirmation',
+      message: `Are you sure you want to cancel the reservation "${bookingTitle}" in ${roomName}? This will immediately release the slot for other colleagues.`,
+      targetName: bookingTitle,
+      targetSub: targetSub,
+      confirmText: 'Release Slot',
+      cancelText: 'Keep Reservation',
       type: 'danger',
     });
-    if (!ok) return;
+    if (!ok) return false;
 
     const res = await facilityApi.cancelBooking(booking.id);
-    if (res.success) {
+    if (res && res.success) {
       if (drawerBooking && drawerBooking.id === booking.id) {
         setDrawerBooking(null);
       }
-      showToast('Reservation Cancelled', `Slot for ${booking.roomName} released and marked vacant.`);
+      showToast('Reservation Cancelled', `Slot for ${roomName} released and marked vacant.`);
       await refreshAllData();
+      return true;
+    } else {
+      showToast('Cancel Failed', res?.error || 'Could not release slot.', 'error');
+      return false;
     }
   };
 
