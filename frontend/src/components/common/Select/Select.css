@@ -1,0 +1,226 @@
+/* ════════════════════ COMMON SELECT DROPDOWN COMPONENT ════════════════════ */
+
+.common-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  position: relative;
+  text-align: left;
+}
+
+/* Label */
+.common-select__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-heading, #0f172a);
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+
+.common-select__label-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary-500, #3b82f6);
+}
+
+.common-select__required-mark {
+  color: #ef4444;
+  margin-left: 2px;
+  font-weight: 700;
+}
+
+/* Control Wrapper */
+.common-select__control-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Inner Leading Icon */
+.common-select__lead-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted, #64748b);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Native Select Field */
+.common-select__field {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 9px 34px 9px 12px;
+  border-radius: var(--radius-md, 8px);
+  border: 1.5px solid var(--border-input, #cbd5e1);
+  background: var(--bg-input, #ffffff);
+  color: var(--text-heading, #0f172a);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.common-select__field--has-lead {
+  padding-left: 36px;
+}
+
+.common-select__field--placeholder {
+  color: var(--text-muted, #64748b);
+}
+
+.common-select__field option {
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-heading, #0f172a);
+  padding: 6px 12px;
+}
+
+.common-select__field option:disabled {
+  color: var(--text-faint, #94a3b8);
+}
+
+/* Focus & Hover */
+.common-select__field:hover:not(:disabled) {
+  border-color: var(--border-hover, #94a3b8);
+}
+
+.common-select__field:focus {
+  border-color: var(--primary-500, #3b82f6);
+  background: var(--bg-card, #ffffff);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Custom Chevron Indicator */
+.common-select__chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #64748b);
+  pointer-events: none;
+  transition: transform 0.2s ease, color 0.15s ease;
+}
+
+.common-select__control-wrap:focus-within .common-select__chevron {
+  color: var(--primary-500, #3b82f6);
+}
+
+/* ════════════════════ SIZE VARIANTS ════════════════════ */
+
+/* Small (sm) */
+.common-select-group--sm .common-select__label {
+  font-size: 0.74rem;
+  gap: 4px;
+}
+
+.common-select-group--sm .common-select__field {
+  padding: 5px 28px 5px 9px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  min-height: 32px;
+}
+
+.common-select-group--sm .common-select__chevron {
+  right: 8px;
+}
+
+/* Large (lg) */
+.common-select-group--lg .common-select__label {
+  font-size: 0.88rem;
+  gap: 8px;
+}
+
+.common-select-group--lg .common-select__field {
+  padding: 12px 38px 12px 14px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  min-height: 46px;
+}
+
+.common-select-group--lg .common-select__chevron {
+  right: 14px;
+}
+
+/* ════════════════════ STATES ════════════════════ */
+
+/* Disabled */
+.common-select-group--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.common-select-group--disabled .common-select__field {
+  cursor: not-allowed;
+  background: var(--bg-surface-alt, #f1f5f9);
+}
+
+/* Error */
+.common-select-group--error .common-select__field {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.common-select__error-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  color: #ef4444;
+  font-weight: 500;
+  margin: 0;
+}
+
+.common-select__helper-msg {
+  font-size: 0.76rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+/* ════════════════════ DARK MODE ════════════════════ */
+
+[data-theme='dark'] .common-select__field {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='dark'] .common-select__field:hover:not(:disabled) {
+  border-color: #475569;
+}
+
+[data-theme='dark'] .common-select__field:focus {
+  background: #0f172a;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+[data-theme='dark'] .common-select__field option {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .common-select__chevron {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .common-select-group--disabled .common-select__field {
+  background: #0f172a;
+}

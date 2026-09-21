@@ -22,6 +22,7 @@ import {
 import RoomInfoCard from './RoomInfoCard';
 import SearchInput from '../../common/SearchInput/SearchInput';
 import DatePicker from '../../common/DatePicker/DatePicker';
+import Select from '../../common/Select/Select';
 
 const HOURS = ['08', '09', '10', '11', '12', '01', '02', '03', '04', '05', '06', '07'];
 const MINUTES = ['00', '15', '30', '45'];
@@ -343,6 +344,7 @@ export default function SlotFinderTab({
     if (result && result.success) {
       onBookingPurposeChange('');
       setDescription('');
+      onDepartmentChange('');
     }
   };
 
@@ -842,28 +844,20 @@ export default function SlotFinderTab({
                     />
                   </div>
 
-                  <div className="input-group">
-                    <label htmlFor="bp-dept">
-                      <Tag size={13} /> Department / Team *
-                    </label>
-                    <select
-                      id="bp-dept"
-                      value={department || ''}
-                      onChange={(e) => onDepartmentChange(e.target.value)}
-                      required
-                    >
-                      <option value="" disabled>
-                        {departmentOptions.length === 0
-                          ? '-- No company departments registered --'
-                          : '-- Select Department --'}
-                      </option>
-                      {departmentOptions.map((deptName) => (
-                        <option key={deptName} value={deptName}>
-                          {deptName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select
+                    id="bp-dept"
+                    label="Department / Team"
+                    icon={<Tag size={13} />}
+                    value={department}
+                    onChange={onDepartmentChange}
+                    options={departmentOptions}
+                    placeholder={
+                      departmentOptions.length === 0
+                        ? '-- No company departments registered --'
+                        : '-- Select Department --'
+                    }
+                    required
+                  />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '14px' }}>

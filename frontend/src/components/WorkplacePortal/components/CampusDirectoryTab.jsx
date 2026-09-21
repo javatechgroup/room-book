@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Building, MapPin, Users, ChevronRight, RotateCcw } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
+import Select from '../../common/Select/Select';
 
 export default function CampusDirectoryTab({
   rooms = [],
@@ -84,20 +85,21 @@ export default function CampusDirectoryTab({
           })}
         </div>
 
-        <div className="dir-size-select" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label htmlFor="dir-size" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-            Capacity:
-          </label>
-          <select
+        <div className="dir-size-select" style={{ display: 'flex', alignItems: 'center', minWidth: '220px' }}>
+          <Select
             id="dir-size"
+            size="sm"
+            label="Capacity:"
             value={dirSizeFilter}
-            onChange={(e) => onSizeFilterChange(e.target.value)}
-          >
-            <option value="all">All Sizes</option>
-            <option value="small">Focus Pods (2 - 4 seats)</option>
-            <option value="medium">Team Rooms (6 - 10 seats)</option>
-            <option value="large">Boardrooms (12+ seats)</option>
-          </select>
+            onChange={onSizeFilterChange}
+            placeholder={null}
+            options={[
+              { label: 'All Sizes', value: 'all' },
+              { label: 'Focus Pods (2 - 4 seats)', value: 'small' },
+              { label: 'Team Rooms (6 - 10 seats)', value: 'medium' },
+              { label: 'Boardrooms (12+ seats)', value: 'large' },
+            ]}
+          />
         </div>
       </div>
 
