@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, User, Mail, Lock, Building2, Shield, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
+import Select from '../../common/Select/Select';
 
 export default function EmployeeModal({
   isOpen,
@@ -24,86 +25,79 @@ export default function EmployeeModal({
           <div className="superadmin-modal-header__icon">
             <User size={20} />
           </div>
-          <div className="superadmin-modal-header__text">
-            <h3>{isEdit ? 'Update Employee Profile' : 'Onboard New Employee'}</h3>
-            <p>{isEdit ? `Edit details for ${editingEmployee.fullName}` : 'Assign an employee to a company department'}</p>
+          <div>
+            <h3>{isEdit ? 'Edit Employee Profile' : 'Register New Employee'}</h3>
+            <p>{isEdit ? 'Modify corporate profile, department, or administrative access level' : 'Create workplace account and grant room reservation credentials'}</p>
           </div>
-          <button type="button" className="superadmin-modal-close" onClick={onClose} aria-label="Close modal">
+          <button type="button" className="superadmin-modal-close" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
         {error && (
-          <div className="superadmin-modal-error">
+          <div className="superadmin-alert superadmin-alert--error" style={{ margin: '1rem 1.5rem 0' }}>
+            <XCircle size={16} />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={onSubmit} className="superadmin-modal-form">
-          <div className="form-group">
-            <label htmlFor="emp-fullname">Full Name *</label>
-            <div className="input-wrap">
-              <User size={16} className="input-icon" />
-              <input
-                id="emp-fullname"
-                type="text"
-                placeholder="e.g., Jane Smith"
-                value={form.fullName}
-                onChange={(e) => onChange({ ...form, fullName: e.target.value })}
-                required
-                autoFocus
-              />
+          <div className="form-row form-row--2col">
+            <div className="form-group">
+              <label htmlFor="emp-name">Full Name *</label>
+              <div className="input-wrap">
+                <User size={16} className="input-icon" />
+                <input
+                  id="emp-name"
+                  type="text"
+                  placeholder="e.g. Sarah Connor"
+                  value={form.fullName}
+                  onChange={(e) => onChange({ ...form, fullName: e.target.value })}
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="emp-email">Corporate Email Address *</label>
-            <div className="input-wrap">
-              <Mail size={16} className="input-icon" />
-              <input
-                id="emp-email"
-                type="email"
-                placeholder="name@company.com"
-                value={form.email}
-                onChange={(e) => onChange({ ...form, email: e.target.value })}
-                required
-              />
+            <div className="form-group">
+              <label htmlFor="emp-email">Corporate Email *</label>
+              <div className="input-wrap">
+                <Mail size={16} className="input-icon" />
+                <input
+                  id="emp-email"
+                  type="email"
+                  placeholder="e.g. sarah.c@cyberdyne.com"
+                  value={form.email}
+                  onChange={(e) => onChange({ ...form, email: e.target.value })}
+                  required
+                />
+              </div>
             </div>
           </div>
 
           <div className="form-row form-row--2col">
-            <div className="form-group">
-              <label htmlFor="emp-dept">Department *</label>
-              <div className="input-wrap">
-                <Building2 size={16} className="input-icon" />
-                <select
-                  id="emp-dept"
-                  value={form.departmentId}
-                  onChange={(e) => onChange({ ...form, departmentId: Number(e.target.value) })}
-                  required
-                >
-                  <option value="" disabled>Select Department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>{dept.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <Select
+              id="emp-dept"
+              label="Department *"
+              icon={<Building2 size={16} />}
+              value={form.departmentId}
+              onChange={(val) => onChange({ ...form, departmentId: Number(val) })}
+              options={departments.map((dept) => ({ value: dept.id, label: dept.name }))}
+              placeholder="Select Department"
+              required
+            />
 
-            <div className="form-group">
-              <label htmlFor="emp-role">Access Role</label>
-              <div className="input-wrap">
-                <Shield size={16} className="input-icon" />
-                <select
-                  id="emp-role"
-                  value={form.role}
-                  onChange={(e) => onChange({ ...form, role: e.target.value })}
-                >
-                  <option value="EMPLOYEE">Employee (Meeting Booker)</option>
-                  <option value="COMPANY_ADMIN">Facility Admin (Co-Admin)</option>
-                </select>
-              </div>
-            </div>
+            <Select
+              id="emp-role"
+              label="Access Role"
+              icon={<Shield size={16} />}
+              value={form.role}
+              onChange={(val) => onChange({ ...form, role: val })}
+              placeholder={null}
+              options={[
+                { value: 'EMPLOYEE', label: 'Employee (Meeting Booker)' },
+                { value: 'COMPANY_ADMIN', label: 'Facility Admin (Co-Admin)' },
+              ]}
+            />
           </div>
 
           <div className="form-group">

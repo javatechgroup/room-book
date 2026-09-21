@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Clock, Calendar, Wrench } from 'lucide-react';
+import Select from '../../common/Select/Select';
 
 export default function FacilityAdminTab({
   policies,
@@ -22,42 +23,48 @@ export default function FacilityAdminTab({
       {/* Policy Settings */}
       <div className="policies-grid">
         <div className="policy-card">
-          <label htmlFor="max-slot">
-            <Clock size={15} /> Maximum Consecutive Slot Duration
-          </label>
-          <select
+          <Select
             id="max-slot"
+            label="Maximum Consecutive Slot Duration"
+            icon={<Clock size={15} />}
             value={policies.maxSlotHours}
-            onChange={(e) =>
-              onPoliciesChange({ ...policies, maxSlotHours: Number(e.target.value) })
+            onChange={(val) =>
+              onPoliciesChange({ ...policies, maxSlotHours: Number(val) })
             }
-          >
-            <option value={1}>1 Hour Maximum</option>
-            <option value={2}>2 Hours Maximum</option>
-            <option value={4}>4 Hours Maximum (Half Day)</option>
-            <option value={8}>8 Hours Maximum (Whole Workday)</option>
-            <option value={12}>12 Hours Maximum (Extended Day)</option>
-            <option value={24}>24 Hours Maximum (Full Day / 24h)</option>
-          </select>
-          <span className="policy-help">Enforced on all employee reservations across office floors.</span>
+            placeholder={null}
+            options={[
+              { value: 1, label: '1 Hour Maximum' },
+              { value: 2, label: '2 Hours Maximum' },
+              { value: 4, label: '4 Hours Maximum (Half Day)' },
+              { value: 8, label: '8 Hours Maximum (Whole Workday)' },
+              { value: 12, label: '12 Hours Maximum (Extended Day)' },
+              { value: 24, label: '24 Hours Maximum (Full Day / 24h)' },
+            ]}
+          />
+          <span className="policy-help" style={{ marginTop: '6px', display: 'block' }}>
+            Enforced on all employee reservations across office floors.
+          </span>
         </div>
 
         <div className="policy-card">
-          <label htmlFor="adv-days">
-            <Calendar size={15} /> Advance Reservation Window
-          </label>
-          <select
+          <Select
             id="adv-days"
+            label="Advance Reservation Window"
+            icon={<Calendar size={15} />}
             value={policies.advanceBookingDays}
-            onChange={(e) =>
-              onPoliciesChange({ ...policies, advanceBookingDays: Number(e.target.value) })
+            onChange={(val) =>
+              onPoliciesChange({ ...policies, advanceBookingDays: Number(val) })
             }
-          >
-            <option value={7}>Up to 7 Days Ahead</option>
-            <option value={14}>Up to 14 Days Ahead (Standard)</option>
-            <option value={30}>Up to 30 Days Ahead</option>
-          </select>
-          <span className="policy-help">Limits how far in advance employees can book rooms.</span>
+            placeholder={null}
+            options={[
+              { value: 7, label: 'Up to 7 Days Ahead' },
+              { value: 14, label: 'Up to 14 Days Ahead (Standard)' },
+              { value: 30, label: 'Up to 30 Days Ahead' },
+            ]}
+          />
+          <span className="policy-help" style={{ marginTop: '6px', display: 'block' }}>
+            Limits how far in advance employees can book rooms.
+          </span>
         </div>
       </div>
 

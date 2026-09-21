@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import DatePicker from '../../common/DatePicker/DatePicker';
+import Select from '../../common/Select/Select';
 import { formatDate } from '../../../utils/dateUtils';
 
 const HOURS = ['08', '09', '10', '11', '12', '01', '02', '03', '04', '05', '06', '07'];
@@ -221,47 +222,38 @@ export default function BookRoomTab({
           <form onSubmit={handleSubmit} className="booking-form">
             {/* Floor & Room Selectors */}
             <div className="form-row form-row--2col">
-              <div className="form-group">
-                <label htmlFor="booking-floor">Filter Floor</label>
-                <div className="input-wrap">
-                  <Layers size={16} className="input-icon" />
-                  <select
-                    id="booking-floor"
-                    value={selectedFloor}
-                    onChange={(e) => {
-                      setSelectedFloor(e.target.value);
-                      const firstRoom = rooms.find(
-                        (r) => (e.target.value === 'ALL' || r.floor === e.target.value) && r.status !== 'MAINTENANCE'
-                      );
-                      if (firstRoom) setSelectedRoomId(firstRoom.id);
-                    }}
-                  >
-                    <option value="ALL">All Office Floors</option>
-                    {floors.map((fl) => (
-                      <option key={fl} value={fl}>{fl}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <Select
+                id="booking-floor"
+                label="Filter Floor"
+                icon={<Layers size={16} />}
+                value={selectedFloor}
+                onChange={(val) => {
+                  setSelectedFloor(val);
+                  const firstRoom = rooms.find(
+                    (r) => (val === 'ALL' || r.floor === val) && r.status !== 'MAINTENANCE'
+                  );
+                  if (firstRoom) setSelectedRoomId(firstRoom.id);
+                }}
+                options={[
+                  { value: 'ALL', label: 'All Office Floors' },
+                  ...floors.map((fl) => ({ value: fl, label: fl })),
+                ]}
+                placeholder={null}
+              />
 
-              <div className="form-group">
-                <label htmlFor="booking-room">Select Meeting Room *</label>
-                <div className="input-wrap">
-                  <DoorOpen size={16} className="input-icon" />
-                  <select
-                    id="booking-room"
-                    value={currentRoom?.id || ''}
-                    onChange={(e) => setSelectedRoomId(Number(e.target.value))}
-                    required
-                  >
-                    {availableRoomsForFloor.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name} ({r.floor} • {r.capacity} seats)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <Select
+                id="booking-room"
+                label="Select Meeting Room *"
+                icon={<DoorOpen size={16} />}
+                value={currentRoom?.id || ''}
+                onChange={(val) => setSelectedRoomId(Number(val))}
+                options={availableRoomsForFloor.map((r) => ({
+                  value: r.id,
+                  label: `${r.name} (${r.floor} • ${r.capacity} seats)`,
+                }))}
+                placeholder={availableRoomsForFloor.length === 0 ? '-- No rooms on this floor --' : '-- Select Meeting Room --'}
+                required
+              />
             </div>
 
             {/* Date Picker */}
@@ -496,21 +488,18 @@ export default function BookRoomTab({
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="booking-dept">Department</label>
-                <div className="input-wrap">
-                  <Building2 size={16} className="input-icon" />
-                  <select
-                    id="booking-dept"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                  >
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.name}>{d.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <Select
+                id="booking-dept"
+                label="Department"
+                icon={<Building2 size={16} />}
+                value={department}
+                onChange={(val) => setDepartment(val)}
+                options={departments.map((d) => ({
+                  value: d.name,
+                  label: d.name,
+                }))}
+                placeholder={departments.length === 0 ? '-- No departments registered --' : '-- Select Department --'}
+              />
             </div>
 
             {/* Attendees & Description */}

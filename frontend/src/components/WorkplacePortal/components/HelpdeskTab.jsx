@@ -1,5 +1,6 @@
 import React from 'react';
-import { CheckCircle, Send } from 'lucide-react';
+import { CheckCircle, Send, DoorOpen, Tag } from 'lucide-react';
+import Select from '../../common/Select/Select';
 
 export default function HelpdeskTab({
   rooms,
@@ -27,35 +28,36 @@ export default function HelpdeskTab({
       ) : (
         <form className="helpdesk-form" onSubmit={onSubmit}>
           <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="hd-room">Target Physical Room *</label>
-              <select
-                id="hd-room"
-                value={helpdeskForm.roomName}
-                onChange={(e) => onFormChange({ ...helpdeskForm, roomName: e.target.value })}
-              >
-                {rooms.map((r) => (
-                  <option key={r.id} value={r.name}>
-                    {r.name} ({r.code} • {r.wing})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              id="hd-room"
+              label="Target Physical Room *"
+              icon={<DoorOpen size={14} />}
+              value={helpdeskForm.roomName}
+              onChange={(val) => onFormChange({ ...helpdeskForm, roomName: val })}
+              options={rooms.map((r) => ({
+                value: r.name,
+                label: `${r.name} (${r.code} • ${r.wing})`,
+              }))}
+              placeholder={rooms.length === 0 ? '-- No rooms available --' : '-- Select Room --'}
+              required
+            />
 
-            <div className="form-group">
-              <label htmlFor="hd-cat">Issue Category *</label>
-              <select
-                id="hd-cat"
-                value={helpdeskForm.category}
-                onChange={(e) => onFormChange({ ...helpdeskForm, category: e.target.value })}
-              >
-                <option value="Hardware Issue">Faulty Display / VC Camera</option>
-                <option value="Cables Missing">HDMI / USB-C Cables Missing</option>
-                <option value="Booking Collision">Physical Room Collision</option>
-                <option value="Room Temperature">HVAC / Temperature Issue</option>
-                <option value="Supplies">Markers / Cleaning Needed</option>
-              </select>
-            </div>
+            <Select
+              id="hd-cat"
+              label="Issue Category *"
+              icon={<Tag size={14} />}
+              value={helpdeskForm.category}
+              onChange={(val) => onFormChange({ ...helpdeskForm, category: val })}
+              options={[
+                { value: 'Hardware Issue', label: 'Faulty Display / VC Camera' },
+                { value: 'Cables Missing', label: 'HDMI / USB-C Cables Missing' },
+                { value: 'Booking Collision', label: 'Physical Room Collision' },
+                { value: 'Room Temperature', label: 'HVAC / Temperature Issue' },
+                { value: 'Supplies', label: 'Markers / Cleaning Needed' },
+              ]}
+              placeholder={null}
+              required
+            />
           </div>
 
           <div className="form-group">

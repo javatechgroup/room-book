@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
+import Select from '../../common/Select/Select';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function CompanyDirectoryTab({
@@ -185,20 +186,18 @@ export default function CompanyDirectoryTab({
           />
 
           <div className="superadmin-filter-group">
-            <div className={`superadmin-dropdown-wrap ${selectedDepartment !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>
-              <Building2 size={15} className="filter-select-icon" />
-              <select
-                value={selectedDepartment}
-                onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="superadmin-filter-select"
-              >
-                <option value="ALL">All Departments</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </select>
-              <ChevronDown size={14} className="filter-select-arrow" />
-            </div>
+            <Select
+              size="sm"
+              icon={<Building2 size={15} />}
+              value={selectedDepartment}
+              onChange={(val) => setSelectedDepartment(val)}
+              placeholder={null}
+              options={[
+                { value: 'ALL', label: 'All Departments' },
+                ...departments.map((d) => ({ value: d.id, label: d.name })),
+              ]}
+              wrapperStyle={{ minWidth: '200px', width: 'auto' }}
+            />
 
             <button
               type="button"

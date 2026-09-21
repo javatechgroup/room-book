@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, DoorOpen, Layers, Users, MapPin, AlignLeft, CheckCircle2, Wrench } from 'lucide-react';
+import Select from '../../common/Select/Select';
 
 export default function RoomModal({
   isOpen,
@@ -59,24 +60,17 @@ export default function RoomModal({
           </div>
 
           <div className="form-row form-row--2col">
-            <div className="form-group">
-              <label htmlFor="room-floor">Floor Location *</label>
-              <div className="input-wrap">
-                <Layers size={16} className="input-icon" />
-                <select
-                  id="room-floor"
-                  value={form.floor || ''}
-                  onChange={(e) => onChange({ ...form, floor: e.target.value })}
-                  required
-                >
-                  <option value="" disabled>
-                    {normalizedFloors.length > 0 ? 'Select Office Floor' : 'No floors created yet'}
-                  </option>
-                  {normalizedFloors.map((fl) => (
-                    <option key={fl} value={fl}>{fl}</option>
-                  ))}
-                </select>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <Select
+                id="room-floor"
+                label="Floor Location *"
+                icon={<Layers size={16} />}
+                value={form.floor || ''}
+                onChange={(val) => onChange({ ...form, floor: val })}
+                options={normalizedFloors}
+                placeholder={normalizedFloors.length > 0 ? 'Select Office Floor' : 'No floors created yet'}
+                required
+              />
               {normalizedFloors.length === 0 && onNavigateToFloors && (
                 <small style={{ color: 'var(--color-primary)', marginTop: '4px', display: 'block', cursor: 'pointer' }} onClick={onNavigateToFloors}>
                   + Create a floor first in Floors tab

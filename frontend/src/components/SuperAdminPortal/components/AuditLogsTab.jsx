@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
+import Select from '../../common/Select/Select';
 import { formatAuditTimestamp, formatDateTime } from '../../../utils/dateUtils';
 
 function formatAuditTarget(entityName, entityType) {
@@ -113,33 +114,22 @@ export default function AuditLogsTab({
         />
 
         {/* Action Type Dropdown Filter */}
-        <div className={`superadmin-dropdown-wrap ${actionFilter !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>
-          <Filter size={15} className="filter-select-icon" />
-          <select
-            value={actionFilter}
-            onChange={(e) => onActionFilterChange && onActionFilterChange(e.target.value)}
-            className="superadmin-filter-select"
-            aria-label="Filter audit logs by action"
-          >
-            <option value="ALL">All Actions</option>
-            {availableActions.map((act) => (
-              <option key={act} value={act}>
-                {act.replace(/_/g, ' ')}
-              </option>
-            ))}
-          </select>
-          {actionFilter !== 'ALL' && (
-            <button
-              type="button"
-              className="filter-select-clear"
-              onClick={() => onActionFilterChange && onActionFilterChange('ALL')}
-              title="Reset Action Filter"
-              aria-label="Reset Action Filter"
-            >
-              &times;
-            </button>
-          )}
-        </div>
+        <Select
+          size="sm"
+          icon={<Filter size={15} />}
+          value={actionFilter}
+          onChange={(val) => onActionFilterChange && onActionFilterChange(val)}
+          placeholder={null}
+          options={[
+            { value: 'ALL', label: 'All Actions' },
+            ...availableActions.map((act) => ({
+              value: act,
+              label: act.replace(/_/g, ' '),
+            })),
+          ]}
+          aria-label="Filter audit logs by action"
+          wrapperStyle={{ minWidth: '200px', width: 'auto' }}
+        />
 
         {/* Entity Type Segment Pills */}
         <div className="status-segment-group">

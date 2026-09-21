@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users } from 'lucide-react';
+import Select from '../../common/Select/Select';
 
 export default function AdminModal({
   isOpen,
@@ -72,32 +73,32 @@ export default function AdminModal({
             </div>
           )}
 
-          <div className="sa-form-group">
-            <label htmlFor="sa-adm-comp">Assign to Tenant Company *</label>
-            <select
-              id="sa-adm-comp"
-              value={form.companyId}
-              onChange={(e) => onChange({ ...form, companyId: e.target.value })}
-            >
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.companyCode})
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            id="sa-adm-comp"
+            label="Assign to Tenant Company *"
+            value={form.companyId}
+            onChange={(val) => onChange({ ...form, companyId: val })}
+            placeholder={null}
+            options={companies.map((c) => ({
+              value: c.id,
+              label: `${c.name} (${c.companyCode})`,
+            }))}
+            required
+            className="sa-form-group"
+          />
 
-          <div className="sa-form-group">
-            <label htmlFor="sa-adm-status">Account Status</label>
-            <select
-              id="sa-adm-status"
-              value={form.status}
-              onChange={(e) => onChange({ ...form, status: e.target.value })}
-            >
-              <option value="ACTIVE">ACTIVE (Authorized to manage company spaces)</option>
-              <option value="INACTIVE">INACTIVE (Login suspended)</option>
-            </select>
-          </div>
+          <Select
+            id="sa-adm-status"
+            label="Account Status"
+            value={form.status}
+            onChange={(val) => onChange({ ...form, status: val })}
+            placeholder={null}
+            options={[
+              { value: 'ACTIVE', label: 'ACTIVE (Authorized to manage company spaces)' },
+              { value: 'INACTIVE', label: 'INACTIVE (Login suspended)' },
+            ]}
+            className="sa-form-group"
+          />
 
           <div className="sa-modal__footer">
             <button

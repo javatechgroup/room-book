@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
+import Select from '../../common/Select/Select';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function EmployeesTab({
@@ -69,20 +70,18 @@ export default function EmployeesTab({
 
         <div className="superadmin-filter-group">
           {/* Department Dropdown */}
-          <div className={`superadmin-dropdown-wrap ${departmentFilter !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>
-            <Building2 size={15} className="filter-select-icon" />
-            <select
-              value={departmentFilter}
-              onChange={(e) => onDepartmentFilterChange(e.target.value)}
-              className="superadmin-filter-select"
-            >
-              <option value="ALL">All Departments</option>
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>{dept.name}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="filter-select-arrow" />
-          </div>
+          <Select
+            size="sm"
+            icon={<Building2 size={15} />}
+            value={departmentFilter}
+            onChange={(val) => onDepartmentFilterChange(val)}
+            placeholder={null}
+            options={[
+              { value: 'ALL', label: 'All Departments' },
+              ...departments.map((dept) => ({ value: String(dept.id), label: dept.name })),
+            ]}
+            wrapperStyle={{ minWidth: '200px', width: 'auto' }}
+          />
 
           {/* Status Segmented Buttons */}
           <div className="status-segment-group">

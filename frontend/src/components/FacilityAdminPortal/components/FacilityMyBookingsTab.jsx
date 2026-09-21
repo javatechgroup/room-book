@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
+import Select from '../../common/Select/Select';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function FacilityMyBookingsTab({
@@ -179,19 +180,18 @@ export default function FacilityMyBookingsTab({
 
         <div className="superadmin-filter-group">
           {/* Floor Dropdown */}
-          <div className={`superadmin-dropdown-wrap superadmin-dropdown-wrap--compact ${floorFilter !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>
-            <Layers size={15} className="filter-select-icon" />
-            <select
-              value={floorFilter}
-              onChange={(e) => handleFloorChange(e.target.value)}
-              className="superadmin-filter-select"
-            >
-              <option value="ALL">All Office Floors</option>
-              {floors.map((fl) => (
-                <option key={fl} value={fl}>{fl}</option>
-              ))}
-            </select>
-          </div>
+          <Select
+            size="sm"
+            icon={<Layers size={15} />}
+            value={floorFilter}
+            onChange={(val) => handleFloorChange(val)}
+            placeholder={null}
+            options={[
+              { value: 'ALL', label: 'All Office Floors' },
+              ...floors.map((fl) => ({ value: fl, label: fl })),
+            ]}
+            wrapperStyle={{ minWidth: '175px', width: 'auto' }}
+          />
 
           {/* Status Segmented Buttons */}
           <div className="status-segment-group">

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
+import Select from '../../common/Select/Select';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
 
 export default function AdminsTab({
@@ -68,35 +69,19 @@ export default function AdminsTab({
         />
 
         {/* Company Filter Dropdown */}
-        <div className={`superadmin-dropdown-wrap ${companyFilter !== 'ALL' ? 'superadmin-dropdown-wrap--active' : ''}`}>
-          <Building2 size={15} className="filter-select-icon" />
-          <select
-            value={companyFilter}
-            onChange={(e) => onCompanyFilterChange && onCompanyFilterChange(e.target.value)}
-            className="superadmin-filter-select"
-            aria-label="Filter administrators by tenant company"
-          >
-            <option value="ALL">All Tenant Companies ({companies.length})</option>
-            {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.companyCode})
-              </option>
-            ))}
-          </select>
-          {companyFilter !== 'ALL' ? (
-            <button
-              type="button"
-              className="filter-select-clear"
-              onClick={() => onCompanyFilterChange && onCompanyFilterChange('ALL')}
-              title="Reset to All Tenant Companies"
-              aria-label="Reset to All Tenant Companies"
-            >
-              &times;
-            </button>
-          ) : (
-            <ChevronDown size={15} className="filter-select-arrow" />
-          )}
-        </div>
+        <Select
+          size="sm"
+          icon={<Building2 size={15} />}
+          value={companyFilter}
+          onChange={(val) => onCompanyFilterChange && onCompanyFilterChange(val)}
+          placeholder={null}
+          options={[
+            { value: 'ALL', label: `All Tenant Companies (${companies.length})` },
+            ...companies.map((c) => ({ value: String(c.id), label: `${c.name} (${c.companyCode})` })),
+          ]}
+          aria-label="Filter administrators by tenant company"
+          wrapperStyle={{ minWidth: '220px', width: 'auto' }}
+        />
 
         {/* Status Segment Pills */}
         <div className="status-segment-group">

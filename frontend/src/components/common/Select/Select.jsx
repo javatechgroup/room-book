@@ -44,6 +44,7 @@ export default function Select({
   size = 'md',
   className = '',
   selectClassName = '',
+  wrapperStyle,
   id,
   name,
   autoFocus = false,
@@ -95,6 +96,7 @@ export default function Select({
       className={`common-select-group ${size !== 'md' ? `common-select-group--${size}` : ''} ${
         error ? 'common-select-group--error' : ''
       } ${disabled ? 'common-select-group--disabled' : ''} ${className}`.trim()}
+      style={wrapperStyle}
     >
       {label && (
         <label htmlFor={selectId} className="common-select__label">

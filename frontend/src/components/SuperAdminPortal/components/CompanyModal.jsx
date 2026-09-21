@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Sparkles, Check, AlertCircle } from 'lucide-react';
 import companyApi from '../../../api/companyApi';
+import Select from '../../common/Select/Select';
 
 export default function CompanyModal({
   isOpen,
@@ -229,17 +230,18 @@ export default function CompanyModal({
             />
           </div>
 
-          <div className="sa-form-group">
-            <label htmlFor="sa-comp-status">Initial Status</label>
-            <select
-              id="sa-comp-status"
-              value={form.status}
-              onChange={(e) => onChange({ ...form, status: e.target.value })}
-            >
-              <option value="ACTIVE">ACTIVE (Authorized for physical room scheduling)</option>
-              <option value="INACTIVE">INACTIVE (Temporarily suspended)</option>
-            </select>
-          </div>
+          <Select
+            id="sa-comp-status"
+            label="Initial Status"
+            value={form.status}
+            onChange={(val) => onChange({ ...form, status: val })}
+            placeholder={null}
+            options={[
+              { value: 'ACTIVE', label: 'ACTIVE (Authorized for physical room scheduling)' },
+              { value: 'INACTIVE', label: 'INACTIVE (Temporarily suspended)' },
+            ]}
+            className="sa-form-group"
+          />
 
           <div className="sa-modal__footer">
             <button
