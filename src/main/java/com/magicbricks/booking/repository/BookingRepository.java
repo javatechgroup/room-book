@@ -13,9 +13,7 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByCompanyId(Long companyId);
     List<Booking> findByBookerId(Long bookerId);
-    List<Booking> findByCompanyIdAndStatus(Long companyId, String status);
 
     @Query("SELECT b FROM Booking b WHERE b.room.id = :roomId AND b.status = 'CONFIRMED' " +
            "AND b.startTime < :endTime AND b.endTime > :startTime")
@@ -84,7 +82,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findBookingsForDay(@Param("companyId") Long companyId,
                                      @Param("dayStart") LocalDateTime dayStart,
                                      @Param("dayEnd") LocalDateTime dayEnd);
-
-    long countByCompanyId(Long companyId);
-    long countByCompanyIdAndStatus(Long companyId, String status);
 }

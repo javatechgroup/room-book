@@ -13,7 +13,6 @@ import java.util.Optional;
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
     List<Department> findByCompanyId(Long companyId);
-    List<Department> findByCompanyIdAndStatus(Long companyId, String status);
     Optional<Department> findByCompanyIdAndNameIgnoreCase(Long companyId, String name);
 
     @Query(value = "SELECT d FROM Department d WHERE d.company.id = :companyId " +

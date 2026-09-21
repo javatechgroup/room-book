@@ -13,8 +13,6 @@ import java.util.List;
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 
-    List<AuditLog> findByCompanyId(Long companyId);
-
     @Query(value = "SELECT a FROM AuditLog a WHERE " +
             "(:action = 'ALL' OR a.action = :action) AND " +
             "(:entityType = 'ALL' OR a.entityType = :entityType) AND " +

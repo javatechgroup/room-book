@@ -14,7 +14,6 @@ import java.util.Optional;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
     List<Room> findByCompanyId(Long companyId);
-    List<Room> findByCompanyIdAndStatus(Long companyId, String status);
     List<Room> findByCompanyIdAndFloor(Long companyId, String floor);
     Optional<Room> findByCompanyIdAndName(Long companyId, String name);
 

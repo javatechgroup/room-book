@@ -20,8 +20,6 @@ public interface FloorRepository extends JpaRepository<Floor, Long> {
 
     Optional<Floor> findByCompanyIdAndNameIgnoreCase(Long companyId, String name);
 
-    boolean existsByCompanyIdAndNameIgnoreCase(Long companyId, String name);
-
     @Query(value = "SELECT f FROM Floor f WHERE f.company.id = :companyId " +
                    "AND (:status = 'ALL' OR f.status = :status) " +
                    "AND (:search IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
