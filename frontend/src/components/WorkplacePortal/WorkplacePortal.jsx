@@ -93,6 +93,7 @@ export default function WorkplacePortal() {
   // ════════════════════ PRIMARY DATA STATES ════════════════════
   const [rooms, setRooms] = useState([]);
   const [floors, setFloors] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [dayOccupancy, setDayOccupancy] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState(true);
@@ -102,7 +103,7 @@ export default function WorkplacePortal() {
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [bookingPurpose, setBookingPurpose] = useState('');
-  const [department, setDepartment] = useState(() => user?.department || '');
+  const [department, setDepartment] = useState('');
 
   // Campus Directory Filters
   const [dirFloorFilter, setDirFloorFilter] = useState('all');
@@ -152,9 +153,16 @@ export default function WorkplacePortal() {
     setIsLoadingRooms(true);
     const companyId = user?.companyId;
     try {
-      const [roomsRes, floorsRes] = await Promise.all([
+      // Fetch rooms, floors, and real company departments from DB
+      const [roomsRes, floorsRes, deptsRes] = await Promise.all([
         facilityApi.getRooms({ companyId, pageSize: 100 }),
         facilityApi.getFloors({ companyId }),
+        facilityApi.getAllDepartments({ companyId }).then((res) => {
+          if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+            return res;
+          }
+          return facilityApi.getDepartments({ companyId, size: 100 });
+        }),
       ]);
 
       let loadedRooms = [];
@@ -169,15 +177,26 @@ export default function WorkplacePortal() {
         setFloors([]);
       }
 
+      let loadedDepts = [];
+      if (deptsRes && deptsRes.success) {
+        if (Array.isArray(deptsRes.data)) {
+          loadedDepts = deptsRes.data;
+        } else if (deptsRes.data && Array.isArray(deptsRes.data.content)) {
+          loadedDepts = deptsRes.data.content;
+        }
+      }
+      setDepartments(loadedDepts);
+
       if (loadedRooms.length > 0) {
         setSelectedRoomId((prev) => (loadedRooms.some((r) => r.id === Number(prev)) ? prev : loadedRooms[0].id));
       } else {
         setSelectedRoomId('');
       }
     } catch (err) {
-      console.warn('Error fetching company rooms and floors from DB:', err);
+      console.warn('Error fetching company rooms, floors, and departments from DB:', err);
       setRooms([]);
       setFloors([]);
+      setDepartments([]);
     } finally {
       setIsLoadingRooms(false);
     }
@@ -248,12 +267,7 @@ export default function WorkplacePortal() {
     }
   }, [selectedDate, fetchDayOccupancy]);
 
-  // Set default department from user if not set
-  useEffect(() => {
-    if (!department && user?.department) {
-      setDepartment(user.department);
-    }
-  }, [user, department]);
+
 
   // ════════════════════ BOOKING ACTIONS ════════════════════
   const handleBookRoom = async (bookingData) => {
@@ -439,6 +453,7 @@ export default function WorkplacePortal() {
             onBookingPurposeChange={setBookingPurpose}
             department={department}
             onDepartmentChange={setDepartment}
+            departments={departments}
             policies={policies}
             onBookRoom={handleBookRoom}
             isAdmin={isAdmin}

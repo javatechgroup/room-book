@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/facility/departments")
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'EMPLOYEE')")
 public class FacilityDepartmentController {
 
     private final FacilityDepartmentService departmentService;
@@ -34,6 +34,7 @@ public class FacilityDepartmentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<DepartmentResponse>> createDepartment(
             @Valid @RequestBody DepartmentRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
@@ -79,6 +80,7 @@ public class FacilityDepartmentController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<DepartmentResponse>> updateDepartment(
             @PathVariable Long id,
             @Valid @RequestBody DepartmentRequest request,
@@ -90,6 +92,7 @@ public class FacilityDepartmentController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<DepartmentResponse>> toggleStatus(
             @PathVariable Long id,
             @RequestParam(required = false) Long companyId,

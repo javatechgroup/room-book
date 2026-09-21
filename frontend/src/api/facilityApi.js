@@ -120,9 +120,9 @@ export const facilityApi = {
     };
   },
 
-  async getAllDepartments() {
+  async getAllDepartments(params = {}) {
     try {
-      const response = await apiClient.get('/facility/departments/all');
+      const response = await apiClient.get('/facility/departments/all', { params });
       if (response.data && response.data.data) {
         return { success: true, data: response.data.data };
       }

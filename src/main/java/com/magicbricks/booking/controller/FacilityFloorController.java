@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/facility/floors")
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'EMPLOYEE')")
 public class FacilityFloorController {
 
     private final FacilityFloorService floorService;
@@ -34,6 +34,7 @@ public class FacilityFloorController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<FloorResponse>> createFloor(
             @Valid @RequestBody FloorRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
@@ -79,6 +80,7 @@ public class FacilityFloorController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<FloorResponse>> updateFloor(
             @PathVariable Long id,
             @Valid @RequestBody FloorRequest request,
@@ -90,6 +92,7 @@ public class FacilityFloorController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<FloorResponse>> toggleStatus(
             @PathVariable Long id,
             @RequestParam(required = false) Long companyId,
@@ -101,6 +104,7 @@ public class FacilityFloorController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteFloor(
             @PathVariable Long id,
             @RequestParam(required = false) Long companyId,

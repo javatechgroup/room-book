@@ -66,6 +66,7 @@ const getInitialUpcomingTime = () => {
 export default function SlotFinderTab({
   rooms = [],
   floors = [],
+  departments = [],
   dayOccupancy = [],
   selectedFloor = 'All Floors',
   onFloorChange,
@@ -97,6 +98,22 @@ export default function SlotFinderTab({
   const [sizeFilter, setSizeFilter] = useState('all');
   const [roomSearch, setRoomSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Extract company departments strictly from DB (no hardcoded defaults)
+  const departmentOptions = useMemo(() => {
+    const list = departments
+      .map((d) => (typeof d === 'string' ? d : d.name))
+      .filter((n) => typeof n === 'string' && n.trim().length > 0);
+
+    const combined = [
+      ...list,
+      ...(currentUser?.department ? [currentUser.department] : []),
+      ...(department ? [department] : []),
+    ];
+    return Array.from(new Set(combined));
+  }, [departments, department, currentUser]);
+
+
 
   // Synchronize time and duration when editing an existing reservation
   useEffect(() => {
@@ -829,14 +846,23 @@ export default function SlotFinderTab({
                     <label htmlFor="bp-dept">
                       <Tag size={13} /> Department / Team *
                     </label>
-                    <input
+                    <select
                       id="bp-dept"
-                      type="text"
-                      value={department}
+                      value={department || ''}
                       onChange={(e) => onDepartmentChange(e.target.value)}
-                      placeholder="e.g. Engineering, Product, Marketing"
                       required
-                    />
+                    >
+                      <option value="" disabled>
+                        {departmentOptions.length === 0
+                          ? '-- No company departments registered --'
+                          : '-- Select Department --'}
+                      </option>
+                      {departmentOptions.map((deptName) => (
+                        <option key={deptName} value={deptName}>
+                          {deptName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
