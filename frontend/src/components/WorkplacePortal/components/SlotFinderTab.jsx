@@ -403,28 +403,21 @@ export default function SlotFinderTab({
       <div className="finder-controls">
         {/* Floor Selection */}
         <div className="control-box">
-          <div className="control-box-header">
-            <label htmlFor="slot-floor">
-              <Building size={14} /> Floor / Wing
-            </label>
-          </div>
-          <select
+          <Select
             id="slot-floor"
+            label="Floor / Wing"
+            icon={<Building size={14} />}
             value={selectedFloor}
-            onChange={(e) => {
-              onFloorChange(e.target.value);
+            onChange={(val) => {
+              onFloorChange(val);
               const firstInFloor = rooms.find(
-                (r) => e.target.value === 'All Floors' || r.floor === e.target.value
+                (r) => val === 'All Floors' || r.floor === val
               );
               if (firstInFloor) onRoomSelect(firstInFloor.id);
             }}
-          >
-            {floorOptions.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
+            options={floorOptions}
+            placeholder={null}
+          />
         </div>
 
         {/* Date Selection */}
@@ -522,11 +515,12 @@ export default function SlotFinderTab({
                 : `${durationMinutes}m`}
             </span>
           </div>
-          <select
+          <Select
             id="slot-duration"
             value={durationMinutes}
-            onChange={(e) => setDurationMinutes(Number(e.target.value))}
-            style={{ width: '100%', height: '42px', fontWeight: 600 }}
+            onChange={(val) => setDurationMinutes(Number(val))}
+            placeholder={null}
+            style={{ fontWeight: 600 }}
           >
             <optgroup label="Short Meetings">
               <option value={15}>15 Minutes (Quick Sync)</option>
@@ -551,7 +545,7 @@ export default function SlotFinderTab({
               <option value={600}>10 Hours</option>
               <option value={720}>12 Hours (All Day Event)</option>
             </optgroup>
-          </select>
+          </Select>
         </div>
       </div>
 
