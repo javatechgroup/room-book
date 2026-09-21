@@ -29,39 +29,87 @@ export default function CompanyDirectoryTab({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  // Combine data from directoryData or props fallback
+  const effectiveEmployees = React.useMemo(() => {
+    if (Array.isArray(directoryData?.employees) && directoryData.employees.length > 0) {
+      return directoryData.employees;
+    }
+    return Array.isArray(employees) ? employees : [];
+  }, [directoryData?.employees, employees]);
+
+  const effectiveDepartments = React.useMemo(() => {
+    if (Array.isArray(directoryData?.departments) && directoryData.departments.length > 0) {
+      return directoryData.departments;
+    }
+    if (Array.isArray(departments) && departments.length > 0) {
+      return departments;
+    }
+    if (directoryData?.departmentGroups && typeof directoryData.departmentGroups === 'object') {
+      return Object.keys(directoryData.departmentGroups).map((name, i) => ({
+        id: `dept-gen-${i}`,
+        name,
+        status: 'ACTIVE',
+      }));
+    }
+    return [];
+  }, [directoryData?.departments, directoryData?.departmentGroups, departments]);
+
+  const effectiveRooms = React.useMemo(() => {
+    if (Array.isArray(directoryData?.rooms) && directoryData.rooms.length > 0) {
+      return directoryData.rooms;
+    }
+    return Array.isArray(rooms) ? rooms : [];
+  }, [directoryData?.rooms, rooms]);
+
   // Reset to page 1 on filter changes
   useEffect(() => {
     setPage(1);
   }, [search, selectedDepartment]);
 
-  const filteredEmployees = employees.filter((emp) => {
+  const filteredEmployees = React.useMemo(() => {
     const q = search.toLowerCase().trim();
-    const matchSearch =
-      !q ||
-      emp.fullName.toLowerCase().includes(q) ||
-      emp.email.toLowerCase().includes(q) ||
-      (emp.departmentName && emp.departmentName.toLowerCase().includes(q));
+    return effectiveEmployees.filter((emp) => {
+      if (!emp) return false;
+      const fullName = (emp.fullName || emp.name || '').toLowerCase();
+      const email = (emp.email || '').toLowerCase();
+      const deptName = (emp.departmentName || '').toLowerCase();
 
-    const matchDept =
-      selectedDepartment === 'ALL' ||
-      String(emp.departmentId) === String(selectedDepartment) ||
-      emp.departmentName === selectedDepartment;
+      const matchSearch =
+        !q ||
+        fullName.includes(q) ||
+        email.includes(q) ||
+        deptName.includes(q);
 
-    return matchSearch && matchDept;
-  });
+      const matchDept =
+        selectedDepartment === 'ALL' ||
+        String(emp.departmentId) === String(selectedDepartment) ||
+        deptName === selectedDepartment.toLowerCase();
+
+      return matchSearch && matchDept;
+    });
+  }, [effectiveEmployees, search, selectedDepartment]);
 
   const paginatedEmployees = filteredEmployees.slice((page - 1) * pageSize, page * pageSize);
 
   // Calculate floor distribution
-  const floorStats = {};
-  rooms.forEach((r) => {
-    const fl = r.floor || 'Other';
-    if (!floorStats[fl]) {
-      floorStats[fl] = { roomsCount: 0, totalCapacity: 0 };
-    }
-    floorStats[fl].roomsCount += 1;
-    floorStats[fl].totalCapacity += (r.capacity || 0);
-  });
+  const floorStats = React.useMemo(() => {
+    const stats = {};
+    effectiveRooms.forEach((r) => {
+      if (!r) return;
+      const fl = r.floor || 'Other';
+      if (!stats[fl]) {
+        stats[fl] = { roomsCount: 0, totalCapacity: 0 };
+      }
+      stats[fl].roomsCount += 1;
+      stats[fl].totalCapacity += (r.capacity || 0);
+    });
+    return stats;
+  }, [effectiveRooms]);
+
+  const totalStaffCount = directoryData?.totalEmployees ?? effectiveEmployees.length;
+  const totalDeptsCount = directoryData?.totalDepartments ?? effectiveDepartments.length;
+  const totalRoomsCount = directoryData?.totalRooms ?? effectiveRooms.length;
+  const totalFloorsCount = Object.keys(floorStats).length;
 
   return (
     <div className="superadmin-tab-content">
@@ -72,7 +120,7 @@ export default function CompanyDirectoryTab({
             <Users size={22} />
           </div>
           <div>
-            <h3>{employees.length}</h3>
+            <h3>{totalStaffCount}</h3>
             <span>Total Staff Members</span>
           </div>
         </div>
@@ -82,7 +130,7 @@ export default function CompanyDirectoryTab({
             <Building2 size={22} />
           </div>
           <div>
-            <h3>{departments.length}</h3>
+            <h3>{totalDeptsCount}</h3>
             <span>Functional Departments</span>
           </div>
         </div>
@@ -92,7 +140,7 @@ export default function CompanyDirectoryTab({
             <DoorOpen size={22} />
           </div>
           <div>
-            <h3>{rooms.length}</h3>
+            <h3>{totalRoomsCount}</h3>
             <span>Managed Meeting Spaces</span>
           </div>
         </div>
@@ -102,7 +150,7 @@ export default function CompanyDirectoryTab({
             <Layers size={22} />
           </div>
           <div>
-            <h3>{Object.keys(floorStats).length}</h3>
+            <h3>{totalFloorsCount}</h3>
             <span>Active Office Floors</span>
           </div>
         </div>
@@ -145,10 +193,12 @@ export default function CompanyDirectoryTab({
         </div>
 
         <div className="department-breakdown-grid">
-          {departments.map((dept) => {
-            const deptEmps = employees.filter((e) => e.departmentId === dept.id || e.departmentName === dept.name);
+          {effectiveDepartments.map((dept) => {
+            const deptEmps = directoryData?.departmentGroups?.[dept.name] || effectiveEmployees.filter(
+              (e) => String(e.departmentId) === String(dept.id) || e.departmentName === dept.name
+            );
             return (
-              <div key={dept.id} className="dept-breakdown-card">
+              <div key={dept.id || dept.name} className="dept-breakdown-card">
                 <div className="dept-breakdown-card__header">
                   <div className="dept-icon">
                     <Building2 size={16} />
@@ -160,12 +210,17 @@ export default function CompanyDirectoryTab({
                 </div>
 
                 <div className="dept-members-avatars">
-                  {deptEmps.map((emp) => (
-                    <div key={emp.id} className="member-avatar-chip" title={`${emp.fullName} (${emp.email})`}>
-                      <span className="member-initial">{emp.fullName.charAt(0)}</span>
-                      <span className="member-name">{emp.fullName}</span>
-                    </div>
-                  ))}
+                  {deptEmps.map((emp) => {
+                    const empName = emp.fullName || emp.name || 'Staff Member';
+                    const empEmail = emp.email || '';
+                    const empInitial = empName.charAt(0) || 'U';
+                    return (
+                      <div key={emp.id || empEmail} className="member-avatar-chip" title={`${empName}${empEmail ? ` (${empEmail})` : ''}`}>
+                        <span className="member-initial">{empInitial}</span>
+                        <span className="member-name">{empName}</span>
+                      </div>
+                    );
+                  })}
                   {deptEmps.length === 0 && (
                     <span className="no-members">No staff assigned</span>
                   )}
@@ -194,7 +249,7 @@ export default function CompanyDirectoryTab({
               placeholder={null}
               options={[
                 { value: 'ALL', label: 'All Departments' },
-                ...departments.map((d) => ({ value: d.id, label: d.name })),
+                ...effectiveDepartments.map((d) => ({ value: String(d.id || d.name), label: d.name })),
               ]}
               wrapperStyle={{ minWidth: '200px', width: 'auto' }}
             />
@@ -245,41 +300,45 @@ export default function CompanyDirectoryTab({
                     </td>
                   </tr>
                 ) : (
-                  paginatedEmployees.map((emp) => (
-                    <tr key={emp.id}>
-                      <td className="td-strong">
-                        <div className="entity-cell">
-                          <div className="entity-cell__icon entity-cell__icon--indigo">
-                            <User size={16} />
+                  paginatedEmployees.map((emp) => {
+                    const empName = emp.fullName || emp.name || 'Staff Member';
+                    const empEmail = emp.email || '—';
+                    return (
+                      <tr key={emp.id || empEmail}>
+                        <td className="td-strong">
+                          <div className="entity-cell">
+                            <div className="entity-cell__icon entity-cell__icon--indigo">
+                              <User size={16} />
+                            </div>
+                            <div className="entity-cell__content">
+                              <div className="entity-cell__name">{empName}</div>
+                              {emp.id && <div className="entity-cell__sub">ID: #{emp.id}</div>}
+                            </div>
                           </div>
-                          <div className="entity-cell__content">
-                            <div className="entity-cell__name">{emp.fullName}</div>
-                            <div className="entity-cell__sub">ID: #{emp.id}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="table-email">
-                          <Mail size={13} /> {emp.email}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="department-badge">
-                          <Building2 size={13} /> {emp.departmentName || 'General'}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`role-badge ${emp.role === 'COMPANY_ADMIN' ? 'role-badge--admin' : 'role-badge--employee'}`}>
-                          {emp.role === 'COMPANY_ADMIN' ? 'Facility Admin' : 'Employee'}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`status-pill ${emp.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'}`}>
-                          {emp.status === 'ACTIVE' ? 'Active' : 'Suspended'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td>
+                          <span className="table-email">
+                            <Mail size={13} /> {empEmail}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="department-badge">
+                            <Building2 size={13} /> {emp.departmentName || 'General'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`role-badge ${emp.role === 'COMPANY_ADMIN' ? 'role-badge--admin' : 'role-badge--employee'}`}>
+                            {emp.role === 'COMPANY_ADMIN' ? 'Facility Admin' : 'Employee'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-pill ${emp.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'}`}>
+                            {emp.status === 'ACTIVE' ? 'Active' : 'Suspended'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -307,34 +366,38 @@ export default function CompanyDirectoryTab({
               )}
             </div>
           ) : (
-            paginatedEmployees.map((emp) => (
-              <div key={emp.id} className="mobile-card">
-                <div className="mobile-card__header">
-                  <div className="mobile-card__header-left">
-                    <div className="mobile-card__title-row">
-                      <h4 className="mobile-card__title">{emp.fullName}</h4>
-                      <span className="mobile-card__subtitle">{emp.email}</span>
+            paginatedEmployees.map((emp) => {
+              const empName = emp.fullName || emp.name || 'Staff Member';
+              const empEmail = emp.email || '—';
+              return (
+                <div key={emp.id || empEmail} className="mobile-card">
+                  <div className="mobile-card__header">
+                    <div className="mobile-card__header-left">
+                      <div className="mobile-card__title-row">
+                        <h4 className="mobile-card__title">{empName}</h4>
+                        <span className="mobile-card__subtitle">{empEmail}</span>
+                      </div>
                     </div>
-                  </div>
-                  <span className={`status-pill ${emp.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'}`}>
-                    {emp.status === 'ACTIVE' ? 'Active' : 'Suspended'}
-                  </span>
-                </div>
-
-                <div className="mobile-card__details">
-                  <div className="mobile-card__info-row">
-                    <Building2 size={14} className="mobile-card__icon" />
-                    <span>Department: <strong>{emp.departmentName || 'General'}</strong></span>
-                  </div>
-                  <div className="mobile-card__info-row">
-                    <Shield size={14} className="mobile-card__icon" />
-                    <span className={`role-badge ${emp.role === 'COMPANY_ADMIN' ? 'role-badge--admin' : 'role-badge--employee'}`}>
-                      {emp.role === 'COMPANY_ADMIN' ? 'Facility Admin' : 'Employee'}
+                    <span className={`status-pill ${emp.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'}`}>
+                      {emp.status === 'ACTIVE' ? 'Active' : 'Suspended'}
                     </span>
                   </div>
+
+                  <div className="mobile-card__details">
+                    <div className="mobile-card__info-row">
+                      <Building2 size={14} className="mobile-card__icon" />
+                      <span>Department: <strong>{emp.departmentName || 'General'}</strong></span>
+                    </div>
+                    <div className="mobile-card__info-row">
+                      <Shield size={14} className="mobile-card__icon" />
+                      <span className={`role-badge ${emp.role === 'COMPANY_ADMIN' ? 'role-badge--admin' : 'role-badge--employee'}`}>
+                        {emp.role === 'COMPANY_ADMIN' ? 'Facility Admin' : 'Employee'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

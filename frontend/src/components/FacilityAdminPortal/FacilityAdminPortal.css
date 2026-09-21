@@ -142,6 +142,91 @@
   border-color: #1d4ed8;
 }
 
+/* ════════════════════ SEGMENTED STATUS FILTER TABS ════════════════════ */
+.status-segment-group {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-surface-alt, #f1f5f9);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-card, #e2e8f0);
+  gap: 4px;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] .status-segment-group {
+  background: var(--bg-surface-alt, rgba(0, 0, 0, 0.04));
+  border-color: var(--border-card);
+}
+
+.status-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--tab-text-idle, #475569);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.status-segment-btn span {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--bg-surface-alt, #e2e8f0);
+  color: var(--text-muted, #334155);
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] .status-segment-btn span {
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+}
+
+.status-segment-btn:hover {
+  color: var(--tab-text-hover, #0f172a);
+}
+
+[data-theme='dark'] .status-segment-btn:hover {
+  color: var(--text-heading);
+}
+
+.status-segment-btn--active {
+  background: var(--tab-active-bg, #ffffff) !important;
+  color: var(--tab-active-text, #2563eb) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .status-segment-btn--active {
+  background: var(--bg-card) !important;
+  color: #60a5fa !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.status-segment-btn--active span {
+  background: #e0e7ff;
+  color: #2563eb;
+}
+
+[data-theme='dark'] .status-segment-btn--active span {
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
+}
+
 /* ════════════════════ METRICS GRID (SINGLE ROW) ════════════════════ */
 .facility-admin-metrics-grid {
   display: grid;
@@ -4161,16 +4246,20 @@
   }
 
   .status-segment-group {
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
   }
 
   .status-segment-btn {
-    flex: 1;
-    min-width: 80px;
+    flex: 0 0 auto;
+    min-width: max-content;
     text-align: center;
     justify-content: center;
+    white-space: nowrap !important;
   }
 
   /* Tabs Bar with Right Fade Clue */

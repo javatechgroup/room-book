@@ -492,4 +492,29 @@ export const facilityApi = {
     }
     return { success: false, error: 'Failed to delete floor' };
   },
+
+  // ════════════════════ FACILITY SUMMARY & DIRECTORY ════════════════════
+  async getFacilitySummary(params = {}) {
+    try {
+      const response = await apiClient.get('/facility/summary', { params });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      console.warn('Backend /facility/summary request failed:', e.message);
+    }
+    return { success: false, data: null };
+  },
+
+  async getCompanyDirectory(params = {}) {
+    try {
+      const response = await apiClient.get('/facility/directory', { params });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      console.warn('Backend /facility/directory request failed:', e.message);
+    }
+    return { success: false, data: null };
+  },
 };

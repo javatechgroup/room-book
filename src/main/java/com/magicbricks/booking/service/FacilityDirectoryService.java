@@ -118,11 +118,32 @@ public class FacilityDirectoryService {
                         Collectors.toList()
                 ));
 
+        List<Map<String, Object>> deptList = departments.stream().map(d -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", d.getId());
+            m.put("name", d.getName());
+            m.put("status", d.getStatus());
+            return m;
+        }).collect(Collectors.toList());
+
+        List<Map<String, Object>> roomList = rooms.stream().map(r -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", r.getId());
+            m.put("name", r.getName());
+            m.put("floor", r.getFloor());
+            m.put("location", r.getLocation());
+            m.put("capacity", r.getCapacity());
+            m.put("status", r.getStatus());
+            return m;
+        }).collect(Collectors.toList());
+
         Map<String, Object> response = new HashMap<>();
         response.put("totalEmployees", employees.size());
         response.put("totalDepartments", departments.size());
         response.put("totalRooms", rooms.size());
         response.put("employees", employeeResponses);
+        response.put("departments", deptList);
+        response.put("rooms", roomList);
         response.put("departmentGroups", groupedByDepartment);
 
         return response;

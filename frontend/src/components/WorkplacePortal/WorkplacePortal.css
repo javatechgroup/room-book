@@ -1286,6 +1286,9 @@
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   gap: 4px;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  flex-shrink: 0;
 }
 
 [data-theme='dark'] .status-segment-group {
@@ -1306,6 +1309,9 @@
   color: #64748b;
   cursor: pointer;
   transition: all 0.18s ease;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  line-height: 1.2;
 }
 
 .status-segment-btn span {
@@ -1316,6 +1322,8 @@
   font-weight: 600;
   background: #e2e8f0;
   color: #334155;
+  white-space: nowrap !important;
+  flex-shrink: 0;
 }
 
 [data-theme='dark'] .status-segment-btn {

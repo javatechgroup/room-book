@@ -172,7 +172,7 @@ export default function MyBookingsTab({
               className={`status-segment-btn ${statusFilter === 'IN_PROGRESS' ? 'status-segment-btn--active' : ''}`}
               onClick={() => handleStatusChange('IN_PROGRESS')}
             >
-              In Progress <span>{counts.inProgress}</span>
+              In&nbsp;Progress <span>{counts.inProgress}</span>
             </button>
             <button
               type="button"

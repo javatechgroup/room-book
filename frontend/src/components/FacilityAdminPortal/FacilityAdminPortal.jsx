@@ -366,8 +366,17 @@ export default function FacilityAdminPortal() {
 
   const fetchDirectory = useCallback(async () => {
     const res = await facilityApi.getCompanyDirectory();
-    if (res.success && res.data) {
+    if (res && res.success && res.data) {
       setDirectoryData(res.data);
+      if (Array.isArray(res.data.employees) && res.data.employees.length > 0) {
+        setEmployees((prev) => (prev.length === 0 ? res.data.employees : prev));
+      }
+      if (Array.isArray(res.data.departments) && res.data.departments.length > 0) {
+        setDepartments((prev) => (prev.length === 0 ? res.data.departments : prev));
+      }
+      if (Array.isArray(res.data.rooms) && res.data.rooms.length > 0) {
+        setRooms((prev) => (prev.length === 0 ? res.data.rooms : prev));
+      }
     }
   }, []);
 
@@ -437,8 +446,11 @@ export default function FacilityAdminPortal() {
   useEffect(() => {
     if (activeTab === 'directory') {
       fetchDirectory();
+      fetchRooms({ size: 1000 });
+      fetchDepartments({ size: 1000 });
+      fetchEmployees({ size: 1000 });
     }
-  }, [activeTab, fetchDirectory]);
+  }, [activeTab, fetchDirectory, fetchRooms, fetchDepartments, fetchEmployees]);
 
   // ════════════════════ ROOM ACTIONS ════════════════════
   const handleOpenCreateRoom = () => {

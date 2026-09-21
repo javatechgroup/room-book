@@ -266,7 +266,7 @@ export default function BookingMonitorTab({
               className={`status-segment-btn ${statusFilter === 'IN_PROGRESS' ? 'status-segment-btn--active' : ''}`}
               onClick={() => handleStatusFilterChange('IN_PROGRESS')}
             >
-              <span className="live-blinking-dot" /> In Progress <span>{inProgressCount}</span>
+              <span className="live-blinking-dot" /> In&nbsp;Progress <span>{inProgressCount}</span>
             </button>
             <button
               type="button"

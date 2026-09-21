@@ -17,7 +17,6 @@ export default function WorkplaceTabs({
   return (
     <div className="workplace-top-section">
       <div className="portal-title-block">
-        <span className="section-tag">Workplace Portal</span>
         <h2 className="portal-main-heading">Physical Room & Slot Manager</h2>
       </div>
 
