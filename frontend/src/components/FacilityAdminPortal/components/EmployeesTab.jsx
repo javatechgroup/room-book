@@ -198,8 +198,8 @@ export default function EmployeesTab({
       )}
 
       {/* Desktop Table View */}
-      <div className="desktop-table-wrap">
-        <div className="table-responsive">
+      <div className="desktop-table-wrap employees-table-wrap">
+        <div className="table-responsive employees-table-responsive">
           <table className="superadmin-table employees-table">
             <thead>
               <tr>
