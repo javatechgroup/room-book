@@ -183,9 +183,18 @@ public class FacilityBookingService {
 		}
 
 		LocalDateTime now = LocalDateTime.now();
+		if (booking.getStartTime().isBefore(now)) {
+			throw new BookingConflictException(
+					"This meeting has already begun and cannot be edited. You can release or cancel the room early if needed.");
+		}
+
+		if (request.getEndTime().isBefore(now)) {
+			throw new BookingConflictException("Cannot reschedule to an end time that has already passed.");
+		}
+
 		if (request.getStartTime().isBefore(now)) {
 			throw new BookingConflictException(
-					"Cannot reschedule to a past date and time. Please select a future slot.");
+					"Cannot reschedule start time to a past date and time. Please select a future slot.");
 		}
 
 		// Conflict check excluding the booking itself

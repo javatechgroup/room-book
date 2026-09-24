@@ -551,6 +551,11 @@
   border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
+.status-panel--editing {
+  background: rgba(37, 99, 235, 0.04);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+}
+
 .status-panel--maintenance {
   background: rgba(239, 68, 68, 0.04);
   border: 1px solid rgba(239, 68, 68, 0.25);

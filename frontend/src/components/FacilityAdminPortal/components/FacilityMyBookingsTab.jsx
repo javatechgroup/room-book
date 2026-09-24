@@ -49,7 +49,7 @@ export default function FacilityMyBookingsTab({
   // Dynamic booking state helper
   const getBookingLifecycleState = useCallback((booking) => {
     if (!booking) {
-      return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false };
+      return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false, canEdit: false };
     }
     if (booking.status === 'CANCELLED') {
       return {
@@ -57,6 +57,7 @@ export default function FacilityMyBookingsTab({
         label: 'Cancelled',
         colorClass: 'status-pill--inactive',
         canCancel: false,
+        canEdit: false,
       };
     }
     const end = new Date(booking.endTime);
@@ -67,6 +68,7 @@ export default function FacilityMyBookingsTab({
         label: 'Completed',
         colorClass: 'status-pill--completed',
         canCancel: false,
+        canEdit: false,
       };
     }
     if (now >= start && now <= end) {
@@ -75,6 +77,7 @@ export default function FacilityMyBookingsTab({
         label: 'In Progress',
         colorClass: 'status-pill--live',
         canCancel: true,
+        canEdit: false,
       };
     }
     return {
@@ -82,6 +85,7 @@ export default function FacilityMyBookingsTab({
       label: 'Confirmed',
       colorClass: 'status-pill--active',
       canCancel: true,
+      canEdit: true,
     };
   }, [now]);
 
@@ -370,8 +374,14 @@ export default function FacilityMyBookingsTab({
                               type="button"
                               className="action-btn action-btn--edit"
                               onClick={() => onEditBooking(booking)}
-                              disabled={!state.canCancel}
-                              title={state.canCancel ? 'Edit & Reschedule Reservation' : 'Cannot edit past or cancelled reservation'}
+                              disabled={!state.canEdit}
+                              title={
+                                state.key === 'IN_PROGRESS'
+                                  ? 'Meeting has already begun — editing is locked'
+                                  : state.canEdit
+                                  ? 'Edit room, time, or participants'
+                                  : 'Cannot edit past or cancelled reservation'
+                              }
                               aria-label={`Edit ${booking.title}`}
                             >
                               <Edit2 size={15} />

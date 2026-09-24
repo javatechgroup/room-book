@@ -30,18 +30,18 @@ export default function BookingInspectorDrawer({
 
   const getBookingState = () => {
     if (booking.status === 'CANCELLED') {
-      return { key: 'CANCELLED', label: 'Cancelled', badgeClass: 'status-badge--cancelled', canCancel: false };
+      return { key: 'CANCELLED', label: 'Cancelled', badgeClass: 'status-badge--cancelled', canCancel: false, canEdit: false };
     }
     const end = new Date(booking.endTime);
     const start = new Date(booking.startTime);
     const now = new Date();
     if (end < now) {
-      return { key: 'COMPLETED', label: 'Completed', badgeClass: 'status-badge--completed', canCancel: false };
+      return { key: 'COMPLETED', label: 'Completed', badgeClass: 'status-badge--completed', canCancel: false, canEdit: false };
     }
     if (start <= now && end > now) {
-      return { key: 'IN_PROGRESS', label: 'In Progress (Live)', badgeClass: 'status-badge--live', canCancel: true };
+      return { key: 'IN_PROGRESS', label: 'In Progress (Live)', badgeClass: 'status-badge--live', canCancel: true, canEdit: false };
     }
-    return { key: 'CONFIRMED', label: 'Confirmed Reservation', badgeClass: 'status-badge--active', canCancel: true };
+    return { key: 'CONFIRMED', label: 'Confirmed Reservation', badgeClass: 'status-badge--active', canCancel: true, canEdit: true };
   };
 
   const state = getBookingState();
@@ -84,8 +84,8 @@ export default function BookingInspectorDrawer({
           </div>
 
           {/* Functional Quick Actions Strip */}
-          <div className="inspector-quick-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '14px' }}>
-            {state.canCancel && onEditBooking && (
+          <div className="inspector-quick-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '14px', flexWrap: 'wrap' }}>
+            {state.canEdit && onEditBooking && (
               <button
                 type="button"
                 className="btn btn--primary btn--sm"
@@ -93,11 +93,16 @@ export default function BookingInspectorDrawer({
                   onEditBooking(booking);
                   onClose();
                 }}
-                title="Edit this reservation and select a new slot in Book a Slot tab"
+                title="Edit time, room, or participants in Book a Slot"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               >
-                <Edit2 size={14} /> Edit & Pick New Slot
+                <Edit2 size={14} /> Edit Reservation
               </button>
+            )}
+            {state.key === 'IN_PROGRESS' && (
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                Meeting has begun — editing is locked.
+              </span>
             )}
             {state.canCancel && onCancelBooking && (
               <button

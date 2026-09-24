@@ -18,6 +18,7 @@ import {
   Tag,
   Search,
   Filter,
+  Edit2,
 } from 'lucide-react';
 import RoomInfoCard from './RoomInfoCard';
 import SearchInput from '../../common/SearchInput/SearchInput';
@@ -102,6 +103,16 @@ export default function SlotFinderTab({
   const [sizeFilter, setSizeFilter] = useState('all');
   const [roomSearch, setRoomSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Check if the reservation being edited has already begun
+  const isMeetingAlreadyBegun = useMemo(() => {
+    if (!editingBooking || !editingBooking.startTime) return false;
+    try {
+      return new Date(editingBooking.startTime) <= new Date();
+    } catch (_) {
+      return false;
+    }
+  }, [editingBooking]);
 
   // Extract company departments strictly from DB (no hardcoded defaults)
   const departmentOptions = useMemo(() => {
@@ -198,11 +209,30 @@ export default function SlotFinderTab({
     try {
       const now = new Date();
       const slotStart = new Date(startTimeStr);
+      const slotEnd = new Date(endTimeStr);
+
+      if (slotEnd <= now) {
+        return true;
+      }
+
+      if (editingBooking) {
+        // If editing an existing booking:
+        // If the start time matches the original booking start time, allow it (e.g. updating participants or room)
+        if (editingBooking.startTime) {
+          const originalStart = new Date(editingBooking.startTime);
+          if (Math.abs(slotStart.getTime() - originalStart.getTime()) <= 60000) {
+            return false;
+          }
+        }
+        // Allow a 3-minute grace window for clock drift when setting start time
+        return slotStart.getTime() < now.getTime() - 3 * 60 * 1000;
+      }
+
       return slotStart < now;
     } catch (_) {
       return false;
     }
-  }, [startTimeStr]);
+  }, [startTimeStr, endTimeStr, editingBooking]);
 
   // Floor options from DB (filtered for the user's company) and room metadata
   const floorOptions = useMemo(() => {
@@ -258,17 +288,18 @@ export default function SlotFinderTab({
     return rooms.find((r) => r.id === Number(selectedRoomId)) || filteredRooms[0] || rooms[0] || null;
   }, [rooms, selectedRoomId, filteredRooms]);
 
-  // Check if current room is occupied at the chosen time window
+  // Check if current room is occupied at the chosen time window (excluding self when editing)
   const conflictingBooking = useMemo(() => {
     if (!currentRoom) return null;
     return dayOccupancy.find(
       (b) =>
         b.roomId === currentRoom.id &&
         b.status === 'CONFIRMED' &&
+        (!editingBooking || String(b.id) !== String(editingBooking.id)) &&
         b.startTime < endTimeStr &&
         b.endTime > startTimeStr
     );
-  }, [currentRoom, dayOccupancy, startTimeStr, endTimeStr]);
+  }, [currentRoom, dayOccupancy, startTimeStr, endTimeStr, editingBooking]);
 
   const isOccupied = Boolean(conflictingBooking);
   const isMaintenance = currentRoom?.status === 'MAINTENANCE' || currentRoom?.isUnderMaintenance;
@@ -321,11 +352,12 @@ export default function SlotFinderTab({
           (b) =>
             b.roomId === r.id &&
             b.status === 'CONFIRMED' &&
+            (!editingBooking || String(b.id) !== String(editingBooking.id)) &&
             b.startTime < endTimeStr &&
             b.endTime > startTimeStr
         )
     );
-  }, [rooms, currentRoom, dayOccupancy, startTimeStr, endTimeStr]);
+  }, [rooms, currentRoom, dayOccupancy, startTimeStr, endTimeStr, editingBooking]);
 
   // Helper to jump date
   const setQuickDate = (type) => {
@@ -340,6 +372,9 @@ export default function SlotFinderTab({
   const handleBookSubmit = async (e) => {
     e.preventDefault();
     if (!currentRoom) return;
+    if (isMeetingAlreadyBegun) {
+      return;
+    }
     if (isMaintenance || isOccupied || isPastTime) return;
 
     setIsSubmitting(true);
@@ -363,6 +398,7 @@ export default function SlotFinderTab({
       setDescription('');
       onDepartmentChange('');
       setParticipants([]);
+      if (onCancelEdit) onCancelEdit();
     }
   };
 
@@ -394,14 +430,30 @@ export default function SlotFinderTab({
 
   return (
     <div className="portal-card">
-      {/* ───────────────── EDITING / RESCHEDULE BANNER ───────────────── */}
+      {/* ───────────────── EDITING / UPDATE BANNER ───────────────── */}
       {editingBooking && (
-        <div className="editing-booking-banner">
+        <div
+          className={`editing-booking-banner ${isMeetingAlreadyBegun ? 'editing-booking-banner--locked' : ''}`}
+          style={isMeetingAlreadyBegun ? { borderColor: '#fca5a5', background: '#fef2f2' } : {}}
+        >
           <div className="editing-booking-banner__content">
-            <span className="editing-booking-banner__badge">Rescheduling</span>
+            <span
+              className="editing-booking-banner__badge"
+              style={isMeetingAlreadyBegun ? { background: '#ef4444', color: '#fff' } : {}}
+            >
+              {isMeetingAlreadyBegun ? 'Editing Locked' : 'Editing Reservation'}
+            </span>
             <div className="editing-booking-banner__text">
-              <strong>Updating Reservation #{editingBooking.id}: "{editingBooking.title || editingBooking.purpose || 'Meeting'}"</strong>
-              <p>Pick a new time slot, date, or room. Confirming will save your changes and release the previous slot.</p>
+              <strong>
+                {isMeetingAlreadyBegun
+                  ? `Reservation #${editingBooking.id} Has Begun ("${editingBooking.title || editingBooking.purpose || 'Meeting'}")`
+                  : `Editing Reservation #${editingBooking.id}: "${editingBooking.title || editingBooking.purpose || 'Meeting'}"`}
+              </strong>
+              <p>
+                {isMeetingAlreadyBegun
+                  ? 'This meeting is already in progress or has ended. Active meetings cannot be edited. You can release the slot early from My Bookings.'
+                  : 'You can update the room, slot time, meeting title, or add/remove participants. Saving will update your existing reservation and notify all attendees.'}
+              </p>
             </div>
           </div>
           {onCancelEdit && (
@@ -411,7 +463,7 @@ export default function SlotFinderTab({
               onClick={onCancelEdit}
               style={{ flexShrink: 0 }}
             >
-              Cancel Editing
+              {isMeetingAlreadyBegun ? 'Close' : 'Cancel Editing'}
             </button>
           )}
         </div>
@@ -606,6 +658,8 @@ export default function SlotFinderTab({
               ? 'Time Passed'
               : isOccupied
               ? 'Booked'
+              : editingBooking
+              ? 'Updating'
               : 'Available'}
           </span>
         </div>
@@ -631,6 +685,7 @@ export default function SlotFinderTab({
                     (b) =>
                       b.roomId === room.id &&
                       b.status === 'CONFIRMED' &&
+                      (!editingBooking || String(b.id) !== String(editingBooking.id)) &&
                       b.startTime < endTimeStr &&
                       b.endTime > startTimeStr
                   );
@@ -826,21 +881,67 @@ export default function SlotFinderTab({
               </div>
             </div>
           ) : (
-            /* ═══════ AVAILABLE STATE: DIRECT RESERVATION FORM ═══════ */
-            <div className="status-panel status-panel--available">
+            /* ═══════ AVAILABLE / EDITING STATE: DIRECT RESERVATION FORM ═══════ */
+            <div className={`status-panel ${editingBooking ? 'status-panel--editing' : 'status-panel--available'}`}>
               <div className="status-panel-header">
-                <CheckCircle size={24} />
+                {editingBooking ? (
+                  <Edit2 size={24} style={{ color: '#2563eb', flexShrink: 0, marginTop: '2px' }} />
+                ) : (
+                  <CheckCircle size={24} />
+                )}
                 <div>
                   <h3>
-                    {currentRoom?.name || 'Meeting Room'} is Free during {formattedTimeRange}
+                    {editingBooking
+                      ? `Updating Meeting in ${currentRoom?.name || 'Meeting Room'} (${formattedTimeRange})`
+                      : `${currentRoom?.name || 'Meeting Room'} is Free during ${formattedTimeRange}`}
                   </h3>
                   <p>
-                    Zero conflicting reservations on {currentRoom?.wing || currentRoom?.floor || 'this floor'}. Complete reservation details:
+                    {editingBooking
+                      ? `Modifying Reservation #${editingBooking.id}. Review and update meeting title, department, time, or participants below:`
+                      : `Zero conflicting reservations on ${currentRoom?.wing || currentRoom?.floor || 'this floor'}. Complete reservation details:`}
                   </p>
                 </div>
               </div>
 
               <form onSubmit={handleBookSubmit} className="booking-form-inner">
+                {/* Conference Room Selector Row - Allows switching room directly in the form */}
+                <div className="booking-form-grid-row" style={{ marginBottom: '14px' }}>
+                  <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                    <Select
+                      id="bp-room"
+                      label="Assigned Conference Room *"
+                      icon={<DoorOpen size={13} style={{ color: 'var(--primary-600, #2563eb)' }} />}
+                      value={currentRoom?.id || ''}
+                      onChange={(val) => onRoomSelect(Number(val))}
+                      placeholder={null}
+                      helperText={
+                        editingBooking
+                          ? 'You can switch this meeting to any available room in your organization for this time slot.'
+                          : 'Select which room to reserve. Conflicting or maintenance rooms are disabled.'
+                      }
+                    >
+                      {rooms.map((r) => {
+                        const isConflict = dayOccupancy.some(
+                          (b) =>
+                            b.roomId === r.id &&
+                            b.status === 'CONFIRMED' &&
+                            (!editingBooking || String(b.id) !== String(editingBooking.id)) &&
+                            b.startTime < endTimeStr &&
+                            b.endTime > startTimeStr
+                        );
+                        const isMaint = r.status === 'MAINTENANCE' || r.isUnderMaintenance;
+                        const isAvailable = !isConflict && !isMaint;
+                        const isCurrent = r.id === currentRoom?.id;
+                        return (
+                          <option key={r.id} value={r.id} disabled={!isAvailable && !isCurrent}>
+                            {r.name} — {r.floor || r.wing || 'Main Floor'} ({r.capacity} seats) {isCurrent ? '(Current Room)' : isAvailable ? '✓ Available' : isMaint ? '✕ Maintenance' : '✕ Occupied'}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="booking-form-grid-row">
                   <div className="input-group">
                     <label htmlFor="bp-title">
@@ -928,13 +1029,15 @@ export default function SlotFinderTab({
                   <button
                     type="submit"
                     className="btn btn--primary btn--lg booking-submit-btn"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isMeetingAlreadyBegun}
                   >
                     <CalendarCheck2 size={18} />
                     {isSubmitting
-                      ? 'Saving Reservation...'
+                      ? 'Saving Changes...'
                       : editingBooking
-                      ? `Update Reservation for ${formattedTimeRange}`
+                      ? isMeetingAlreadyBegun
+                        ? 'Editing Locked (Meeting In Progress)'
+                        : `Save Changes to Reservation #${editingBooking.id}`
                       : `Confirm Room Booking for ${formattedTimeRange}`}
                   </button>
                 </div>

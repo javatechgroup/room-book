@@ -53,21 +53,23 @@ export default function MyBookingsTab({
 
   const getBookingState = useCallback((booking) => {
     if (!booking) {
-      return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false };
+      return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false, canEdit: false };
     }
     if (booking.status === 'CANCELLED') {
-      return { key: 'CANCELLED', label: 'Cancelled', colorClass: 'status-pill--inactive', canCancel: false };
+      return { key: 'CANCELLED', label: 'Cancelled', colorClass: 'status-pill--inactive', canCancel: false, canEdit: false };
     }
     const end = new Date(booking.endTime || booking.date);
     const start = new Date(booking.startTime || booking.date);
     const now = new Date();
     if (end < now) {
-      return { key: 'COMPLETED', label: 'Completed', colorClass: 'status-pill--completed', canCancel: false };
+      return { key: 'COMPLETED', label: 'Completed', colorClass: 'status-pill--completed', canCancel: false, canEdit: false };
     }
     if (start <= now && end > now) {
-      return { key: 'IN_PROGRESS', label: 'In Progress', colorClass: 'status-pill--active', canCancel: true };
+      // Meeting has already begun: can release slot early, but CANNOT be edited
+      return { key: 'IN_PROGRESS', label: 'In Progress', colorClass: 'status-pill--active', canCancel: true, canEdit: false };
     }
-    return { key: 'CONFIRMED', label: 'Confirmed', colorClass: 'status-pill--active', canCancel: true };
+    // Upcoming confirmed reservation: can be edited and cancelled
+    return { key: 'CONFIRMED', label: 'Confirmed', colorClass: 'status-pill--active', canCancel: true, canEdit: true };
   }, []);
 
   // Compute status counts for filter tabs
@@ -344,10 +346,12 @@ export default function MyBookingsTab({
                             type="button"
                             className="action-btn action-btn--edit"
                             onClick={() => onEditBooking && onEditBooking(b)}
-                            disabled={!state.canCancel}
+                            disabled={!state.canEdit}
                             title={
-                              state.canCancel
-                                ? 'Edit & Reschedule in Book a Slot'
+                              state.key === 'IN_PROGRESS'
+                                ? 'Meeting has already begun — editing is locked'
+                                : state.canEdit
+                                ? 'Edit room, time, or participants'
                                 : 'Cannot edit past or cancelled reservation'
                             }
                             aria-label={`Edit ${b.title || b.purpose}`}
@@ -450,11 +454,13 @@ export default function MyBookingsTab({
                         type="button"
                         className="action-btn action-btn--edit"
                         onClick={() => onEditBooking && onEditBooking(b)}
-                        disabled={!state.canCancel}
+                        disabled={!state.canEdit}
                         title={
-                          state.canCancel
-                            ? 'Edit & Reschedule in Book a Slot'
-                            : 'Cannot edit slot'
+                          state.key === 'IN_PROGRESS'
+                            ? 'Meeting has already begun — editing is locked'
+                            : state.canEdit
+                            ? 'Edit room, time, or participants'
+                            : 'Cannot edit past or cancelled reservation'
                         }
                         aria-label="Edit reservation details"
                       >

@@ -123,6 +123,18 @@ export default function WorkplacePortal() {
   const [editingBooking, setEditingBooking] = useState(null);
 
   const handleStartEditBooking = (booking) => {
+    if (!booking) return;
+    if (booking.startTime) {
+      const start = new Date(booking.startTime);
+      if (start <= new Date()) {
+        toast.warning(
+          'Meeting Has Begun',
+          'This meeting has already started and cannot be edited. You can release the room early from My Bookings.',
+          5000
+        );
+        return;
+      }
+    }
     setEditingBooking(booking);
     if (booking.roomId) setSelectedRoomId(booking.roomId);
     if (booking.floor) setSelectedFloor(booking.floor);
