@@ -8,6 +8,10 @@ import com.magicbricks.booking.domain.*;
 import com.magicbricks.booking.dto.BookingRequest;
 import com.magicbricks.booking.dto.BookingResponse;
 import com.magicbricks.booking.repository.*;
+import com.magicbricks.booking.notification.event.BookingCancelledEvent;
+import com.magicbricks.booking.notification.event.BookingCreatedEvent;
+import com.magicbricks.booking.notification.event.BookingUpdatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,283 +28,281 @@ import java.util.stream.Collectors;
 @Service
 public class FacilityBookingService {
 
-    private final BookingRepository bookingRepository;
-    private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
-    private final CompanyRepository companyRepository;
-    private final AuditLogRepository auditLogRepository;
+	private final BookingRepository bookingRepository;
+	private final RoomRepository roomRepository;
+	private final UserRepository userRepository;
+	private final CompanyRepository companyRepository;
+	private final AuditLogRepository auditLogRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
-    public FacilityBookingService(BookingRepository bookingRepository,
-                                  RoomRepository roomRepository,
-                                  UserRepository userRepository,
-                                  CompanyRepository companyRepository,
-                                  AuditLogRepository auditLogRepository) {
-        this.bookingRepository = bookingRepository;
-        this.roomRepository = roomRepository;
-        this.userRepository = userRepository;
-        this.companyRepository = companyRepository;
-        this.auditLogRepository = auditLogRepository;
-    }
+	public FacilityBookingService(BookingRepository bookingRepository, RoomRepository roomRepository,
+			UserRepository userRepository, CompanyRepository companyRepository, AuditLogRepository auditLogRepository,
+			ApplicationEventPublisher eventPublisher) {
+		this.bookingRepository = bookingRepository;
+		this.roomRepository = roomRepository;
+		this.userRepository = userRepository;
+		this.companyRepository = companyRepository;
+		this.auditLogRepository = auditLogRepository;
+		this.eventPublisher = eventPublisher;
+	}
 
-    @Transactional
-    public BookingResponse createBooking(BookingRequest request, Long companyId, Long currentUserId) {
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + companyId));
+	@Transactional
+	public BookingResponse createBooking(BookingRequest request, Long companyId, Long currentUserId) {
+		Company company = companyRepository.findById(companyId)
+				.orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + companyId));
 
-        Room room = roomRepository.findById(request.getRoomId())
-                .filter(r -> r.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + request.getRoomId()));
+		Room room = roomRepository.findById(request.getRoomId()).filter(r -> r.getCompany().getId().equals(companyId))
+				.orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + request.getRoomId()));
 
-        if ("MAINTENANCE".equalsIgnoreCase(room.getStatus())) {
-            throw new BookingConflictException("Room '" + room.getName() + "' is currently under maintenance and unavailable for booking.");
-        }
+		if ("MAINTENANCE".equalsIgnoreCase(room.getStatus())) {
+			throw new BookingConflictException(
+					"Room '" + room.getName() + "' is currently under maintenance and unavailable for booking.");
+		}
 
-        if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().isEqual(request.getEndTime())) {
-            throw new BookingConflictException("End time must be strictly after start time.");
-        }
+		if (request.getStartTime().isAfter(request.getEndTime())
+				|| request.getStartTime().isEqual(request.getEndTime())) {
+			throw new BookingConflictException("End time must be strictly after start time.");
+		}
 
-        LocalDateTime now = LocalDateTime.now();
-        if (request.getStartTime().isBefore(now)) {
-            throw new BookingConflictException("Cannot book a room in the past. Please select a future date and time.");
-        }
+		LocalDateTime now = LocalDateTime.now();
+		if (request.getStartTime().isBefore(now)) {
+			throw new BookingConflictException("Cannot book a room in the past. Please select a future date and time.");
+		}
 
-        // Conflict check
-        List<Booking> conflicts = bookingRepository.findConflictingBookings(room.getId(), request.getStartTime(), request.getEndTime());
-        if (!conflicts.isEmpty()) {
-            Booking conflict = conflicts.get(0);
-            throw new BookingConflictException("Time slot overlaps with an existing confirmed reservation ('"
-                    + conflict.getTitle() + "' by " + conflict.getBooker().getFullName() + "). Please choose another slot.");
-        }
+		// Conflict check
+		List<Booking> conflicts = bookingRepository.findConflictingBookings(room.getId(), request.getStartTime(),
+				request.getEndTime());
+		if (!conflicts.isEmpty()) {
+			Booking conflict = conflicts.get(0);
+			throw new BookingConflictException(
+					"Time slot overlaps with an existing confirmed reservation ('" + conflict.getTitle() + "' by "
+							+ conflict.getBooker().getFullName() + "). Please choose another slot.");
+		}
 
-        User booker = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booker user not found with ID: " + currentUserId));
+		User booker = userRepository.findById(currentUserId)
+				.orElseThrow(() -> new ResourceNotFoundException("Booker user not found with ID: " + currentUserId));
 
-        Booking booking = new Booking();
-        booking.setCompany(company);
-        booking.setRoom(room);
-        booking.setBooker(booker);
-        booking.setTitle(request.getTitle().trim());
-        booking.setDescription(request.getDescription());
-        booking.setStartTime(request.getStartTime());
-        booking.setEndTime(request.getEndTime());
-        booking.setStatus("CONFIRMED");
-        if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
-            booking.setDepartment(request.getDepartment().trim());
-        } else if (booker.getDepartment() != null) {
-            booking.setDepartment(booker.getDepartment().getName());
-        }
-        booking.setAttendeesCount(request.getAttendeesCount() != null ? request.getAttendeesCount() : 2);
+		Booking booking = new Booking();
+		booking.setCompany(company);
+		booking.setRoom(room);
+		booking.setBooker(booker);
+		booking.setTitle(request.getTitle().trim());
+		booking.setDescription(request.getDescription());
+		booking.setStartTime(request.getStartTime());
+		booking.setEndTime(request.getEndTime());
+		booking.setStatus("CONFIRMED");
+		if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
+			booking.setDepartment(request.getDepartment().trim());
+		} else if (booker.getDepartment() != null) {
+			booking.setDepartment(booker.getDepartment().getName());
+		}
+		booking.setAttendeesCount(request.getAttendeesCount() != null ? request.getAttendeesCount() : 2);
 
-        Booking saved = bookingRepository.save(booking);
+		Booking saved = bookingRepository.save(booking);
 
-        AuditLog audit = new AuditLog();
-        audit.setUserId(currentUserId);
-        audit.setCompanyId(companyId);
-        audit.setAction("CREATE_BOOKING");
-        audit.setEntityType("BOOKING");
-        audit.setEntityId(saved.getId());
-        audit.setNewValue("Booked Room: " + room.getName() + " on " + room.getFloor() + " from " + saved.getStartTime() + " to " + saved.getEndTime() + " ('" + saved.getTitle() + "')");
-        audit.setTimestamp(LocalDateTime.now());
-        auditLogRepository.save(audit);
+		AuditLog audit = new AuditLog();
+		audit.setUserId(currentUserId);
+		audit.setCompanyId(companyId);
+		audit.setAction("CREATE_BOOKING");
+		audit.setEntityType("BOOKING");
+		audit.setEntityId(saved.getId());
+		audit.setNewValue("Booked Room: " + room.getName() + " on " + room.getFloor() + " from " + saved.getStartTime()
+				+ " to " + saved.getEndTime() + " ('" + saved.getTitle() + "')");
+		audit.setTimestamp(LocalDateTime.now());
+		auditLogRepository.save(audit);
 
-        return mapToResponse(saved);
-    }
+		eventPublisher.publishEvent(new BookingCreatedEvent(saved));
 
-    @Transactional
-    public BookingResponse cancelBooking(Long bookingId, Long companyId, Long currentUserId, boolean isSuperAdminOrFacilityAdmin) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .filter(b -> b.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
+		return mapToResponse(saved);
+	}
 
-        // Facility Admin can cancel any company booking or specifically their own booking
-        if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
-            throw new UnauthorizedAccessException("You are only authorized to cancel bookings made by yourself.");
-        }
+	@Transactional
+	public BookingResponse cancelBooking(Long bookingId, Long companyId, Long currentUserId,
+			boolean isSuperAdminOrFacilityAdmin) {
+		Booking booking = bookingRepository.findById(bookingId).filter(b -> b.getCompany().getId().equals(companyId))
+				.orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-        booking.setStatus("CANCELLED");
-        Booking updated = bookingRepository.save(booking);
+		// Facility Admin can cancel any company booking or specifically their own
+		// booking
+		if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
+			throw new UnauthorizedAccessException("You are only authorized to cancel bookings made by yourself.");
+		}
 
-        AuditLog audit = new AuditLog();
-        audit.setUserId(currentUserId);
-        audit.setCompanyId(companyId);
-        audit.setAction("CANCEL_BOOKING");
-        audit.setEntityType("BOOKING");
-        audit.setEntityId(updated.getId());
-        audit.setNewValue("Cancelled Booking #" + updated.getId() + " for Room: " + updated.getRoom().getName());
-        audit.setTimestamp(LocalDateTime.now());
-        auditLogRepository.save(audit);
+		booking.setStatus("CANCELLED");
+		Booking updated = bookingRepository.save(booking);
 
-        return mapToResponse(updated);
-    }
+		AuditLog audit = new AuditLog();
+		audit.setUserId(currentUserId);
+		audit.setCompanyId(companyId);
+		audit.setAction("CANCEL_BOOKING");
+		audit.setEntityType("BOOKING");
+		audit.setEntityId(updated.getId());
+		audit.setNewValue("Cancelled Booking #" + updated.getId() + " for Room: " + updated.getRoom().getName());
+		audit.setTimestamp(LocalDateTime.now());
+		auditLogRepository.save(audit);
 
-    @Transactional
-    public BookingResponse updateBooking(Long bookingId, BookingRequest request, Long companyId, Long currentUserId, boolean isSuperAdminOrFacilityAdmin) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .filter(b -> b.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
+		eventPublisher.publishEvent(new BookingCancelledEvent(updated));
 
-        if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
-            throw new UnauthorizedAccessException("You are only authorized to update bookings made by yourself.");
-        }
+		return mapToResponse(updated);
+	}
 
-        Room room = roomRepository.findById(request.getRoomId())
-                .filter(r -> r.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + request.getRoomId()));
+	@Transactional
+	public BookingResponse updateBooking(Long bookingId, BookingRequest request, Long companyId, Long currentUserId,
+			boolean isSuperAdminOrFacilityAdmin) {
+		Booking booking = bookingRepository.findById(bookingId).filter(b -> b.getCompany().getId().equals(companyId))
+				.orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-        if ("MAINTENANCE".equalsIgnoreCase(room.getStatus())) {
-            throw new BookingConflictException("Room '" + room.getName() + "' is currently under maintenance and unavailable for booking.");
-        }
+		if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
+			throw new UnauthorizedAccessException("You are only authorized to update bookings made by yourself.");
+		}
 
-        if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().isEqual(request.getEndTime())) {
-            throw new BookingConflictException("End time must be strictly after start time.");
-        }
+		Room room = roomRepository.findById(request.getRoomId()).filter(r -> r.getCompany().getId().equals(companyId))
+				.orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + request.getRoomId()));
 
-        LocalDateTime now = LocalDateTime.now();
-        if (request.getStartTime().isBefore(now)) {
-            throw new BookingConflictException("Cannot reschedule to a past date and time. Please select a future slot.");
-        }
+		if ("MAINTENANCE".equalsIgnoreCase(room.getStatus())) {
+			throw new BookingConflictException(
+					"Room '" + room.getName() + "' is currently under maintenance and unavailable for booking.");
+		}
 
-        // Conflict check excluding the booking itself
-        List<Booking> conflicts = bookingRepository.findConflictingBookingsExcludingSelf(room.getId(), bookingId, request.getStartTime(), request.getEndTime());
-        if (!conflicts.isEmpty()) {
-            Booking conflict = conflicts.get(0);
-            throw new BookingConflictException("Time slot overlaps with an existing confirmed reservation ('"
-                    + conflict.getTitle() + "' by " + conflict.getBooker().getFullName() + "). Please choose another slot.");
-        }
+		if (request.getStartTime().isAfter(request.getEndTime())
+				|| request.getStartTime().isEqual(request.getEndTime())) {
+			throw new BookingConflictException("End time must be strictly after start time.");
+		}
 
-        booking.setRoom(room);
-        booking.setTitle(request.getTitle().trim());
-        booking.setDescription(request.getDescription());
-        booking.setStartTime(request.getStartTime());
-        booking.setEndTime(request.getEndTime());
-        booking.setStatus("CONFIRMED");
-        if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
-            booking.setDepartment(request.getDepartment().trim());
-        }
-        if (request.getAttendeesCount() != null) {
-            booking.setAttendeesCount(request.getAttendeesCount());
-        }
+		LocalDateTime now = LocalDateTime.now();
+		if (request.getStartTime().isBefore(now)) {
+			throw new BookingConflictException(
+					"Cannot reschedule to a past date and time. Please select a future slot.");
+		}
 
-        Booking updated = bookingRepository.save(booking);
+		// Conflict check excluding the booking itself
+		List<Booking> conflicts = bookingRepository.findConflictingBookingsExcludingSelf(room.getId(), bookingId,
+				request.getStartTime(), request.getEndTime());
+		if (!conflicts.isEmpty()) {
+			Booking conflict = conflicts.get(0);
+			throw new BookingConflictException(
+					"Time slot overlaps with an existing confirmed reservation ('" + conflict.getTitle() + "' by "
+							+ conflict.getBooker().getFullName() + "). Please choose another slot.");
+		}
 
-        AuditLog audit = new AuditLog();
-        audit.setUserId(currentUserId);
-        audit.setCompanyId(companyId);
-        audit.setAction("UPDATE_BOOKING");
-        audit.setEntityType("BOOKING");
-        audit.setEntityId(updated.getId());
-        audit.setNewValue("Updated Booking #" + updated.getId() + " for Room: " + room.getName() + " on " + room.getFloor() + " from " + updated.getStartTime() + " to " + updated.getEndTime() + " ('" + updated.getTitle() + "')");
-        audit.setTimestamp(LocalDateTime.now());
-        auditLogRepository.save(audit);
+		booking.setRoom(room);
+		booking.setTitle(request.getTitle().trim());
+		booking.setDescription(request.getDescription());
+		booking.setStartTime(request.getStartTime());
+		booking.setEndTime(request.getEndTime());
+		booking.setStatus("CONFIRMED");
+		if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
+			booking.setDepartment(request.getDepartment().trim());
+		}
+		if (request.getAttendeesCount() != null) {
+			booking.setAttendeesCount(request.getAttendeesCount());
+		}
 
-        return mapToResponse(updated);
-    }
+		Booking updated = bookingRepository.save(booking);
 
-    @Transactional(readOnly = true)
-    public PageResponse<BookingResponse> getBookingsPaginated(
-            Long companyId,
-            int page,
-            int size,
-            String search,
-            Long roomId,
-            String floor,
-            String status,
-            Long bookerId,
-            LocalDate dateFilter,
-            String sortBy,
-            String sortDir) {
+		AuditLog audit = new AuditLog();
+		audit.setUserId(currentUserId);
+		audit.setCompanyId(companyId);
+		audit.setAction("UPDATE_BOOKING");
+		audit.setEntityType("BOOKING");
+		audit.setEntityId(updated.getId());
+		audit.setNewValue("Updated Booking #" + updated.getId() + " for Room: " + room.getName() + " on "
+				+ room.getFloor() + " from " + updated.getStartTime() + " to " + updated.getEndTime() + " ('"
+				+ updated.getTitle() + "')");
+		audit.setTimestamp(LocalDateTime.now());
+		auditLogRepository.save(audit);
 
-        int pageNum = Math.max(0, page - 1);
-        int pageSize = Math.max(1, size);
+		eventPublisher.publishEvent(new BookingUpdatedEvent(updated));
 
-        Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
-        String sortProperty = (sortBy == null || sortBy.isBlank()) ? "startTime" : sortBy;
-        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortProperty));
+		return mapToResponse(updated);
+	}
 
-        String sanitizedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
-        String floorFilter = (floor == null || floor.trim().isEmpty()) ? "ALL" : floor.trim();
-        String statusFilter = (status == null || status.trim().isEmpty()) ? "ALL" : status.trim();
+	@Transactional(readOnly = true)
+	public PageResponse<BookingResponse> getBookingsPaginated(Long companyId, int page, int size, String search,
+			Long roomId, String floor, String status, Long bookerId, LocalDate dateFilter, String sortBy,
+			String sortDir) {
 
-        LocalDateTime startFrom = null;
-        LocalDateTime startTo = null;
-        if (dateFilter != null) {
-            startFrom = dateFilter.atStartOfDay();
-            startTo = dateFilter.atTime(LocalTime.MAX);
-        }
+		int pageNum = Math.max(0, page - 1);
+		int pageSize = Math.max(1, size);
 
-        Page<Booking> bookingPage = bookingRepository.searchBookings(
-                companyId, roomId, floorFilter, statusFilter, bookerId, startFrom, startTo, sanitizedSearch, LocalDateTime.now(), pageable);
+		Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String sortProperty = (sortBy == null || sortBy.isBlank()) ? "startTime" : sortBy;
+		Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortProperty));
 
-        List<BookingResponse> content = bookingPage.getContent().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+		String sanitizedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+		String floorFilter = (floor == null || floor.trim().isEmpty()) ? "ALL" : floor.trim();
+		String statusFilter = (status == null || status.trim().isEmpty()) ? "ALL" : status.trim();
 
-        return new PageResponse<>(
-                content,
-                page,
-                bookingPage.getSize(),
-                bookingPage.getTotalElements(),
-                bookingPage.getTotalPages(),
-                bookingPage.isFirst(),
-                bookingPage.isLast()
-        );
-    }
+		LocalDateTime startFrom = null;
+		LocalDateTime startTo = null;
+		if (dateFilter != null) {
+			startFrom = dateFilter.atStartOfDay();
+			startTo = dateFilter.atTime(LocalTime.MAX);
+		}
 
-    @Transactional(readOnly = true)
-    public List<BookingResponse> getMyBookings(Long companyId, Long currentUserId) {
-        return bookingRepository.findByBookerId(currentUserId).stream()
-                .filter(b -> b.getCompany().getId().equals(companyId))
-                .sorted((a, b) -> b.getStartTime().compareTo(a.getStartTime()))
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
+		Page<Booking> bookingPage = bookingRepository.searchBookings(companyId, roomId, floorFilter, statusFilter,
+				bookerId, startFrom, startTo, sanitizedSearch, LocalDateTime.now(), pageable);
 
-    @Transactional(readOnly = true)
-    public List<BookingResponse> getLiveOccupancyForDay(Long companyId, LocalDate date) {
-        LocalDate targetDate = date != null ? date : LocalDate.now();
-        LocalDateTime dayStart = targetDate.atStartOfDay();
-        LocalDateTime dayEnd = targetDate.atTime(LocalTime.MAX);
+		List<BookingResponse> content = bookingPage.getContent().stream().map(this::mapToResponse)
+				.collect(Collectors.toList());
 
-        return bookingRepository.findBookingsForDay(companyId, dayStart, dayEnd).stream()
-                .filter(b -> !"CANCELLED".equalsIgnoreCase(b.getStatus()))
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
+		return new PageResponse<>(content, page, bookingPage.getSize(), bookingPage.getTotalElements(),
+				bookingPage.getTotalPages(), bookingPage.isFirst(), bookingPage.isLast());
+	}
 
-    public BookingResponse mapToResponse(Booking booking) {
-        BookingResponse res = new BookingResponse();
-        res.setId(booking.getId());
-        if (booking.getCompany() != null) {
-            res.setCompanyId(booking.getCompany().getId());
-            res.setCompanyName(booking.getCompany().getName());
-        }
-        if (booking.getRoom() != null) {
-            res.setRoomId(booking.getRoom().getId());
-            res.setRoomName(booking.getRoom().getName());
-            res.setFloor(booking.getRoom().getFloor());
-            res.setLocation(booking.getRoom().getLocation());
-        }
-        if (booking.getBooker() != null) {
-            res.setBookerId(booking.getBooker().getId());
-            res.setBookerName(booking.getBooker().getFullName());
-            res.setBookerEmail(booking.getBooker().getEmail());
-            if (booking.getBooker().getDepartment() != null) {
-                res.setDepartmentName(booking.getBooker().getDepartment().getName());
-            }
-        }
-        res.setTitle(booking.getTitle());
-        res.setDescription(booking.getDescription());
-        res.setStartTime(booking.getStartTime());
-        res.setEndTime(booking.getEndTime());
-        res.setStatus(booking.getStatus());
-        res.setAttendeesCount(booking.getAttendeesCount() != null ? booking.getAttendeesCount() : 2);
-        if (booking.getDepartment() != null && !booking.getDepartment().trim().isEmpty()) {
-            res.setDepartmentName(booking.getDepartment());
-        } else if (booking.getBooker() != null && booking.getBooker().getDepartment() != null) {
-            res.setDepartmentName(booking.getBooker().getDepartment().getName());
-        }
-        res.setCreatedAt(booking.getCreatedAt());
-        res.setUpdatedAt(booking.getUpdatedAt());
-        return res;
-    }
+	@Transactional(readOnly = true)
+	public List<BookingResponse> getMyBookings(Long companyId, Long currentUserId) {
+		return bookingRepository.findByBookerId(currentUserId).stream()
+				.filter(b -> b.getCompany().getId().equals(companyId))
+				.sorted((a, b) -> b.getStartTime().compareTo(a.getStartTime())).map(this::mapToResponse)
+				.collect(Collectors.toList());
+	}
+
+	@Transactional(readOnly = true)
+	public List<BookingResponse> getLiveOccupancyForDay(Long companyId, LocalDate date) {
+		LocalDate targetDate = date != null ? date : LocalDate.now();
+		LocalDateTime dayStart = targetDate.atStartOfDay();
+		LocalDateTime dayEnd = targetDate.atTime(LocalTime.MAX);
+
+		return bookingRepository.findBookingsForDay(companyId, dayStart, dayEnd).stream()
+				.filter(b -> !"CANCELLED".equalsIgnoreCase(b.getStatus())).map(this::mapToResponse)
+				.collect(Collectors.toList());
+	}
+
+	public BookingResponse mapToResponse(Booking booking) {
+		BookingResponse res = new BookingResponse();
+		res.setId(booking.getId());
+		if (booking.getCompany() != null) {
+			res.setCompanyId(booking.getCompany().getId());
+			res.setCompanyName(booking.getCompany().getName());
+		}
+		if (booking.getRoom() != null) {
+			res.setRoomId(booking.getRoom().getId());
+			res.setRoomName(booking.getRoom().getName());
+			res.setFloor(booking.getRoom().getFloor());
+			res.setLocation(booking.getRoom().getLocation());
+		}
+		if (booking.getBooker() != null) {
+			res.setBookerId(booking.getBooker().getId());
+			res.setBookerName(booking.getBooker().getFullName());
+			res.setBookerEmail(booking.getBooker().getEmail());
+			if (booking.getBooker().getDepartment() != null) {
+				res.setDepartmentName(booking.getBooker().getDepartment().getName());
+			}
+		}
+		res.setTitle(booking.getTitle());
+		res.setDescription(booking.getDescription());
+		res.setStartTime(booking.getStartTime());
+		res.setEndTime(booking.getEndTime());
+		res.setStatus(booking.getStatus());
+		res.setAttendeesCount(booking.getAttendeesCount() != null ? booking.getAttendeesCount() : 2);
+		if (booking.getDepartment() != null && !booking.getDepartment().trim().isEmpty()) {
+			res.setDepartmentName(booking.getDepartment());
+		} else if (booking.getBooker() != null && booking.getBooker().getDepartment() != null) {
+			res.setDepartmentName(booking.getBooker().getDepartment().getName());
+		}
+		res.setCreatedAt(booking.getCreatedAt());
+		res.setUpdatedAt(booking.getUpdatedAt());
+		return res;
+	}
 }
