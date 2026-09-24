@@ -8,7 +8,7 @@
 		<version>3.3.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.magicbricks</groupId>
+	<groupId>com.javatechgroup</groupId>
 	<artifactId>room-book</artifactId>
 	<version>0.0.1</version>
 	<name>room-book</name>
