@@ -4,6 +4,7 @@ import {
   Layers,
   DoorOpen,
   Users,
+  MapPin,
   Wrench,
   CheckCircle2,
   Edit2,
@@ -16,10 +17,64 @@ import {
   ArrowDown,
   ArrowUpDown,
   ChevronDown,
+  Tv,
+  Video,
+  Wifi,
+  Monitor,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
 import Select from '../../common/Select/Select';
+
+const getRoomCategory = (capacity) => {
+  const cap = Number(capacity) || 0;
+  if (cap <= 4) return 'Focus Pod';
+  if (cap <= 8) return 'Team Room';
+  if (cap <= 14) return 'Conference Room';
+  return 'Boardroom';
+};
+
+const getAmenityIcon = (name = '') => {
+  const lower = String(name).toLowerCase();
+  if (lower.includes('video') || lower.includes('conf') || lower.includes('camera')) {
+    return <Video size={12} />;
+  }
+  if (lower.includes('tv') || lower.includes('display') || lower.includes('screen')) {
+    return <Tv size={12} />;
+  }
+  if (lower.includes('wifi') || lower.includes('net') || lower.includes('internet')) {
+    return <Wifi size={12} />;
+  }
+  return <Monitor size={12} />;
+};
+
+const getRoomAmenities = (room) => {
+  if (Array.isArray(room.hardware) && room.hardware.length > 0) {
+    return room.hardware.map((hw) => {
+      const name = typeof hw === 'string' ? hw : hw.name || 'Equipment';
+      return { name, icon: getAmenityIcon(name) };
+    });
+  }
+  const cap = Number(room.capacity) || 0;
+  if (cap >= 12) {
+    return [
+      { name: '4K Display', icon: <Tv size={12} /> },
+      { name: 'Video Bar', icon: <Video size={12} /> },
+      { name: 'Whiteboard', icon: <Monitor size={12} /> },
+    ];
+  }
+  if (cap >= 6) {
+    return [
+      { name: 'HD Monitor', icon: <Tv size={12} /> },
+      { name: 'Video Conf', icon: <Video size={12} /> },
+      { name: 'Whiteboard', icon: <Monitor size={12} /> },
+    ];
+  }
+  return [
+    { name: 'HD Screen', icon: <Tv size={12} /> },
+    { name: 'High-Speed WiFi', icon: <Wifi size={12} /> },
+  ];
+};
 
 export default function RoomsTab({
   rooms = [],
@@ -58,6 +113,18 @@ export default function RoomsTab({
   const availableCount = rooms.filter((r) => r.status === 'AVAILABLE').length;
   const maintenanceCount = rooms.filter((r) => r.status === 'MAINTENANCE').length;
 
+  const roomsByFloor = React.useMemo(() => {
+    const groups = {};
+    rooms.forEach((room) => {
+      const fl = room.floor || 'General Level';
+      if (!groups[fl]) groups[fl] = [];
+      groups[fl].push(room);
+    });
+    return Object.entries(groups).sort(([a], [b]) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+    );
+  }, [rooms]);
+
   return (
     <div className="superadmin-tab-content">
       {/* SuperAdmin Toolbar */}
@@ -72,15 +139,21 @@ export default function RoomsTab({
           {/* Floor Dropdown */}
           <Select
             size="sm"
-            icon={<Layers size={15} />}
+            icon={<Layers size={14} />}
             value={floorFilter}
             onChange={(val) => onFloorFilterChange(val)}
             placeholder={null}
             options={[
-              { value: 'ALL', label: 'All Office Floors' },
-              ...floors.map((fl) => ({ value: fl, label: fl })),
+              { value: 'ALL', label: `All Floors (${rooms.length})` },
+              ...floors.map((fl) => {
+                const count = rooms.filter((r) => r.floor === fl).length;
+                return {
+                  value: fl,
+                  label: `${fl} (${count} ${count === 1 ? 'Room' : 'Rooms'})`,
+                };
+              }),
             ]}
-            wrapperStyle={{ minWidth: '175px', width: 'auto' }}
+            wrapperStyle={{ minWidth: '185px', width: 'auto' }}
           />
 
           {/* Status Segmented Buttons */}
@@ -384,99 +457,169 @@ export default function RoomsTab({
         </div>
       ) : (
         /* Floor-based Cards View */
-        <div className="facility-rooms-cards-section">
-          <div className="facility-rooms-card-grid">
-            {rooms.map((room) => {
-              const isMaintenance = room.status === 'MAINTENANCE';
-              const floorDisplay = typeof room.floor === 'string' && room.floor.toLowerCase().includes('floor')
-                ? room.floor
-                : `Floor ${room.floor}`;
+        <div className="dir-floors-container facility-rooms-cards-section">
+          {roomsByFloor.map(([floorName, floorRooms]) => {
+            const floorAvail = floorRooms.filter((r) => r.status === 'AVAILABLE').length;
+            const floorSeats = floorRooms.reduce((sum, r) => sum + (r.capacity || 0), 0);
 
-              return (
-                <div key={room.id} className="facility-room-card" onClick={() => onInspectRoom(room)}>
-                  <div className="facility-room-card__header">
-                    <div className="facility-room-card__header-top">
-                      <span className="code-pill">
-                        <Layers size={11} style={{ marginRight: '4px' }} /> {floorDisplay}
-                      </span>
-                      <span className={`status-pill ${isMaintenance ? 'status-pill--inactive' : 'status-pill--active'}`}>
-                        <span className="status-pill__dot" />
-                        {isMaintenance ? 'Maintenance' : 'Available'}
+            return (
+              <div key={floorName} className="dir-floor-group facility-floor-card-group">
+                <div className="dir-floor-header facility-floor-card-header">
+                  <div className="dir-floor-header__main">
+                    <div className="dir-floor-header__icon">
+                      <Layers size={15} />
+                    </div>
+                    <div>
+                      <h3 className="dir-floor-header__title">{floorName}</h3>
+                      <span className="dir-floor-header__meta">
+                        {floorRooms.length} {floorRooms.length === 1 ? 'Meeting Space' : 'Meeting Spaces'} • {floorSeats} Total Seats
                       </span>
                     </div>
-                    <h4 className="facility-room-card__title" title={room.name}>{room.name}</h4>
                   </div>
-
-                  <div className="facility-room-card__body">
-                    <div className="room-card-meta">
-                      <div className="room-card-meta__item">
-                        <Users size={13} className="room-card-meta__icon" />
-                        <span>Capacity: <strong>{room.capacity} People</strong></span>
-                      </div>
-                      {room.location && (
-                        <div className="room-card-meta__item">
-                          <DoorOpen size={13} className="room-card-meta__icon" />
-                          <span>{room.location}</span>
-                        </div>
-                      )}
-                    </div>
-                    <p className="room-card-desc">
-                      {room.description || 'Standard display setup and conference seating.'}
-                    </p>
-                  </div>
-
-                  <div className="facility-room-card__footer" onClick={(e) => e.stopPropagation()}>
-                    <div className="facility-room-card__footer-meta">
-                      <span className="room-seats-pill">
-                        <Users size={12} />
-                        <span>{room.capacity} Seats</span>
-                      </span>
-                    </div>
-                    <div className="facility-room-card__actions">
-                      <button
-                        type="button"
-                        className="action-btn action-btn--inspect"
-                        onClick={() => onInspectRoom(room)}
-                        title="Inspect Room Specs"
-                        aria-label={`Inspect ${room.name}`}
-                      >
-                        <Eye size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        className="action-btn action-btn--edit"
-                        onClick={() => onOpenEditRoom(room)}
-                        title="Edit Room Details"
-                        aria-label={`Edit ${room.name}`}
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        className={`action-btn ${isMaintenance ? 'action-btn--activate' : 'action-btn--deactivate'}`}
-                        onClick={() => onToggleMaintenance(room.id)}
-                        title={isMaintenance ? 'Mark Available' : 'Set Maintenance'}
-                        aria-label={isMaintenance ? `Mark ${room.name} available` : `Set maintenance for ${room.name}`}
-                      >
-                        {isMaintenance ? <CheckCircle2 size={14} /> : <Wrench size={14} />}
-                      </button>
-                      {!isMaintenance && onBookRoom && (
-                        <button
-                          type="button"
-                          className="action-btn action-btn--book"
-                          onClick={() => onBookRoom(room)}
-                          title="Book Room Now"
-                          aria-label={`Book ${room.name}`}
-                        >
-                          <CalendarPlus size={14} />
-                        </button>
-                      )}
-                    </div>
+                  <div className="dir-floor-header__stats">
+                    <span className="dir-floor-stat-badge dir-floor-stat-badge--avail">
+                      <span className="pulse-dot" />
+                      <span>{floorAvail} Available</span>
+                    </span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="directory-grid facility-rooms-card-grid">
+                  {floorRooms.map((room) => {
+                    const isMaintenance = room.status === 'MAINTENANCE';
+                    const floorDisplay =
+                      typeof room.floor === 'string' && room.floor.toLowerCase().includes('floor')
+                        ? room.floor
+                        : `Floor ${room.floor}`;
+                    const category = room.type || getRoomCategory(room.capacity);
+                    const amenities = getRoomAmenities(room);
+
+                    return (
+                      <div
+                        key={room.id}
+                        className={`dir-room-card facility-room-card ${
+                          isMaintenance ? 'dir-room-card--maintenance' : 'dir-room-card--available'
+                        }`}
+                        onClick={() => onInspectRoom(room)}
+                      >
+                        <div className="dir-room-card__header">
+                          <div className="dir-room-card__header-main">
+                            <div
+                              className={`dir-room-card__icon ${
+                                isMaintenance
+                                  ? 'dir-room-card__icon--maint'
+                                  : 'dir-room-card__icon--active'
+                              }`}
+                            >
+                              <DoorOpen size={18} />
+                            </div>
+                            <div className="dir-room-card__title-box">
+                              <h4 title={room.name}>{room.name}</h4>
+                              <div className="dir-room-card__tags">
+                                <span className="dir-room-tag dir-room-tag--code">
+                                  {room.code || `RM-${room.id}`}
+                                </span>
+                                <span className="dir-room-tag dir-room-tag--type">
+                                  {category}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            className={`status-badge-btn ${
+                              isMaintenance ? 'status-badge-btn--inactive' : 'status-badge-btn--active'
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleMaintenance(room.id);
+                            }}
+                            title={`Click to toggle status (Currently: ${room.status})`}
+                          >
+                            <span className="status-badge__dot" />
+                            <span>{isMaintenance ? 'Maintenance' : 'Available'}</span>
+                          </button>
+                        </div>
+
+                        <div className="dir-room-card__body">
+                          <div className="dir-room-card__meta-row">
+                            <div className="dir-meta-item" title="Room Location">
+                              <MapPin size={13} className="dir-meta-icon" />
+                              <span>{room.location ? `${floorDisplay} • ${room.location}` : floorDisplay}</span>
+                            </div>
+                            <div className="dir-meta-item dir-meta-item--capacity" title="Room Capacity">
+                              <Users size={13} className="dir-meta-icon" />
+                              <span><strong>{room.capacity}</strong> Seats</span>
+                            </div>
+                          </div>
+
+                          <p className="facility-room-desc" title={room.description}>
+                            {room.description || `${category} equipped for hybrid conferencing, audio-visual display, and team discussions.`}
+                          </p>
+
+                          <div className="facility-hw-chips">
+                            {amenities.map((item, idx) => (
+                              <span className="facility-hw-tag" key={idx}>
+                                {item.icon}
+                                <span>{item.name}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="dir-room-card__footer facility-room-card__footer" onClick={(e) => e.stopPropagation()}>
+                          <span className="facility-room-id-sub">
+                            Room #{room.id}
+                          </span>
+                          <div className="facility-room-card__actions">
+                            <button
+                              type="button"
+                              className="action-btn action-btn--inspect"
+                              onClick={() => onInspectRoom(room)}
+                              title="Inspect Room Specs"
+                              aria-label={`Inspect ${room.name}`}
+                            >
+                              <Eye size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className="action-btn action-btn--edit"
+                              onClick={() => onOpenEditRoom(room)}
+                              title="Edit Room Details"
+                              aria-label={`Edit ${room.name}`}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className={`action-btn ${isMaintenance ? 'action-btn--activate' : 'action-btn--deactivate'}`}
+                              onClick={() => onToggleMaintenance(room.id)}
+                              title={isMaintenance ? 'Mark Available' : 'Set Maintenance'}
+                              aria-label={isMaintenance ? `Mark ${room.name} available` : `Set maintenance for ${room.name}`}
+                            >
+                              {isMaintenance ? <CheckCircle2 size={14} /> : <Wrench size={14} />}
+                            </button>
+                            {!isMaintenance && onBookRoom && (
+                              <button
+                                type="button"
+                                className="action-btn action-btn--book"
+                                onClick={() => onBookRoom(room)}
+                                title="Book Room Now"
+                                aria-label={`Book ${room.name}`}
+                              >
+                                <CalendarPlus size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
 
           {/* Universal Pagination (Cards View) */}
           <Pagination
