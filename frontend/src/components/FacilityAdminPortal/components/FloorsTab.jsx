@@ -89,7 +89,7 @@ export default function FloorsTab({
 
       {/* Desktop Table View */}
       <div className="desktop-table-wrap">
-        <div className="table-responsive">
+        <div className="table-responsive floors-table-responsive">
           <table className="superadmin-table floors-table">
             <thead>
               <tr>

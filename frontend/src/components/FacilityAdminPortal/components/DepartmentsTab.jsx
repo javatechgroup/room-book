@@ -91,7 +91,7 @@ export default function DepartmentsTab({
 
       {/* Desktop Table View */}
       <div className="desktop-table-wrap">
-        <div className="table-responsive">
+        <div className="table-responsive departments-table-responsive">
           <table className="superadmin-table departments-table">
             <thead>
               <tr>

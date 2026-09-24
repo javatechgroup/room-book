@@ -133,7 +133,7 @@ export default function FacilityAdminPortal() {
 
   // 5. Book a Room / Slot Finder State (Shared Interface with Employee Portal)
   const [selectedRoomId, setSelectedRoomId] = useState('');
-  const [selectedFloor, setSelectedFloor] = useState('ALL');
+  const [selectedFloor, setSelectedFloor] = useState('All Floors');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [bookingPurpose, setBookingPurpose] = useState('');
   const [bookingDept, setBookingDept] = useState('');
@@ -543,6 +543,7 @@ export default function FacilityAdminPortal() {
     setEditingBooking(booking);
     if (booking.roomId) setSelectedRoomId(booking.roomId);
     if (booking.floor) setSelectedFloor(booking.floor);
+    else setSelectedFloor('All Floors');
     if (booking.startTime) {
       setSelectedDate(booking.startTime.split('T')[0]);
     }
@@ -557,6 +558,7 @@ export default function FacilityAdminPortal() {
 
   const handleCancelEdit = () => {
     setEditingBooking(null);
+    setSelectedFloor('All Floors');
   };
 
   useEffect(() => {
@@ -1468,6 +1470,7 @@ export default function FacilityAdminPortal() {
               onEditBooking={handleStartEditBooking}
               onOpenBookRoom={() => {
                 setEditingBooking(null);
+                setSelectedFloor('All Floors');
                 handleTabChange('book-room');
               }}
               onExportCSV={handleExportBookingsCSV}

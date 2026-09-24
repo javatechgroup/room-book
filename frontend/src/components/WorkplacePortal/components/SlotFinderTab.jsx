@@ -258,8 +258,17 @@ export default function SlotFinderTab({
 
   // Filtered rooms for the selector and list
   const filteredRooms = useMemo(() => {
+    const isAllFloors =
+      !selectedFloor ||
+      selectedFloor === 'All Floors' ||
+      selectedFloor === 'ALL' ||
+      String(selectedFloor).trim().toLowerCase() === 'all' ||
+      String(selectedFloor).trim().toLowerCase() === 'all floors';
+
     return rooms.filter((r) => {
-      const matchesFloor = selectedFloor === 'All Floors' || r.floor === selectedFloor;
+      const matchesFloor =
+        isAllFloors ||
+        (r.floor && String(r.floor).trim().toLowerCase() === String(selectedFloor).trim().toLowerCase());
       const matchesSize = sizeFilter === 'all' || r.sizeCategory === sizeFilter;
       const matchesSearch =
         !roomSearch ||
@@ -269,10 +278,11 @@ export default function SlotFinderTab({
     });
   }, [rooms, selectedFloor, sizeFilter, roomSearch]);
 
-  // Group filtered rooms by Floor
+  // Group filtered rooms by Floor (fallback to all rooms if filter yields empty so Switch Room is never blank)
   const roomsByFloor = useMemo(() => {
     const map = new Map();
-    filteredRooms.forEach((room) => {
+    const targetRooms = filteredRooms.length > 0 ? filteredRooms : rooms;
+    targetRooms.forEach((room) => {
       const floorKey = room.floor || 'Main Floor';
       if (!map.has(floorKey)) {
         map.set(floorKey, []);
@@ -281,12 +291,25 @@ export default function SlotFinderTab({
     });
     // Sort floor keys
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [filteredRooms]);
+  }, [filteredRooms, rooms]);
 
   // Current active room
   const currentRoom = useMemo(() => {
     return rooms.find((r) => r.id === Number(selectedRoomId)) || filteredRooms[0] || rooms[0] || null;
   }, [rooms, selectedRoomId, filteredRooms]);
+
+  // Ensure an initial room is selected on page load if none is selected
+  useEffect(() => {
+    if (rooms && rooms.length > 0) {
+      const hasValidSelection = rooms.some((r) => r.id === Number(selectedRoomId));
+      if (!hasValidSelection) {
+        const fallback = filteredRooms[0] || rooms[0];
+        if (fallback) {
+          onRoomSelect(fallback.id);
+        }
+      }
+    }
+  }, [rooms, filteredRooms, selectedRoomId, onRoomSelect]);
 
   // Check if current room is occupied at the chosen time window (excluding self when editing)
   const conflictingBooking = useMemo(() => {
@@ -477,11 +500,26 @@ export default function SlotFinderTab({
             id="slot-floor"
             label="Floor / Wing"
             icon={<Building size={14} />}
-            value={selectedFloor}
+            value={
+              !selectedFloor ||
+              selectedFloor === 'ALL' ||
+              String(selectedFloor).trim().toLowerCase() === 'all' ||
+              String(selectedFloor).trim().toLowerCase() === 'all floors'
+                ? 'All Floors'
+                : selectedFloor
+            }
             onChange={(val) => {
               onFloorChange(val);
+              const isAll =
+                !val ||
+                val === 'All Floors' ||
+                val === 'ALL' ||
+                String(val).trim().toLowerCase() === 'all' ||
+                String(val).trim().toLowerCase() === 'all floors';
               const firstInFloor = rooms.find(
-                (r) => val === 'All Floors' || r.floor === val
+                (r) =>
+                  isAll ||
+                  (r.floor && String(r.floor).trim().toLowerCase() === String(val).trim().toLowerCase())
               );
               if (firstInFloor) onRoomSelect(firstInFloor.id);
             }}

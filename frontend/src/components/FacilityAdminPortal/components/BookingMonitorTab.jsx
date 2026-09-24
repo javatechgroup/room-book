@@ -587,7 +587,7 @@ export default function BookingMonitorTab({
         <div className="table-header-title">
           <h4>Scheduled Reservations Master Log ({displayedBookings.length} Records)</h4>
         </div>
-        <div className="table-responsive">
+        <div className="table-responsive bookings-table-responsive">
           <table className="superadmin-table bookings-table">
             <thead>
               <tr>

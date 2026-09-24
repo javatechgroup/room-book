@@ -138,6 +138,7 @@ export default function WorkplacePortal() {
     setEditingBooking(booking);
     if (booking.roomId) setSelectedRoomId(booking.roomId);
     if (booking.floor) setSelectedFloor(booking.floor);
+    else setSelectedFloor('All Floors');
     if (booking.startTime) {
       setSelectedDate(booking.startTime.split('T')[0]);
     }
@@ -153,6 +154,7 @@ export default function WorkplacePortal() {
 
   const handleCancelEdit = () => {
     setEditingBooking(null);
+    setSelectedFloor('All Floors');
   };
 
   // Helpdesk form state
