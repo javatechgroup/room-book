@@ -225,90 +225,114 @@
 
 /* 1. Tenant Companies Table (.companies-table) */
 .companies-table th:nth-child(1),
-.companies-table td:nth-child(1) {
-  width: 44px;
+.companies-table td:nth-child(1),
+.companies-table th.th-checkbox,
+.companies-table td.td-checkbox {
+  width: 48px;
+  min-width: 48px;
   text-align: center;
 }
 
 .companies-table th:nth-child(2),
 .companies-table td:nth-child(2) {
-  width: 100px;
+  width: 8%;
+  min-width: 85px;
 }
 
 .companies-table th:nth-child(3),
 .companies-table td:nth-child(3) {
-  width: 20%;
+  width: 22%;
+  min-width: 170px;
 }
 
 .companies-table th:nth-child(4),
 .companies-table td:nth-child(4) {
   width: 22%;
+  min-width: 170px;
 }
 
 .companies-table th:nth-child(5),
 .companies-table td:nth-child(5) {
   width: 18%;
+  min-width: 140px;
 }
 
 .companies-table th:nth-child(6),
 .companies-table td:nth-child(6) {
-  width: 140px;
+  width: 11%;
+  min-width: 110px;
   text-align: center;
 }
 
 .companies-table th:nth-child(7),
 .companies-table td:nth-child(7) {
-  width: 100px;
+  width: 9%;
+  min-width: 90px;
   text-align: center;
 }
 
 .companies-table th:nth-child(8),
-.companies-table td:nth-child(8) {
-  width: 145px;
+.companies-table td:nth-child(8),
+.companies-table th.th-actions,
+.companies-table td.td-actions {
+  width: 10%;
+  min-width: 130px;
   text-align: right;
 }
 
 /* 2. Facility Administrators Table (.admins-table) */
 .admins-table th:nth-child(1),
-.admins-table td:nth-child(1) {
-  width: 44px;
+.admins-table td:nth-child(1),
+.admins-table th.th-checkbox,
+.admins-table td.td-checkbox {
+  width: 48px;
+  min-width: 48px;
   text-align: center;
 }
 
 .admins-table th:nth-child(2),
 .admins-table td:nth-child(2) {
   width: 20%;
+  min-width: 160px;
 }
 
 .admins-table th:nth-child(3),
 .admins-table td:nth-child(3) {
   width: 20%;
+  min-width: 160px;
 }
 
 .admins-table th:nth-child(4),
 .admins-table td:nth-child(4) {
   width: 18%;
+  min-width: 150px;
 }
 
 .admins-table th:nth-child(5),
 .admins-table td:nth-child(5) {
-  width: 130px;
+  width: 12%;
+  min-width: 110px;
 }
 
 .admins-table th:nth-child(6),
 .admins-table td:nth-child(6) {
-  width: 105px;
+  width: 10%;
+  min-width: 95px;
 }
 
 .admins-table th:nth-child(7),
 .admins-table td:nth-child(7) {
-  width: 95px;
+  width: 9%;
+  min-width: 85px;
   text-align: center;
 }
 
 .admins-table th:nth-child(8),
-.admins-table td:nth-child(8) {
-  width: 145px;
+.admins-table td:nth-child(8),
+.admins-table th.th-actions,
+.admins-table td.td-actions {
+  width: 11%;
+  min-width: 130px;
   text-align: right;
 }
 
@@ -332,37 +356,46 @@
 
 .audit-logs-table th:nth-child(1),
 .audit-logs-table td:nth-child(1) {
-  width: 200px;
+  width: 16%;
+  min-width: 150px;
 }
 
 .audit-logs-table th:nth-child(2),
 .audit-logs-table td:nth-child(2) {
-  width: 215px;
+  width: 14%;
+  min-width: 130px;
 }
 
 .audit-logs-table th:nth-child(3),
 .audit-logs-table td:nth-child(3) {
-  width: 110px;
+  width: 12%;
+  min-width: 110px;
 }
 
 .audit-logs-table th:nth-child(4),
 .audit-logs-table td:nth-child(4) {
   width: 16%;
+  min-width: 130px;
 }
 
 .audit-logs-table th:nth-child(5),
 .audit-logs-table td:nth-child(5) {
   width: 16%;
+  min-width: 130px;
 }
 
 .audit-logs-table th:nth-child(6),
 .audit-logs-table td:nth-child(6) {
-  width: auto;
+  width: 20%;
+  min-width: 160px;
 }
 
 .audit-logs-table th:nth-child(7),
-.audit-logs-table td:nth-child(7) {
-  width: 60px;
+.audit-logs-table td:nth-child(7),
+.audit-logs-table th.th-actions,
+.audit-logs-table td.td-actions {
+  width: 6%;
+  min-width: 65px;
   text-align: center;
 }
 

@@ -17,7 +17,16 @@ export default function WorkplaceTabs({
   return (
     <div className="workplace-top-section">
       <div className="portal-title-block">
-        <h2 className="portal-main-heading">Physical Room & Slot Manager</h2>
+        <div className="portal-crystal-badge">
+          <span className="pulse-dot"></span>
+          <span>Live Enterprise Workspace</span>
+        </div>
+        <h2 className="portal-main-heading">
+          Physical Room & <span className="brand-title--accent">Slot Manager</span>
+        </h2>
+        <p className="portal-main-subheading">
+          Reserve physical conference rooms, review live campus floor availability, and coordinate team collaborations.
+        </p>
       </div>
 
       <div className="superadmin-tabs-bar">

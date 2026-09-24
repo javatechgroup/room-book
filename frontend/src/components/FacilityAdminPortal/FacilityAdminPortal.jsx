@@ -1235,6 +1235,20 @@ export default function FacilityAdminPortal() {
   return (
     <div className="superadmin-portal facility-admin-portal">
       <div className="container">
+        {/* Crystal Portal Header */}
+        <div className="portal-title-block">
+          <div className="portal-crystal-badge">
+            <span className="pulse-dot"></span>
+            <span>Facility Management & Operations</span>
+          </div>
+          <h2 className="portal-main-heading">
+            Campus Infrastructure & <span className="brand-title--accent">Workspace Facilities</span>
+          </h2>
+          <p className="portal-main-subheading">
+            Manage physical conference rooms, floor maps, organizational departments, and live workplace reservations.
+          </p>
+        </div>
+
         {/* Top Metrics Cards */}
         <FacilityAdminMetrics
           totalRooms={summary.totalRooms || rooms.length}

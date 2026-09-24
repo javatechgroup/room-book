@@ -57,6 +57,22 @@
   --accent-gradient-subtle: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
   --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
 
+  /* Ambient Portal Atmosphere & Crystal Glass System */
+  --portal-bg: radial-gradient(ellipse 80% 60% at 15% 5%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+               radial-gradient(ellipse 65% 50% at 85% 25%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+               radial-gradient(ellipse 60% 40% at 50% 95%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+               linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  --crystal-surface: rgba(255, 255, 255, 0.85);
+  --crystal-surface-hover: rgba(255, 255, 255, 0.95);
+  --crystal-surface-strong: rgba(255, 255, 255, 0.92);
+  --crystal-blur: blur(16px);
+  --crystal-border: 1px solid rgba(226, 232, 240, 0.78);
+  --crystal-border-highlight: 1px solid rgba(147, 197, 253, 0.8);
+  --crystal-border-subtle: 1px solid rgba(255, 255, 255, 0.85);
+  --crystal-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(226, 232, 240, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --crystal-shadow-hover: 0 16px 36px -4px rgba(37, 99, 235, 0.12), 0 0 0 1px rgba(147, 197, 253, 0.8), inset 0 1px 0 #ffffff;
+  --crystal-shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(226, 232, 240, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
   /* Semantic Colors — Layered Depth & High-Contrast Typography in Light Theme */
   --bg-body: #f8fafc;
   --bg-surface: #ffffff;
@@ -90,26 +106,26 @@
   --tab-badge-active-bg: var(--primary-600);
   --tab-badge-active-text: #ffffff;
 
-  /* Data Tables — Light Theme */
-  --table-wrap-bg: #ffffff;
-  --table-wrap-border: #e2e8f0;
-  --table-wrap-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-  --th-bg: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  /* Data Tables — Light Theme (Crystal Elevation) */
+  --table-wrap-bg: rgba(255, 255, 255, 0.92);
+  --table-wrap-border: rgba(226, 232, 240, 0.8);
+  --table-wrap-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(226, 232, 240, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --th-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(241, 245, 249, 0.92) 100%);
   --th-text: #0f172a;
   --th-border: #cbd5e1;
   --th-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   --th-sort-hover-bg: #eef2ff;
-  --th-sort-hover-text: #312e81;
-  --th-sort-icon: #4f46e5;
+  --th-sort-hover-text: #1e40af;
+  --th-sort-icon: #2563eb;
   --th-sort-idle: #94a3b8;
-  --tr-bg: #ffffff;
-  --tr-alt-bg: #fafbfd;
-  --tr-border: #f1f5f9;
-  --tr-hover-bg: #f4f7ff;
-  --tr-hover-stripe: #4f46e5;
-  --tr-hover-shadow: inset 4px 0 0 0 var(--tr-hover-stripe), 0 2px 8px rgba(79, 70, 229, 0.04);
-  --tr-selected-bg: #eef2ff;
-  --tr-selected-stripe: #4f46e5;
+  --tr-bg: transparent;
+  --tr-alt-bg: rgba(248, 250, 252, 0.5);
+  --tr-border: rgba(241, 245, 249, 0.9);
+  --tr-hover-bg: rgba(59, 130, 246, 0.04);
+  --tr-hover-stripe: #2563eb;
+  --tr-hover-shadow: inset 4px 0 0 0 var(--tr-hover-stripe), 0 2px 8px rgba(37, 99, 235, 0.04);
+  --tr-selected-bg: rgba(59, 130, 246, 0.08);
+  --tr-selected-stripe: #2563eb;
 
   /* Header */
   --header-bg: rgba(255, 255, 255, 0.88);
@@ -204,6 +220,20 @@
   --tab-badge-text: #94a3b8;
   --tab-badge-active-bg: var(--primary-500);
   --tab-badge-active-text: #ffffff;
+
+  /* Ambient Portal Atmosphere & Crystal Glass System (Dark) */
+  --portal-bg: radial-gradient(ellipse 80% 60% at 15% 5%, rgba(59, 130, 246, 0.14) 0%, transparent 60%),
+               radial-gradient(ellipse 65% 50% at 85% 25%, rgba(139, 92, 246, 0.10) 0%, transparent 60%),
+               linear-gradient(180deg, #090d16 0%, #0d1322 100%);
+  --crystal-surface: rgba(18, 26, 44, 0.78);
+  --crystal-surface-hover: rgba(24, 35, 58, 0.90);
+  --crystal-surface-strong: rgba(20, 29, 48, 0.88);
+  --crystal-border: 1px solid rgba(255, 255, 255, 0.09);
+  --crystal-border-highlight: 1px solid rgba(96, 165, 250, 0.5);
+  --crystal-border-subtle: 1px solid rgba(255, 255, 255, 0.06);
+  --crystal-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --crystal-shadow-hover: 0 18px 40px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(96, 165, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --crystal-shadow-card: 0 8px 24px -2px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
   /* Data Tables — Dark Theme */
   --table-wrap-bg: #141d2e;

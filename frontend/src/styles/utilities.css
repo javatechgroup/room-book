@@ -29,3 +29,103 @@
   padding: 16px;
   animation: fadeIn 0.2s ease-out;
 }
+
+/* ================================================================
+   Global Crystal Portal Header & Ambient Utility Classes
+   ================================================================ */
+.portal-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.portal-crystal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: var(--crystal-surface, rgba(255, 255, 255, 0.85));
+  backdrop-filter: var(--crystal-blur, blur(16px));
+  -webkit-backdrop-filter: var(--crystal-blur, blur(16px));
+  border: var(--crystal-border, 1px solid rgba(226, 232, 240, 0.8));
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  color: var(--text-heading);
+  font-size: 0.78rem;
+  font-weight: 650;
+  width: fit-content;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+.portal-crystal-badge:hover {
+  border-color: var(--primary-400);
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme='dark'] .portal-crystal-badge {
+  background: rgba(18, 26, 44, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulseGreen 2s infinite;
+  display: inline-block;
+}
+
+@keyframes pulseGreen {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.portal-main-heading {
+  font-size: 2.1rem;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.brand-title--accent {
+  background: linear-gradient(135deg, var(--primary-600) 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.portal-main-subheading {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 820px;
+}
+
+@media (max-width: 768px) {
+  .portal-main-heading {
+    font-size: 1.65rem;
+  }
+  .portal-main-subheading {
+    font-size: 0.88rem;
+  }
+}
+

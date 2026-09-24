@@ -959,6 +959,20 @@ export default function SuperAdminPortal() {
   return (
     <div className="superadmin-portal" id="superadmin-console">
       <div className="container">
+        {/* Crystal Portal Header */}
+        <div className="portal-title-block">
+          <div className="portal-crystal-badge">
+            <span className="pulse-dot"></span>
+            <span>Platform Governance & Tenants</span>
+          </div>
+          <h2 className="portal-main-heading">
+            Enterprise Tenant & <span className="brand-title--accent">System Administration</span>
+          </h2>
+          <p className="portal-main-subheading">
+            Manage corporate tenant accounts, administrator credentials, and comprehensive security audit event logs.
+          </p>
+        </div>
+
         {/* Top Focused Metrics */}
         <SuperAdminMetrics
           companies={effectiveCompanies}
