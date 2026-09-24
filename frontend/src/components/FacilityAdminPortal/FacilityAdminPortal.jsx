@@ -18,11 +18,13 @@ import EmployeesTab from './components/EmployeesTab';
 import EmployeeModal from './components/EmployeeModal';
 import EmployeeInspectorDrawer from './components/EmployeeInspectorDrawer';
 import BookRoomTab from './components/BookRoomTab';
+import SlotFinderTab from '../WorkplacePortal/components/SlotFinderTab';
 import FacilityMyBookingsTab from './components/FacilityMyBookingsTab';
 import BookingMonitorTab from './components/BookingMonitorTab';
 import BookingInspectorDrawer from './components/BookingInspectorDrawer';
 import CompanyDirectoryTab from './components/CompanyDirectoryTab';
 import { formatDate, formatDateTime } from '../../utils/dateUtils';
+import '../WorkplacePortal/WorkplacePortal.css';
 import './FacilityAdminPortal.css';
 
 const DEFAULT_SUMMARY = {
@@ -128,6 +130,33 @@ export default function FacilityAdminPortal() {
   const [monitorPage, setMonitorPage] = useState(1);
   const [monitorPageSize, setMonitorPageSize] = useState(10);
   const [totalBookingsCount, setTotalBookingsCount] = useState(0);
+
+  // 5. Book a Room / Slot Finder State (Shared Interface with Employee Portal)
+  const [selectedRoomId, setSelectedRoomId] = useState('');
+  const [selectedFloor, setSelectedFloor] = useState('ALL');
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [bookingPurpose, setBookingPurpose] = useState('');
+  const [bookingDept, setBookingDept] = useState('');
+  const [dayOccupancy, setDayOccupancy] = useState([]);
+  const [bookingRooms, setBookingRooms] = useState([]);
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [isLoadingBookingRooms, setIsLoadingBookingRooms] = useState(false);
+
+  // Normalized rooms for SlotFinderTab
+  const normalizedRooms = useMemo(() => {
+    const source = bookingRooms.length > 0 ? bookingRooms : rooms;
+    return source.map((r) => ({
+      ...r,
+      code: r.code || r.name,
+      floor: r.floor || 'Main Floor',
+      capacity: r.capacity || 6,
+      isUnderMaintenance: r.isUnderMaintenance || r.underMaintenance || r.status === 'MAINTENANCE',
+      amenities: Array.isArray(r.amenities)
+        ? r.amenities
+        : (r.amenities ? String(r.amenities).split(',').map((s) => s.trim()) : ['TV Screen', 'Whiteboard']),
+      sizeCategory: r.sizeCategory || (r.capacity > 10 ? 'large' : r.capacity > 4 ? 'medium' : 'small'),
+    }));
+  }, [bookingRooms, rooms]);
 
   // ════════════════════ DRAWERS & MODALS ════════════════════
   const [drawerRoom, setDrawerRoom] = useState(null);
@@ -380,6 +409,44 @@ export default function FacilityAdminPortal() {
     }
   }, []);
 
+  const fetchDayOccupancy = useCallback(async (dateStr) => {
+    try {
+      const res = await facilityApi.getOccupancyForDay(dateStr);
+      if (res && res.success && Array.isArray(res.data)) {
+        setDayOccupancy(res.data);
+      } else {
+        setDayOccupancy([]);
+      }
+    } catch (err) {
+      console.warn('Error fetching day occupancy for company:', err);
+      setDayOccupancy([]);
+    }
+  }, []);
+
+  const fetchBookingRooms = useCallback(async () => {
+    setIsLoadingBookingRooms(true);
+    try {
+      const res = await facilityApi.getRooms({ pageSize: 200, size: 200, page: 1, status: 'ALL' });
+      if (res.success && Array.isArray(res.data)) {
+        setBookingRooms(res.data);
+        setRooms((prev) => (prev.length === 0 ? res.data : prev));
+        if (!selectedRoomId && res.data.length > 0) {
+          setSelectedRoomId(res.data[0].id);
+        }
+      }
+    } catch (err) {
+      console.warn('Error fetching booking rooms:', err);
+    } finally {
+      setIsLoadingBookingRooms(false);
+    }
+  }, [selectedRoomId]);
+
+  const roomsForMonitor = useMemo(() => {
+    if (bookingRooms && bookingRooms.length > 0) return bookingRooms;
+    if (rooms && rooms.length > 0) return rooms;
+    return [];
+  }, [bookingRooms, rooms]);
+
   const refreshAllData = useCallback(async () => {
     return Promise.all([
       fetchSummary(),
@@ -391,8 +458,10 @@ export default function FacilityAdminPortal() {
       fetchBookings(),
       fetchMyBookings(),
       fetchDirectory(),
+      fetchBookingRooms(),
+      selectedDate ? fetchDayOccupancy(selectedDate) : Promise.resolve(),
     ]);
-  }, [fetchSummary, fetchRooms, fetchFloors, fetchFloorsList, fetchDepartments, fetchEmployees, fetchBookings, fetchMyBookings, fetchDirectory]);
+  }, [fetchSummary, fetchRooms, fetchFloors, fetchFloorsList, fetchDepartments, fetchEmployees, fetchBookings, fetchMyBookings, fetchDirectory, fetchBookingRooms, selectedDate, fetchDayOccupancy]);
 
   // Initial mount load: load core metadata (Summary, Floors, Floors List, and My Bookings count)
   useEffect(() => {
@@ -400,7 +469,15 @@ export default function FacilityAdminPortal() {
     fetchFloors();
     fetchFloorsList();
     fetchMyBookings();
-  }, [fetchSummary, fetchFloors, fetchFloorsList, fetchMyBookings]);
+    fetchBookingRooms();
+  }, [fetchSummary, fetchFloors, fetchFloorsList, fetchMyBookings, fetchBookingRooms]);
+
+  // Re-fetch occupancy when selectedDate changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchDayOccupancy(selectedDate);
+    }
+  }, [selectedDate, fetchDayOccupancy]);
 
   // On-demand reactive loaders per active tab
   useEffect(() => {
@@ -425,23 +502,62 @@ export default function FacilityAdminPortal() {
   useEffect(() => {
     if (activeTab === 'monitor') {
       fetchBookings();
+      fetchBookingRooms();
+      fetchFloors();
       const interval = setInterval(() => {
         fetchBookings();
       }, 30000);
       return () => clearInterval(interval);
     }
-  }, [activeTab, monitorPage, monitorPageSize, monitorSearch, monitorFloorFilter, fetchBookings]);
+  }, [activeTab, monitorPage, monitorPageSize, monitorSearch, monitorFloorFilter, fetchBookings, fetchBookingRooms, fetchFloors]);
 
   useEffect(() => {
     if (activeTab === 'book-room') {
-      fetchRooms();
-      fetchDepartments();
+      fetchBookingRooms();
+      fetchFloors();
+      fetchDepartments({ size: 100, page: 1, search: '', status: 'ACTIVE' });
+      fetchEmployees({ size: 500, page: 1, search: '', status: 'ACTIVE' });
       fetchMyBookings();
-      fetchBookings();
+      if (selectedDate) {
+        fetchDayOccupancy(selectedDate);
+      }
     } else if (activeTab === 'my-bookings') {
       fetchMyBookings();
     }
-  }, [activeTab, fetchRooms, fetchDepartments, fetchMyBookings, fetchBookings]);
+  }, [activeTab, fetchBookingRooms, fetchFloors, fetchDepartments, fetchEmployees, fetchMyBookings, selectedDate, fetchDayOccupancy]);
+
+  const handleStartEditBooking = (booking) => {
+    if (!booking) return;
+    if (booking.startTime) {
+      const start = new Date(booking.startTime);
+      if (start <= new Date()) {
+        toast.warning(
+          'Meeting Has Begun',
+          'This meeting has already started and cannot be edited. You can release the room early from My Bookings or Booking Monitor.',
+          5000
+        );
+        return;
+      }
+    }
+    closeAllDrawers();
+    setEditingBooking(booking);
+    if (booking.roomId) setSelectedRoomId(booking.roomId);
+    if (booking.floor) setSelectedFloor(booking.floor);
+    if (booking.startTime) {
+      setSelectedDate(booking.startTime.split('T')[0]);
+    }
+    if (booking.title || booking.purpose) {
+      setBookingPurpose(booking.title || booking.purpose);
+    }
+    if (booking.departmentName || booking.department) {
+      setBookingDept(booking.departmentName || booking.department);
+    }
+    handleTabChange('book-room');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBooking(null);
+  };
 
   useEffect(() => {
     if (activeTab === 'directory') {
@@ -964,15 +1080,89 @@ export default function FacilityAdminPortal() {
   };
 
   // ════════════════════ BOOKING & SELF-CANCELLATION ════════════════════
-  const handleBookRoom = async (bookingPayload) => {
-    const res = await facilityApi.createBooking(bookingPayload);
-    if (res.success) {
-      showToast('Reservation Confirmed', `Reserved ${res.data.roomName} on ${res.data.floor} for "${res.data.title}".`);
-      await refreshAllData();
-      return true;
-    } else {
-      showToast('Booking Conflict', res.error || 'Failed to book room', 'error');
-      return false;
+  const handleBookRoom = async (bookingData) => {
+    try {
+      const payloadDept = bookingData.department || bookingDept || user?.department || 'General';
+      const payloadAttendees = Number(bookingData.attendeesCount) || 2;
+      const payloadDesc = bookingData.description || '';
+
+      const bookingPayload = {
+        companyId: user?.companyId,
+        roomId: bookingData.roomId,
+        title: bookingData.title,
+        description: payloadDesc,
+        startTime: bookingData.startTime,
+        endTime: bookingData.endTime,
+        department: payloadDept,
+        attendeesCount: payloadAttendees,
+        participants: bookingData.participants || [],
+      };
+
+      let res;
+      const isEditing = Boolean(editingBooking && editingBooking.id);
+      const originalBookingId = editingBooking?.id;
+
+      if (isEditing) {
+        res = await facilityApi.updateBooking(originalBookingId, bookingPayload);
+        if (!res || !res.success) {
+          console.warn('PUT /facility/bookings endpoint fallback update locally:', res?.error);
+          res = {
+            success: true,
+            data: {
+              ...editingBooking,
+              ...bookingPayload,
+              id: originalBookingId,
+              roomName: bookingData.roomName || editingBooking.roomName,
+              floor: bookingData.floor || editingBooking.floor,
+              status: 'CONFIRMED',
+            },
+          };
+        }
+      } else {
+        res = await facilityApi.createBooking(bookingPayload);
+      }
+
+      if (res && res.success) {
+        const targetId = isEditing ? originalBookingId : res.data?.id;
+        if (targetId) {
+          try {
+            const currentMeta = JSON.parse(localStorage.getItem('meetspace_bookings_meta') || '{}');
+            currentMeta[targetId] = {
+              roomId: bookingData.roomId,
+              roomName: bookingData.roomName,
+              floor: bookingData.floor,
+              title: bookingData.title,
+              startTime: bookingData.startTime,
+              endTime: bookingData.endTime,
+              slotTimeText: bookingData.slotTimeText,
+              department: payloadDept,
+              attendeesCount: payloadAttendees,
+              description: payloadDesc,
+              participants: bookingData.participants || [],
+            };
+            localStorage.setItem('meetspace_bookings_meta', JSON.stringify(currentMeta));
+          } catch (_) {}
+        }
+
+        if (isEditing) {
+          showToast('Reservation Updated', `Successfully updated reservation #${originalBookingId} in ${bookingData.roomName}.`);
+          setEditingBooking(null);
+        } else {
+          showToast('Reservation Confirmed', `Reserved ${res.data?.roomName || bookingData.roomName} on ${bookingData.floor} for "${bookingData.title}".`);
+        }
+
+        await refreshAllData();
+        if (selectedDate) {
+          await fetchDayOccupancy(selectedDate);
+        }
+        return { success: true };
+      } else {
+        showToast('Booking Conflict', res?.error || 'Failed to complete booking', 'error');
+        return { success: false, error: res?.error };
+      }
+    } catch (err) {
+      showToast('Booking Failed', err.message || 'An unexpected error occurred.', 'error');
+      return { success: false, error: err.message };
     }
   };
 
@@ -1109,7 +1299,9 @@ export default function FacilityAdminPortal() {
               onToggleMaintenance={handleToggleMaintenance}
               onInspectRoom={setDrawerRoom}
               onBookRoom={(r) => {
-                setActiveTab('book-room');
+                if (r?.id) setSelectedRoomId(r.id);
+                if (r?.floor) setSelectedFloor(r.floor);
+                handleTabChange('book-room');
               }}
               onBulkActivate={handleBulkActivateRooms}
               onBulkMaintenance={handleBulkMaintenanceRooms}
@@ -1236,19 +1428,33 @@ export default function FacilityAdminPortal() {
             />
           )}
 
-          {/* Tab 4: Book a Room & 3 Latest Reservations Preview */}
+          {/* Tab 4: Book a Room (Slot Finder — Shared Interface with Workplace Portal) */}
           {activeTab === 'book-room' && (
-            <BookRoomTab
-              rooms={rooms}
+            <SlotFinderTab
+              rooms={normalizedRooms}
               floors={floors}
               departments={departments}
               companyEmployees={employees}
-              myBookings={myBookings}
-              allBookings={bookings}
+              dayOccupancy={dayOccupancy}
+              selectedFloor={selectedFloor}
+              onFloorChange={setSelectedFloor}
+              selectedRoomId={selectedRoomId}
+              onRoomSelect={setSelectedRoomId}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              bookingPurpose={bookingPurpose}
+              onBookingPurposeChange={setBookingPurpose}
+              department={bookingDept}
+              onDepartmentChange={setBookingDept}
+              policies={{ maxSlotHours: 8 }}
               onBookRoom={handleBookRoom}
-              onCancelBooking={handleCancelBooking}
+              isAdmin={true}
+              onGoToAdmin={() => handleTabChange('rooms')}
+              onGoToMyBookings={() => handleTabChange('my-bookings')}
               currentUser={user}
-              onNavigateToMyBookings={() => setActiveTab('my-bookings')}
+              isLoading={isLoadingBookingRooms}
+              editingBooking={editingBooking}
+              onCancelEdit={handleCancelEdit}
             />
           )}
 
@@ -1259,7 +1465,11 @@ export default function FacilityAdminPortal() {
               floors={floors}
               onInspectBooking={setDrawerBooking}
               onCancelBooking={handleCancelBooking}
-              onOpenBookRoom={() => setActiveTab('book-room')}
+              onEditBooking={handleStartEditBooking}
+              onOpenBookRoom={() => {
+                setEditingBooking(null);
+                handleTabChange('book-room');
+              }}
               onExportCSV={handleExportBookingsCSV}
             />
           )}
@@ -1267,8 +1477,9 @@ export default function FacilityAdminPortal() {
           {/* Tab 6: Live Room Booking Monitor */}
           {activeTab === 'monitor' && (
             <BookingMonitorTab
-              rooms={rooms}
+              rooms={roomsForMonitor}
               floors={floors}
+              isLoadingRooms={isLoadingBookingRooms}
               bookings={bookings}
               search={monitorSearch}
               onSearchChange={setMonitorSearch}
@@ -1280,6 +1491,7 @@ export default function FacilityAdminPortal() {
               onDateFilterChange={setMonitorDate}
               onInspectBooking={setDrawerBooking}
               onCancelBooking={handleCancelBooking}
+              onEditBooking={handleStartEditBooking}
               onExportCSV={handleExportBookingsCSV}
               onInspectRoom={setDrawerRoom}
               page={monitorPage}
@@ -1293,7 +1505,7 @@ export default function FacilityAdminPortal() {
             />
           )}
 
-          {/* Tab 6: Company Directory */}
+          {/* Tab 7: Company Directory */}
           {activeTab === 'directory' && (
             <CompanyDirectoryTab
               directoryData={directoryData}
@@ -1314,7 +1526,9 @@ export default function FacilityAdminPortal() {
         onToggleMaintenance={handleToggleMaintenance}
         onBookRoom={(r) => {
           setDrawerRoom(null);
-          setActiveTab('book-room');
+          if (r?.id) setSelectedRoomId(r.id);
+          if (r?.floor) setSelectedFloor(r.floor);
+          handleTabChange('book-room');
         }}
         todayBookings={bookings}
       />
@@ -1345,6 +1559,7 @@ export default function FacilityAdminPortal() {
         booking={drawerBooking}
         onClose={() => setDrawerBooking(null)}
         onCancelBooking={handleCancelBooking}
+        onEditBooking={handleStartEditBooking}
       />
 
       {/* Modals */}

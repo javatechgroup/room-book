@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   ChevronDown,
   Radio,
+  Edit2,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
@@ -39,6 +40,7 @@ export default function BookingMonitorTab({
   onDateFilterChange,
   onInspectBooking,
   onCancelBooking,
+  onEditBooking,
   onExportCSV,
   onInspectRoom,
   page = 1,
@@ -46,6 +48,7 @@ export default function BookingMonitorTab({
   totalCount = 0,
   onPageChange,
   onPageSizeChange,
+  isLoadingRooms = false,
 }) {
   const [activeView, setActiveView] = useState('grid'); // 'grid' (Floor Map) | 'list' (Table)
   const [currentTime, setCurrentTime] = useState(() => new Date());
@@ -82,7 +85,7 @@ export default function BookingMonitorTab({
   // Dynamic booking state helper
   const getBookingLifecycleState = useCallback((booking) => {
     if (!booking) {
-      return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false };
+      return { key: 'UNKNOWN', label: 'Unknown', colorClass: 'status-pill--inactive', canCancel: false, canEdit: false };
     }
     if (booking.status === 'CANCELLED') {
       return {
@@ -90,6 +93,7 @@ export default function BookingMonitorTab({
         label: 'Cancelled',
         colorClass: 'status-pill--inactive',
         canCancel: false,
+        canEdit: false,
       };
     }
     const end = new Date(booking.endTime);
@@ -100,6 +104,7 @@ export default function BookingMonitorTab({
         label: 'Completed',
         colorClass: 'status-pill--completed',
         canCancel: false,
+        canEdit: false,
       };
     }
     if (now >= start && now <= end) {
@@ -108,6 +113,7 @@ export default function BookingMonitorTab({
         label: 'In Progress',
         colorClass: 'status-pill--live',
         canCancel: true,
+        canEdit: false,
       };
     }
     return {
@@ -115,6 +121,7 @@ export default function BookingMonitorTab({
       label: 'Confirmed',
       colorClass: 'status-pill--active',
       canCancel: true,
+      canEdit: true,
     };
   }, [now]);
 
@@ -201,9 +208,13 @@ export default function BookingMonitorTab({
     return { status: 'AVAILABLE', label: 'Vacant / Free', color: 'emerald', isInProgress: false };
   };
 
-  const filteredRooms = rooms.filter(
-    (r) => floorFilter === 'ALL' || r.floor === floorFilter
-  );
+  const filteredRooms = useMemo(() => {
+    return rooms.filter((r) => {
+      if (floorFilter === 'ALL') return true;
+      if (!r.floor) return false;
+      return String(r.floor).trim().toLowerCase() === String(floorFilter).trim().toLowerCase();
+    });
+  }, [rooms, floorFilter]);
   const totalRooms = filteredRooms.length;
   const paginatedRooms = filteredRooms.slice(
     (roomPage - 1) * roomPageSize,
@@ -338,7 +349,12 @@ export default function BookingMonitorTab({
 
         {activeView === 'grid' ? (
           <div className="occupancy-room-grid">
-            {paginatedRooms.length === 0 ? (
+            {isLoadingRooms && paginatedRooms.length === 0 ? (
+              <div className="occupancy-empty-state" style={{ gridColumn: '1 / -1', padding: '2.5rem', textAlign: 'center', color: '#64748b' }}>
+                <div className="loading-spinner" style={{ margin: '0 auto 0.75rem' }} />
+                <p style={{ fontWeight: 500 }}>Loading real-time room occupancy...</p>
+              </div>
+            ) : paginatedRooms.length === 0 ? (
               <div className="occupancy-empty-state" style={{ gridColumn: '1 / -1', padding: '2rem', textAlign: 'center', color: '#64748b' }}>
                 <DoorOpen size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
                 <p>No rooms found matching the selected floor filter.</p>
@@ -443,7 +459,14 @@ export default function BookingMonitorTab({
                 </tr>
               </thead>
               <tbody>
-                {paginatedRooms.length === 0 ? (
+                {isLoadingRooms && paginatedRooms.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="td-empty" style={{ padding: '2.5rem 1rem' }}>
+                      <div className="loading-spinner" style={{ margin: '0 auto 0.75rem' }} />
+                      <p style={{ fontWeight: 500 }}>Loading real-time room occupancy...</p>
+                    </td>
+                  </tr>
+                ) : paginatedRooms.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="td-empty">
                       <DoorOpen size={32} className="empty-icon" />
@@ -666,6 +689,24 @@ export default function BookingMonitorTab({
                           >
                             <Eye size={14} />
                           </button>
+                          {onEditBooking && (
+                            <button
+                              type="button"
+                              className="action-btn action-btn--edit"
+                              onClick={() => onEditBooking(booking)}
+                              disabled={!state.canEdit}
+                              title={
+                                state.key === 'IN_PROGRESS'
+                                  ? 'Meeting has already begun — editing is locked'
+                                  : state.canEdit
+                                  ? 'Edit room, time, or participants'
+                                  : 'Cannot edit past or cancelled reservation'
+                              }
+                              aria-label={`Edit ${booking.title}`}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          )}
                           {state.canCancel && onCancelBooking && (
                             <button
                               type="button"
@@ -786,6 +827,24 @@ export default function BookingMonitorTab({
                     >
                       <Eye size={15} />
                     </button>
+                    {onEditBooking && (
+                      <button
+                        type="button"
+                        className="action-btn action-btn--edit"
+                        onClick={() => onEditBooking(booking)}
+                        disabled={!state.canEdit}
+                        title={
+                          state.key === 'IN_PROGRESS'
+                            ? 'Meeting has already begun — editing is locked'
+                            : state.canEdit
+                            ? 'Edit room, time, or participants'
+                            : 'Cannot edit past or cancelled reservation'
+                        }
+                        aria-label={`Edit ${booking.title}`}
+                      >
+                        <Edit2 size={15} />
+                      </button>
+                    )}
                     {state.canCancel && onCancelBooking && (
                       <button
                         type="button"
