@@ -46,4 +46,15 @@ public class FacilityDirectoryController {
         Map<String, Object> response = directoryService.getCompanyDirectory(resolvedCompanyId);
         return ResponseEntity.ok(ApiResponse.success(response, "Company directory retrieved"));
     }
+
+    @GetMapping("/employees/search")
+    public ResponseEntity<ApiResponse<java.util.List<com.magicbricks.booking.dto.EmployeeResponse>>> searchEmployees(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false, defaultValue = "15") int limit,
+            @RequestParam(required = false) Long companyId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long resolvedCompanyId = resolveCompanyId(currentUser, companyId);
+        java.util.List<com.magicbricks.booking.dto.EmployeeResponse> response = directoryService.searchCompanyEmployees(resolvedCompanyId, query, limit);
+        return ResponseEntity.ok(ApiResponse.success(response, "Employee directory search retrieved"));
+    }
 }

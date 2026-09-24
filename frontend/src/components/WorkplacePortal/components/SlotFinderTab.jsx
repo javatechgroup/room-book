@@ -23,6 +23,7 @@ import RoomInfoCard from './RoomInfoCard';
 import SearchInput from '../../common/SearchInput/SearchInput';
 import DatePicker from '../../common/DatePicker/DatePicker';
 import Select from '../../common/Select/Select';
+import ParticipantPicker from '../../common/ParticipantPicker/ParticipantPicker';
 
 const HOURS = ['08', '09', '10', '11', '12', '01', '02', '03', '04', '05', '06', '07'];
 const MINUTES = ['00', '15', '30', '45'];
@@ -68,6 +69,7 @@ export default function SlotFinderTab({
   rooms = [],
   floors = [],
   departments = [],
+  companyEmployees = [],
   dayOccupancy = [],
   selectedFloor = 'All Floors',
   onFloorChange,
@@ -96,6 +98,7 @@ export default function SlotFinderTab({
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [attendeesCount, setAttendeesCount] = useState(4);
   const [description, setDescription] = useState('');
+  const [participants, setParticipants] = useState([]);
   const [sizeFilter, setSizeFilter] = useState('all');
   const [roomSearch, setRoomSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,9 +137,22 @@ export default function SlotFinderTab({
         if (diffMins > 0) setDurationMinutes(diffMins);
         if (editingBooking.attendeesCount) setAttendeesCount(editingBooking.attendeesCount);
         if (editingBooking.description) setDescription(editingBooking.description);
+        if (Array.isArray(editingBooking.participants)) {
+          setParticipants(editingBooking.participants);
+        } else {
+          setParticipants([]);
+        }
       } catch (_) {}
+    } else {
+      setParticipants([]);
     }
   }, [editingBooking]);
+
+  const handleParticipantsChange = (updated) => {
+    setParticipants(updated);
+    const minAttendees = updated.length + 1;
+    setAttendeesCount((prev) => Math.max(Number(prev) || 1, minAttendees));
+  };
 
   // Time String Calculations
   const to24Hour = (hStr, mStr, pStr) => {
@@ -337,7 +353,8 @@ export default function SlotFinderTab({
       endTime: endTimeStr,
       slotTimeText: formattedTimeRange,
       department: department || currentUser?.department || 'General',
-      attendeesCount: Number(attendeesCount) || 2,
+      attendeesCount: Number(attendeesCount) || Math.max(2, participants.length + 1),
+      participants: participants,
     });
     setIsSubmitting(false);
 
@@ -345,6 +362,7 @@ export default function SlotFinderTab({
       onBookingPurposeChange('');
       setDescription('');
       onDepartmentChange('');
+      setParticipants([]);
     }
   };
 
@@ -882,6 +900,17 @@ export default function SlotFinderTab({
                       placeholder="Brief notes, video call links, or presentation goals"
                     />
                   </div>
+                </div>
+
+                {/* Google-like Participant Picker with external warning */}
+                <div className="booking-form-participants-row" style={{ marginTop: '14px', marginBottom: '6px' }}>
+                  <ParticipantPicker
+                    participants={participants}
+                    onChange={handleParticipantsChange}
+                    companyEmployees={companyEmployees}
+                    currentUser={currentUser}
+                    maxCapacity={currentRoom?.capacity}
+                  />
                 </div>
 
                 <div className="booking-action-bar">

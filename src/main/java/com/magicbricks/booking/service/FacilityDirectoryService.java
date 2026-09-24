@@ -11,6 +11,9 @@ import com.magicbricks.booking.repository.DepartmentRepository;
 import com.magicbricks.booking.repository.FloorRepository;
 import com.magicbricks.booking.repository.RoomRepository;
 import com.magicbricks.booking.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,5 +150,21 @@ public class FacilityDirectoryService {
         response.put("departmentGroups", groupedByDepartment);
 
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeResponse> searchCompanyEmployees(Long companyId, String query) {
+        return searchCompanyEmployees(companyId, query, 15);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeResponse> searchCompanyEmployees(Long companyId, String query, int limit) {
+        int pageSize = (limit > 0 && limit <= 50) ? limit : 15;
+        Pageable pageable = PageRequest.of(0, pageSize);
+        String searchParam = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        Page<User> matches = userRepository.searchEmployees(companyId, null, null, "ACTIVE", searchParam, pageable);
+        return matches.getContent().stream()
+                .map(facilityEmployeeService::mapToResponse)
+                .collect(Collectors.toList());
     }
 }

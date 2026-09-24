@@ -30,6 +30,10 @@ public class BookingRequest {
 
     private Integer attendeesCount;
 
+    private java.util.List<ParticipantDto> participants = new java.util.ArrayList<>();
+
+    private java.util.List<String> participantEmails = new java.util.ArrayList<>();
+
     public BookingRequest() {}
 
     public Long getCompanyId() { return companyId; }
@@ -55,4 +59,10 @@ public class BookingRequest {
 
     public Integer getAttendeesCount() { return attendeesCount; }
     public void setAttendeesCount(Integer attendeesCount) { this.attendeesCount = attendeesCount; }
+
+    public java.util.List<ParticipantDto> getParticipants() { return participants; }
+    public void setParticipants(java.util.List<ParticipantDto> participants) { this.participants = participants; }
+
+    public java.util.List<String> getParticipantEmails() { return participantEmails; }
+    public void setParticipantEmails(java.util.List<String> participantEmails) { this.participantEmails = participantEmails; }
 }

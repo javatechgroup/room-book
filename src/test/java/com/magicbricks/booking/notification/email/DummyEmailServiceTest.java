@@ -203,4 +203,40 @@ class DummyEmailServiceTest {
 
         assertEquals(0, disabledService.getSentEmailCount());
     }
+
+    @Test
+    @DisplayName("Should dispatch simulated emails to both booker and all participants")
+    void testSendBookingConfirmationWithParticipants() {
+        User booker = new User();
+        booker.setFullName("David Host");
+        booker.setEmail("david.host@corp.com");
+
+        Booking booking = new Booking();
+        booking.setId(101L);
+        booking.setTitle("Design Sprint");
+        booking.setBooker(booker);
+        booking.setStartTime(LocalDateTime.of(2026, 10, 1, 10, 0));
+        booking.setEndTime(LocalDateTime.of(2026, 10, 1, 11, 0));
+
+        com.magicbricks.booking.domain.BookingParticipant p1 = new com.magicbricks.booking.domain.BookingParticipant(
+                booking, null, "coworker@corp.com", "Coworker One", false
+        );
+        com.magicbricks.booking.domain.BookingParticipant p2 = new com.magicbricks.booking.domain.BookingParticipant(
+                booking, null, "guest@external.com", "External Guest", true
+        );
+        booking.addParticipant(p1);
+        booking.addParticipant(p2);
+
+        emailService.sendBookingConfirmation(booking);
+
+        // 1 email to booker + 2 to participants = 3 total emails
+        assertEquals(3, emailService.getSentEmailCount());
+        assertFalse(emailService.getSentEmailsForRecipient("david.host@corp.com").isEmpty());
+        assertFalse(emailService.getSentEmailsForRecipient("coworker@corp.com").isEmpty());
+        assertFalse(emailService.getSentEmailsForRecipient("guest@external.com").isEmpty());
+
+        EmailMessage guestMsg = emailService.getSentEmailsForRecipient("guest@external.com").get(0);
+        assertTrue(guestMsg.getSubject().contains("External Invite"));
+        assertEquals("PARTICIPANT_INVITATION", guestMsg.getType());
+    }
 }

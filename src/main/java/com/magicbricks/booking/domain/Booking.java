@@ -49,6 +49,9 @@ public class Booking {
     @Column(name = "attendees_count")
     private Integer attendeesCount;
 
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<BookingParticipant> participants = new java.util.ArrayList<>();
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -89,6 +92,19 @@ public class Booking {
 
     public Integer getAttendeesCount() { return attendeesCount; }
     public void setAttendeesCount(Integer attendeesCount) { this.attendeesCount = attendeesCount; }
+
+    public java.util.List<BookingParticipant> getParticipants() { return participants; }
+    public void setParticipants(java.util.List<BookingParticipant> participants) { this.participants = participants; }
+
+    public void addParticipant(BookingParticipant participant) {
+        participants.add(participant);
+        participant.setBooking(this);
+    }
+
+    public void removeParticipant(BookingParticipant participant) {
+        participants.remove(participant);
+        participant.setBooking(null);
+    }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

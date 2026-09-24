@@ -373,6 +373,18 @@ export const facilityApi = {
     };
   },
 
+  async searchEmployees(query = '', params = {}) {
+    try {
+      const response = await apiClient.get('/facility/employees/search', { params: { query, ...params } });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      console.warn('Backend /facility/employees/search failed:', e.message);
+    }
+    return { success: true, data: [] };
+  },
+
   // ════════════════════ FLOORS ════════════════════
   async getFloorsList(params = {}) {
     try {

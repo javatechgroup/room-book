@@ -1,6 +1,8 @@
 package com.magicbricks.booking.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookingResponse {
 
@@ -21,6 +23,7 @@ public class BookingResponse {
     private LocalDateTime endTime;
     private String status;
     private Integer attendeesCount;
+    private List<ParticipantDto> participants = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -76,6 +79,9 @@ public class BookingResponse {
 
     public Integer getAttendeesCount() { return attendeesCount; }
     public void setAttendeesCount(Integer attendeesCount) { this.attendeesCount = attendeesCount; }
+
+    public List<ParticipantDto> getParticipants() { return participants; }
+    public void setParticipants(List<ParticipantDto> participants) { this.participants = participants; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

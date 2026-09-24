@@ -1,13 +1,16 @@
 package com.magicbricks.booking;
 
+import com.magicbricks.booking.domain.BookingParticipant;
 import com.magicbricks.booking.domain.Company;
 import com.magicbricks.booking.domain.Role;
 import com.magicbricks.booking.domain.Room;
 import com.magicbricks.booking.domain.User;
 import com.magicbricks.booking.dto.BookingRequest;
 import com.magicbricks.booking.dto.BookingResponse;
+import com.magicbricks.booking.dto.ParticipantDto;
 import com.magicbricks.booking.notification.email.DummyEmailService;
 import com.magicbricks.booking.notification.email.EmailMessage;
+import com.magicbricks.booking.repository.BookingParticipantRepository;
 import com.magicbricks.booking.repository.BookingRepository;
 import com.magicbricks.booking.repository.CompanyRepository;
 import com.magicbricks.booking.repository.RoomRepository;
@@ -20,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,9 +50,13 @@ public class BookingEmailIntegrationTest {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private BookingParticipantRepository participantRepository;
+
     private Company company;
     private Room room;
     private User employee;
+    private User colleague;
 
     @BeforeEach
     public void setUp() {
@@ -67,6 +76,17 @@ public class BookingEmailIntegrationTest {
             u.setCompany(company);
             u.setEmail("emp.emailtest@corp.com");
             u.setFullName("John EmailTester");
+            u.setPasswordHash("hashedpass");
+            u.setRole(Role.EMPLOYEE);
+            u.setStatus("ACTIVE");
+            return userRepository.save(u);
+        });
+
+        colleague = userRepository.findByEmail("colleague.internal@corp.com").orElseGet(() -> {
+            User u = new User();
+            u.setCompany(company);
+            u.setEmail("colleague.internal@corp.com");
+            u.setFullName("Alice Colleague");
             u.setPasswordHash("hashedpass");
             u.setRole(Role.EMPLOYEE);
             u.setStatus("ACTIVE");
@@ -110,7 +130,7 @@ public class BookingEmailIntegrationTest {
         assertNotNull(created);
         assertNotNull(created.getId());
 
-        // Verify Dummy Email was captured
+        // Verify Dummy Email was captured for booker
         assertEquals(1, dummyEmailService.getSentEmailCount());
         Optional<EmailMessage> createdMsg = dummyEmailService.getLatestEmail();
         assertTrue(createdMsg.isPresent());
@@ -153,5 +173,91 @@ public class BookingEmailIntegrationTest {
         assertEquals("emp.emailtest@corp.com", cancelledMsg.get().getRecipient());
         assertEquals("BOOKING_CANCELLATION", cancelledMsg.get().getType());
         assertTrue(cancelledMsg.get().getSubject().contains("Booking Cancelled"));
+    }
+
+    @Test
+    @DisplayName("End-to-End: Adding internal & external participants saves to DB, warns outside company, and sends dummy emails to all")
+    public void testParticipantsLifecycleAndEmails() {
+        LocalDateTime start = LocalDateTime.now().plusDays(3).withHour(14).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime end = start.plusHours(1);
+
+        BookingRequest request = new BookingRequest();
+        request.setRoomId(room.getId());
+        request.setTitle("Cross-Company Product Demo");
+        request.setDescription("Reviewing product integration with partner");
+        request.setStartTime(start);
+        request.setEndTime(end);
+        request.setAttendeesCount(3);
+
+        // Add 1 internal company employee and 1 external participant
+        List<ParticipantDto> participants = new ArrayList<>();
+        participants.add(new ParticipantDto("colleague.internal@corp.com", "Alice Colleague", false));
+        participants.add(new ParticipantDto("partner@externalclient.org", "Bob External", true));
+        request.setParticipants(participants);
+
+        // 1. CREATE BOOKING WITH PARTICIPANTS
+        BookingResponse created = facilityBookingService.createBooking(request, company.getId(), employee.getId());
+        assertNotNull(created);
+        assertNotNull(created.getId());
+        assertEquals(2, created.getParticipants().size());
+
+        // Check internal vs external categorization
+        ParticipantDto internalP = created.getParticipants().stream()
+                .filter(p -> "colleague.internal@corp.com".equalsIgnoreCase(p.getEmail()))
+                .findFirst().orElseThrow();
+        assertFalse(internalP.getIsExternal());
+        assertNotNull(internalP.getUserId());
+
+        ParticipantDto externalP = created.getParticipants().stream()
+                .filter(p -> "partner@externalclient.org".equalsIgnoreCase(p.getEmail()))
+                .findFirst().orElseThrow();
+        assertTrue(externalP.getIsExternal());
+        assertNull(externalP.getUserId());
+
+        // 2. VERIFY PARTICIPANTS PERSISTED IN DB
+        List<BookingParticipant> dbParticipants = participantRepository.findByBookingId(created.getId());
+        assertEquals(2, dbParticipants.size());
+
+        // 3. VERIFY DUMMY EMAILS SENT TO BOOKER + ALL PARTICIPANTS
+        // 1 email to booker + 1 to colleague.internal + 1 to partner@externalclient.org = 3 emails
+        assertEquals(3, dummyEmailService.getSentEmailCount());
+        assertFalse(dummyEmailService.getSentEmailsForRecipient("emp.emailtest@corp.com").isEmpty());
+        assertFalse(dummyEmailService.getSentEmailsForRecipient("colleague.internal@corp.com").isEmpty());
+        assertFalse(dummyEmailService.getSentEmailsForRecipient("partner@externalclient.org").isEmpty());
+
+        EmailMessage externalEmail = dummyEmailService.getSentEmailsForRecipient("partner@externalclient.org").get(0);
+        assertTrue(externalEmail.getBody().contains("external participant"));
+        assertEquals("PARTICIPANT_INVITATION", externalEmail.getType());
+
+        // 4. EDIT BOOKING: REMOVE EXTERNAL GUEST, ADD ANOTHER EXTERNAL
+        dummyEmailService.clearSentEmails();
+
+        BookingRequest updateReq = new BookingRequest();
+        updateReq.setRoomId(room.getId());
+        updateReq.setTitle("Cross-Company Product Demo (Rescheduled)");
+        updateReq.setStartTime(start.plusHours(1));
+        updateReq.setEndTime(end.plusHours(1));
+
+        List<ParticipantDto> updatedParticipants = new ArrayList<>();
+        // Keep internal colleague
+        updatedParticipants.add(new ParticipantDto("colleague.internal@corp.com", "Alice Colleague", false));
+        // Remove Bob External, add Consultant Dan
+        updatedParticipants.add(new ParticipantDto("dan@consultingfirm.com", "Dan Consultant", true));
+        updateReq.setParticipants(updatedParticipants);
+
+        BookingResponse updated = facilityBookingService.updateBooking(created.getId(), updateReq, company.getId(), employee.getId(), false);
+        assertEquals(2, updated.getParticipants().size());
+
+        // Verify DB reflects updated participants
+        List<BookingParticipant> updatedDbParticipants = participantRepository.findByBookingId(created.getId());
+        assertEquals(2, updatedDbParticipants.size());
+        assertTrue(updatedDbParticipants.stream().anyMatch(p -> "dan@consultingfirm.com".equalsIgnoreCase(p.getEmail())));
+        assertFalse(updatedDbParticipants.stream().anyMatch(p -> "partner@externalclient.org".equalsIgnoreCase(p.getEmail())));
+
+        // Verify update emails were sent to all participants
+        // 1 to booker + 1 to colleague.internal + 1 to dan@consultingfirm.com = 3 emails
+        assertEquals(3, dummyEmailService.getSentEmailCount());
+        assertFalse(dummyEmailService.getSentEmailsForRecipient("dan@consultingfirm.com").isEmpty());
+        assertEquals("PARTICIPANT_UPDATE", dummyEmailService.getSentEmailsForRecipient("dan@consultingfirm.com").get(0).getType());
     }
 }

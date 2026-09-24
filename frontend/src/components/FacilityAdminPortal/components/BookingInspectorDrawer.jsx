@@ -164,6 +164,39 @@ export default function BookingInspectorDrawer({
             </div>
           </div>
 
+          {booking.participants && booking.participants.length > 0 && (
+            <div className="inspector-section">
+              <h4 className="inspector-section__title">
+                <Users size={14} /> Invited Participants ({booking.participants.length})
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                {booking.participants.map((p, idx) => (
+                  <span
+                    key={p.id || idx}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 10px',
+                      borderRadius: '16px',
+                      background: p.isExternal ? '#fff7ed' : '#f1f5f9',
+                      border: `1px solid ${p.isExternal ? '#fed7aa' : '#cbd5e1'}`,
+                      fontSize: '0.8rem',
+                      color: p.isExternal ? '#9a3412' : '#334155',
+                    }}
+                  >
+                    <span style={{ fontWeight: 600 }}>{p.name || p.email}</span>
+                    {p.isExternal && (
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c2410c', background: '#ffedd5', padding: '1px 5px', borderRadius: '4px' }}>
+                        External
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {booking.description && (
             <div className="inspector-section">
               <h4 className="inspector-section__title">Meeting Notes</h4>

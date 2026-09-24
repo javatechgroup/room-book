@@ -98,6 +98,7 @@ export default function WorkplacePortal() {
   const [departments, setDepartments] = useState([]);
   const [dayOccupancy, setDayOccupancy] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
+  const [companyEmployees, setCompanyEmployees] = useState([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState(true);
 
   // Slot Finder Controls
@@ -155,8 +156,8 @@ export default function WorkplacePortal() {
     setIsLoadingRooms(true);
     const companyId = user?.companyId;
     try {
-      // Fetch rooms, floors, and real company departments from DB
-      const [roomsRes, floorsRes, deptsRes] = await Promise.all([
+      // Fetch rooms, floors, real company departments, and employees from DB
+      const [roomsRes, floorsRes, deptsRes, dirRes] = await Promise.all([
         facilityApi.getRooms({ companyId, pageSize: 100 }),
         facilityApi.getFloors({ companyId }),
         facilityApi.getAllDepartments({ companyId }).then((res) => {
@@ -165,6 +166,7 @@ export default function WorkplacePortal() {
           }
           return facilityApi.getDepartments({ companyId, size: 100 });
         }),
+        facilityApi.getCompanyDirectory({ companyId }),
       ]);
 
       let loadedRooms = [];
@@ -188,6 +190,10 @@ export default function WorkplacePortal() {
         }
       }
       setDepartments(loadedDepts);
+
+      if (dirRes && dirRes.success && Array.isArray(dirRes.data?.employees)) {
+        setCompanyEmployees(dirRes.data.employees);
+      }
 
       if (loadedRooms.length > 0) {
         setSelectedRoomId((prev) => (loadedRooms.some((r) => r.id === Number(prev)) ? prev : loadedRooms[0].id));
@@ -287,6 +293,7 @@ export default function WorkplacePortal() {
         endTime: bookingData.endTime,
         department: payloadDept,
         attendeesCount: payloadAttendees,
+        participants: bookingData.participants || [],
       };
 
       let res;
@@ -469,6 +476,7 @@ export default function WorkplacePortal() {
           <SlotFinderTab
             rooms={rooms}
             floors={floors}
+            companyEmployees={companyEmployees}
             dayOccupancy={dayOccupancy}
             selectedFloor={selectedFloor}
             onFloorChange={setSelectedFloor}

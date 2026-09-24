@@ -1,6 +1,7 @@
 package com.magicbricks.booking.notification.email;
 
 import com.magicbricks.booking.domain.Booking;
+import com.magicbricks.booking.domain.BookingParticipant;
 import com.magicbricks.booking.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +19,9 @@ import java.util.stream.Collectors;
  * Dummy implementation of EmailService that simulates sending emails.
  * <p>
  * Logs formatted email envelopes to the application console, captures sent
- * messages in an in-memory history buffer for inspection/testing, and simulates
- * real-world email dispatch latency if configured.
+ * messages in an in-memory history buffer for inspection/testing, simulates
+ * real-world email dispatch latency if configured, and dispatches simulated
+ * notifications to both the booker and all meeting participants (internal and external).
  */
 @Service
 @Primary
@@ -123,7 +125,7 @@ public class DummyEmailService implements EmailService {
         StringBuilder body = new StringBuilder();
         body.append(String.format("Dear %s,%n%n", booker.getFullName()));
         body.append(String.format("Your room booking has been successfully confirmed at %s.%n%n", companyName));
-        body.append("Booking Details:%n");
+        body.append("Booking Details:\n");
         body.append(String.format("  • Booking Reference: #%d%n", booking.getId()));
         body.append(String.format("  • Meeting Title:     %s%n", booking.getTitle()));
         body.append(String.format("  • Room:              %s (Floor: %s, Location: %s)%n", roomName, floor, location));
@@ -133,6 +135,15 @@ public class DummyEmailService implements EmailService {
         body.append(String.format("  • Expected Attendees:%d%n", booking.getAttendeesCount() != null ? booking.getAttendeesCount() : 1));
         if (booking.getDescription() != null && !booking.getDescription().isBlank()) {
             body.append(String.format("  • Notes:             %s%n", booking.getDescription()));
+        }
+        if (booking.getParticipants() != null && !booking.getParticipants().isEmpty()) {
+            body.append("\nInvited Participants:\n");
+            for (BookingParticipant p : booking.getParticipants()) {
+                body.append(String.format("    - %s (%s)%s%n",
+                        p.getName() != null ? p.getName() : p.getEmail(),
+                        p.getEmail(),
+                        Boolean.TRUE.equals(p.getIsExternal()) ? " [External]" : ""));
+            }
         }
         body.append(String.format("%nIf you need to modify or cancel this reservation, please manage it via the Corporate Room Booking portal.%n%n"));
         body.append("Warm regards,\nCorporate Room Booking System");
@@ -150,6 +161,9 @@ public class DummyEmailService implements EmailService {
         );
 
         sendEmail(message);
+
+        // Also notify all invited participants
+        sendParticipantInvitations(booking, "CREATE");
     }
 
     @Override
@@ -169,7 +183,7 @@ public class DummyEmailService implements EmailService {
         StringBuilder body = new StringBuilder();
         body.append(String.format("Dear %s,%n%n", booker.getFullName()));
         body.append(String.format("Your room booking #%d has been updated.%n%n", booking.getId()));
-        body.append("Updated Booking Details:%n");
+        body.append("Updated Booking Details:\n");
         body.append(String.format("  • Booking Reference: #%d%n", booking.getId()));
         body.append(String.format("  • Meeting Title:     %s%n", booking.getTitle()));
         body.append(String.format("  • Room:              %s (Floor: %s, Location: %s)%n", roomName, floor, location));
@@ -177,6 +191,15 @@ public class DummyEmailService implements EmailService {
         body.append(String.format("  • End Time:          %s%n", formatDateTime(booking.getEndTime())));
         body.append(String.format("  • Department:        %s%n", booking.getDepartment() != null ? booking.getDepartment() : "General"));
         body.append(String.format("  • Expected Attendees:%d%n", booking.getAttendeesCount() != null ? booking.getAttendeesCount() : 1));
+        if (booking.getParticipants() != null && !booking.getParticipants().isEmpty()) {
+            body.append("\nInvited Participants:\n");
+            for (BookingParticipant p : booking.getParticipants()) {
+                body.append(String.format("    - %s (%s)%s%n",
+                        p.getName() != null ? p.getName() : p.getEmail(),
+                        p.getEmail(),
+                        Boolean.TRUE.equals(p.getIsExternal()) ? " [External]" : ""));
+            }
+        }
         body.append(String.format("%nWarm regards,%nCorporate Room Booking System"));
 
         EmailMessage message = new EmailMessage(
@@ -192,6 +215,9 @@ public class DummyEmailService implements EmailService {
         );
 
         sendEmail(message);
+
+        // Also notify all invited participants
+        sendParticipantInvitations(booking, "UPDATE");
     }
 
     @Override
@@ -209,7 +235,7 @@ public class DummyEmailService implements EmailService {
         StringBuilder body = new StringBuilder();
         body.append(String.format("Dear %s,%n%n", booker.getFullName()));
         body.append(String.format("Your room booking #%d ('%s') has been cancelled.%n%n", booking.getId(), booking.getTitle()));
-        body.append("Cancelled Slot Information:%n");
+        body.append("Cancelled Slot Information:\n");
         body.append(String.format("  • Room:              %s%n", roomName));
         body.append(String.format("  • Scheduled Slot:    %s to %s%n", formatDateTime(booking.getStartTime()), formatDateTime(booking.getEndTime())));
         body.append(String.format("  • Status:            CANCELLED%n%n"));
@@ -229,6 +255,96 @@ public class DummyEmailService implements EmailService {
         );
 
         sendEmail(message);
+
+        // Also notify all invited participants
+        sendParticipantInvitations(booking, "CANCEL");
+    }
+
+    private void sendParticipantInvitations(Booking booking, String updateType) {
+        if (booking == null || booking.getParticipants() == null || booking.getParticipants().isEmpty()) {
+            return;
+        }
+
+        User booker = booking.getBooker();
+        String bookerName = booker != null ? booker.getFullName() : "Organizer";
+        String bookerEmail = booker != null ? booker.getEmail() : "";
+        String roomName = booking.getRoom() != null ? booking.getRoom().getName() : "Room";
+        String floor = (booking.getRoom() != null && booking.getRoom().getFloor() != null) ? booking.getRoom().getFloor() : "N/A";
+        String location = (booking.getRoom() != null && booking.getRoom().getLocation() != null) ? booking.getRoom().getLocation() : "N/A";
+        String companyName = booking.getCompany() != null ? booking.getCompany().getName() : "Corporate Room Booking";
+
+        for (BookingParticipant participant : booking.getParticipants()) {
+            if (participant.getEmail() == null || participant.getEmail().isBlank()) {
+                continue;
+            }
+            // Skip sending to booker if booker is listed as participant to avoid duplicate emails
+            if (bookerEmail != null && bookerEmail.equalsIgnoreCase(participant.getEmail())) {
+                continue;
+            }
+
+            boolean isExt = Boolean.TRUE.equals(participant.getIsExternal());
+            String displayName = participant.getName() != null && !participant.getName().isBlank()
+                    ? participant.getName()
+                    : (isExt ? "Guest" : participant.getEmail());
+
+            String subject;
+            StringBuilder body = new StringBuilder();
+
+            if ("UPDATE".equals(updateType)) {
+                subject = String.format("[RoomBook%s] Meeting Updated: %s (#%d)",
+                        isExt ? " External" : "", booking.getTitle(), booking.getId());
+                body.append(String.format("Dear %s,%n%n", displayName));
+                body.append(String.format("The scheduled meeting '%s' organized by %s (%s) has been updated.%n%n",
+                        booking.getTitle(), bookerName, bookerEmail));
+                body.append("Updated Meeting Details:\n");
+                body.append(String.format("  • Meeting Title:     %s%n", booking.getTitle()));
+                body.append(String.format("  • Room:              %s (Floor: %s, Location: %s)%n", roomName, floor, location));
+                body.append(String.format("  • Time Slot:         %s to %s%n", formatDateTime(booking.getStartTime()), formatDateTime(booking.getEndTime())));
+                body.append(String.format("  • Organization:      %s%n", companyName));
+                body.append(String.format("  • Booking Reference: #%d%n", booking.getId()));
+                body.append(String.format("%nWarm regards,%nCorporate Room Booking System"));
+            } else if ("CANCEL".equals(updateType)) {
+                subject = String.format("[RoomBook%s] Meeting Cancelled: %s (#%d)",
+                        isExt ? " External" : "", booking.getTitle(), booking.getId());
+                body.append(String.format("Dear %s,%n%n", displayName));
+                body.append(String.format("The meeting '%s' scheduled for %s in %s has been cancelled by organizer %s.%n%n",
+                        booking.getTitle(), formatDateTime(booking.getStartTime()), roomName, bookerName));
+                body.append("Warm regards,\nCorporate Room Booking System");
+            } else {
+                // INVITE / CREATE
+                subject = String.format("[RoomBook%s] Meeting Invitation: %s (#%d)",
+                        isExt ? " External Invite" : "", booking.getTitle(), booking.getId());
+                body.append(String.format("Dear %s,%n%n", displayName));
+                body.append(String.format("You have been invited by %s (%s) to attend a meeting at %s.%n%n",
+                        bookerName, bookerEmail, companyName));
+                body.append("Meeting Invitation Details:\n");
+                body.append(String.format("  • Meeting Title:     %s%n", booking.getTitle()));
+                body.append(String.format("  • Host / Organizer:  %s (%s)%n", bookerName, bookerEmail));
+                body.append(String.format("  • Room:              %s (Floor: %s, Location: %s)%n", roomName, floor, location));
+                body.append(String.format("  • Time Slot:         %s to %s%n", formatDateTime(booking.getStartTime()), formatDateTime(booking.getEndTime())));
+                body.append(String.format("  • Booking Reference: #%d%n", booking.getId()));
+                if (booking.getDescription() != null && !booking.getDescription().isBlank()) {
+                    body.append(String.format("  • Agenda / Notes:    %s%n", booking.getDescription()));
+                }
+                if (isExt) {
+                    body.append(String.format("%nNote: You are registered as an external participant for this meeting.%n"));
+                }
+                body.append(String.format("%nWarm regards,%nCorporate Room Booking System"));
+            }
+
+            EmailMessage msg = new EmailMessage(
+                    generateMessageId(),
+                    participant.getEmail(),
+                    displayName,
+                    defaultSender,
+                    subject,
+                    body.toString(),
+                    "UPDATE".equals(updateType) ? "PARTICIPANT_UPDATE" : ("CANCEL".equals(updateType) ? "PARTICIPANT_CANCELLATION" : "PARTICIPANT_INVITATION"),
+                    LocalDateTime.now(),
+                    true
+            );
+            sendEmail(msg);
+        }
     }
 
     @Override
@@ -244,7 +360,7 @@ public class DummyEmailService implements EmailService {
         StringBuilder body = new StringBuilder();
         body.append(String.format("Dear %s,%n%n", user.getFullName()));
         body.append(String.format("Welcome to the %s Room Booking Portal!%n%n", companyName));
-        body.append("Your account has been provisioned with the following details:%n");
+        body.append("Your account has been provisioned with the following details:\n");
         body.append(String.format("  • Login Email:       %s%n", user.getEmail()));
         body.append(String.format("  • Role:              %s%n", user.getRole()));
         if (temporaryPassword != null && !temporaryPassword.isBlank()) {

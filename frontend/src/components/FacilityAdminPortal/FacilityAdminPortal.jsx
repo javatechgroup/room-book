@@ -1242,6 +1242,7 @@ export default function FacilityAdminPortal() {
               rooms={rooms}
               floors={floors}
               departments={departments}
+              companyEmployees={employees}
               myBookings={myBookings}
               allBookings={bookings}
               onBookRoom={handleBookRoom}

@@ -20,6 +20,7 @@ import {
 import Pagination from '../../common/Pagination/Pagination';
 import DatePicker from '../../common/DatePicker/DatePicker';
 import Select from '../../common/Select/Select';
+import ParticipantPicker from '../../common/ParticipantPicker/ParticipantPicker';
 import { formatDate } from '../../../utils/dateUtils';
 
 const HOURS = ['08', '09', '10', '11', '12', '01', '02', '03', '04', '05', '06', '07'];
@@ -64,6 +65,7 @@ export default function BookRoomTab({
   rooms = [],
   floors = [],
   departments = [],
+  companyEmployees = [],
   myBookings = [],
   allBookings = [],
   onBookRoom,
@@ -88,6 +90,7 @@ export default function BookRoomTab({
   const [department, setDepartment] = useState('');
   const [attendeesCount, setAttendeesCount] = useState(4);
   const [description, setDescription] = useState('');
+  const [participants, setParticipants] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filtered rooms by floor
@@ -197,11 +200,13 @@ export default function BookRoomTab({
       startTime: startTimeStr,
       endTime: endTimeStr,
       department,
-      attendeesCount,
+      attendeesCount: Math.max(Number(attendeesCount) || 1, participants.length + 1),
+      participants: participants,
     });
     setIsSubmitting(false);
     setTitle('');
     setDescription('');
+    setParticipants([]);
   };
 
   return (
@@ -532,6 +537,16 @@ export default function BookRoomTab({
                   />
                 </div>
               </div>
+            </div>
+
+            <div style={{ marginTop: '14px', marginBottom: '16px' }}>
+              <ParticipantPicker
+                participants={participants}
+                onChange={setParticipants}
+                companyEmployees={companyEmployees}
+                currentUser={currentUser}
+                maxCapacity={currentRoom?.capacity}
+              />
             </div>
 
             <button

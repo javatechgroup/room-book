@@ -7,10 +7,11 @@ import com.magicbricks.booking.common.UnauthorizedAccessException;
 import com.magicbricks.booking.domain.*;
 import com.magicbricks.booking.dto.BookingRequest;
 import com.magicbricks.booking.dto.BookingResponse;
-import com.magicbricks.booking.repository.*;
+import com.magicbricks.booking.dto.ParticipantDto;
 import com.magicbricks.booking.notification.event.BookingCancelledEvent;
 import com.magicbricks.booking.notification.event.BookingCreatedEvent;
 import com.magicbricks.booking.notification.event.BookingUpdatedEvent;
+import com.magicbricks.booking.repository.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,7 +52,8 @@ public class FacilityBookingService {
 		Company company = companyRepository.findById(companyId)
 				.orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + companyId));
 
-		Room room = roomRepository.findById(request.getRoomId()).filter(r -> r.getCompany().getId().equals(companyId))
+		Room room = roomRepository.findById(request.getRoomId())
+				.filter(r -> r.getCompany().getId().equals(companyId))
 				.orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + request.getRoomId()));
 
 		if ("MAINTENANCE".equalsIgnoreCase(room.getStatus())) {
@@ -96,7 +98,15 @@ public class FacilityBookingService {
 		} else if (booker.getDepartment() != null) {
 			booking.setDepartment(booker.getDepartment().getName());
 		}
-		booking.setAttendeesCount(request.getAttendeesCount() != null ? request.getAttendeesCount() : 2);
+
+		// Sync participants to booking
+		syncParticipants(booking, request, companyId);
+
+		int effectiveAttendees = request.getAttendeesCount() != null ? request.getAttendeesCount() : 2;
+		if (booking.getParticipants() != null && !booking.getParticipants().isEmpty()) {
+			effectiveAttendees = Math.max(effectiveAttendees, booking.getParticipants().size() + 1);
+		}
+		booking.setAttendeesCount(effectiveAttendees);
 
 		Booking saved = bookingRepository.save(booking);
 
@@ -107,7 +117,8 @@ public class FacilityBookingService {
 		audit.setEntityType("BOOKING");
 		audit.setEntityId(saved.getId());
 		audit.setNewValue("Booked Room: " + room.getName() + " on " + room.getFloor() + " from " + saved.getStartTime()
-				+ " to " + saved.getEndTime() + " ('" + saved.getTitle() + "')");
+				+ " to " + saved.getEndTime() + " ('" + saved.getTitle() + "') with "
+				+ (saved.getParticipants() != null ? saved.getParticipants().size() : 0) + " participants");
 		audit.setTimestamp(LocalDateTime.now());
 		auditLogRepository.save(audit);
 
@@ -119,11 +130,11 @@ public class FacilityBookingService {
 	@Transactional
 	public BookingResponse cancelBooking(Long bookingId, Long companyId, Long currentUserId,
 			boolean isSuperAdminOrFacilityAdmin) {
-		Booking booking = bookingRepository.findById(bookingId).filter(b -> b.getCompany().getId().equals(companyId))
+		Booking booking = bookingRepository.findById(bookingId)
+				.filter(b -> b.getCompany().getId().equals(companyId))
 				.orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-		// Facility Admin can cancel any company booking or specifically their own
-		// booking
+		// Facility Admin can cancel any company booking or specifically their own booking
 		if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
 			throw new UnauthorizedAccessException("You are only authorized to cancel bookings made by yourself.");
 		}
@@ -149,14 +160,16 @@ public class FacilityBookingService {
 	@Transactional
 	public BookingResponse updateBooking(Long bookingId, BookingRequest request, Long companyId, Long currentUserId,
 			boolean isSuperAdminOrFacilityAdmin) {
-		Booking booking = bookingRepository.findById(bookingId).filter(b -> b.getCompany().getId().equals(companyId))
+		Booking booking = bookingRepository.findById(bookingId)
+				.filter(b -> b.getCompany().getId().equals(companyId))
 				.orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
 		if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
 			throw new UnauthorizedAccessException("You are only authorized to update bookings made by yourself.");
 		}
 
-		Room room = roomRepository.findById(request.getRoomId()).filter(r -> r.getCompany().getId().equals(companyId))
+		Room room = roomRepository.findById(request.getRoomId())
+				.filter(r -> r.getCompany().getId().equals(companyId))
 				.orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + request.getRoomId()));
 
 		if ("MAINTENANCE".equalsIgnoreCase(room.getStatus())) {
@@ -194,9 +207,17 @@ public class FacilityBookingService {
 		if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
 			booking.setDepartment(request.getDepartment().trim());
 		}
-		if (request.getAttendeesCount() != null) {
-			booking.setAttendeesCount(request.getAttendeesCount());
+
+		// Update participants if provided in request
+		if (request.getParticipants() != null || request.getParticipantEmails() != null) {
+			syncParticipants(booking, request, companyId);
 		}
+
+		int effectiveAttendees = request.getAttendeesCount() != null ? request.getAttendeesCount() : booking.getAttendeesCount();
+		if (booking.getParticipants() != null && !booking.getParticipants().isEmpty()) {
+			effectiveAttendees = Math.max(effectiveAttendees, booking.getParticipants().size() + 1);
+		}
+		booking.setAttendeesCount(effectiveAttendees);
 
 		Booking updated = bookingRepository.save(booking);
 
@@ -208,13 +229,84 @@ public class FacilityBookingService {
 		audit.setEntityId(updated.getId());
 		audit.setNewValue("Updated Booking #" + updated.getId() + " for Room: " + room.getName() + " on "
 				+ room.getFloor() + " from " + updated.getStartTime() + " to " + updated.getEndTime() + " ('"
-				+ updated.getTitle() + "')");
+				+ updated.getTitle() + "') with "
+				+ (updated.getParticipants() != null ? updated.getParticipants().size() : 0) + " participants");
 		audit.setTimestamp(LocalDateTime.now());
 		auditLogRepository.save(audit);
 
 		eventPublisher.publishEvent(new BookingUpdatedEvent(updated));
 
 		return mapToResponse(updated);
+	}
+
+	private void syncParticipants(Booking booking, BookingRequest request, Long companyId) {
+		if (booking.getParticipants() == null) {
+			booking.setParticipants(new ArrayList<>());
+		} else {
+			booking.getParticipants().clear();
+		}
+
+		Set<String> processedEmails = new HashSet<>();
+
+		// 1. Process structured participants if present
+		if (request.getParticipants() != null) {
+			for (ParticipantDto dto : request.getParticipants()) {
+				if (dto == null || dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+					continue;
+				}
+				String email = dto.getEmail().trim().toLowerCase();
+				if (processedEmails.contains(email)) continue;
+				processedEmails.add(email);
+
+				Optional<User> matchedUserOpt = userRepository.findByEmail(email)
+						.filter(u -> u.getCompany() != null && u.getCompany().getId().equals(companyId));
+
+				BookingParticipant participant = new BookingParticipant();
+				participant.setBooking(booking);
+				participant.setEmail(email);
+
+				if (matchedUserOpt.isPresent()) {
+					User matchedUser = matchedUserOpt.get();
+					participant.setUser(matchedUser);
+					participant.setName(matchedUser.getFullName());
+					participant.setIsExternal(false);
+				} else {
+					participant.setUser(null);
+					participant.setName(dto.getName() != null && !dto.getName().trim().isEmpty() ? dto.getName().trim() : email);
+					participant.setIsExternal(true);
+				}
+				booking.getParticipants().add(participant);
+			}
+		}
+
+		// 2. Process participantEmails list if present
+		if (request.getParticipantEmails() != null) {
+			for (String rawEmail : request.getParticipantEmails()) {
+				if (rawEmail == null || rawEmail.trim().isEmpty()) continue;
+				String email = rawEmail.trim().toLowerCase();
+				if (processedEmails.contains(email)) continue;
+				processedEmails.add(email);
+
+				Optional<User> matchedUserOpt = userRepository.findByEmail(email)
+						.filter(u -> u.getCompany() != null && u.getCompany().getId().equals(companyId));
+
+				BookingParticipant participant = new BookingParticipant();
+				participant.setBooking(booking);
+				participant.setEmail(email);
+
+				if (matchedUserOpt.isPresent()) {
+					User matchedUser = matchedUserOpt.get();
+					participant.setUser(matchedUser);
+					participant.setName(matchedUser.getFullName());
+					participant.setIsExternal(false);
+				} else {
+					participant.setUser(null);
+					participant.setName(email);
+					participant.setIsExternal(true);
+				}
+				booking.getParticipants().add(participant);
+			}
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -300,6 +392,18 @@ public class FacilityBookingService {
 			res.setDepartmentName(booking.getDepartment());
 		} else if (booking.getBooker() != null && booking.getBooker().getDepartment() != null) {
 			res.setDepartmentName(booking.getBooker().getDepartment().getName());
+		}
+		if (booking.getParticipants() != null) {
+			List<ParticipantDto> participantDtos = booking.getParticipants().stream()
+					.map(p -> new ParticipantDto(
+							p.getId(),
+							p.getUser() != null ? p.getUser().getId() : null,
+							p.getEmail(),
+							p.getName(),
+							p.getIsExternal()
+					))
+					.collect(Collectors.toList());
+			res.setParticipants(participantDtos);
 		}
 		res.setCreatedAt(booking.getCreatedAt());
 		res.setUpdatedAt(booking.getUpdatedAt());
