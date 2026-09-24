@@ -80,7 +80,7 @@ export default function FacilityAdminTab({
                 <th>Capacity</th>
                 <th>Equipment</th>
                 <th>Status</th>
-                <th>Action</th>
+                <th className="th-actions">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -114,7 +114,7 @@ export default function FacilityAdminTab({
                         {rm.isUnderMaintenance ? 'Maintenance Block' : 'Active'}
                       </span>
                     </td>
-                    <td>
+                    <td className="td-actions">
                       <button
                         type="button"
                         className={`btn btn--sm ${

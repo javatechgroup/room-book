@@ -1493,36 +1493,18 @@
   table-layout: fixed;
 }
 
-.my-bookings-table th:nth-child(1),
-.my-bookings-table td:nth-child(1) {
-  width: 20%;
-  min-width: 160px;
+.my-bookings-table .th-actions,
+.my-bookings-table .td-actions {
+  width: 145px;
+  min-width: 135px;
+  text-align: right !important;
+  padding-right: 14px !important;
+  padding-left: 6px !important;
+  overflow: visible !important;
 }
 
-.my-bookings-table th:nth-child(2),
-.my-bookings-table td:nth-child(2) {
-  width: 28%;
-  min-width: 190px;
-}
-
-.my-bookings-table th:nth-child(3),
-.my-bookings-table td:nth-child(3) {
-  width: 20%;
-  min-width: 150px;
-}
-
-.my-bookings-table th:nth-child(4),
-.my-bookings-table td:nth-child(4) {
-  width: 10%;
-  min-width: 90px;
-  text-align: center;
-}
-
-.my-bookings-table th:nth-child(5),
-.my-bookings-table td:nth-child(5) {
-  width: 11%;
-  min-width: 110px;
-  text-align: center;
+.my-bookings-table th:not(.th-actions) {
+  min-width: 120px;
 }
 
 .my-bookings-table td:nth-child(5) .status-pill {
@@ -1537,18 +1519,6 @@
 .my-bookings-table td {
   padding: 10px 14px;
   vertical-align: middle;
-}
-
-.bookings-panel .my-bookings-table th:nth-child(6),
-.bookings-panel .my-bookings-table td:nth-child(6),
-.my-bookings-table th.th-actions,
-.my-bookings-table td.td-actions {
-  width: 11% !important;
-  min-width: 135px !important;
-  text-align: right !important;
-  padding-right: 14px !important;
-  padding-left: 6px !important;
-  overflow: visible !important;
 }
 
 .my-bookings-table .action-btn {
@@ -2332,18 +2302,15 @@
   width: 100%;
   table-layout: fixed;
 }
-.admin-table-block .rooms-table th:nth-child(1),
-.admin-table-block .rooms-table td:nth-child(1) { width: 22%; min-width: 160px; text-align: left; }
-.admin-table-block .rooms-table th:nth-child(2),
-.admin-table-block .rooms-table td:nth-child(2) { width: 18%; min-width: 130px; text-align: left; }
-.admin-table-block .rooms-table th:nth-child(3),
-.admin-table-block .rooms-table td:nth-child(3) { width: 14%; min-width: 100px; text-align: left; }
-.admin-table-block .rooms-table th:nth-child(4),
-.admin-table-block .rooms-table td:nth-child(4) { width: 22%; min-width: 150px; text-align: left; }
-.admin-table-block .rooms-table th:nth-child(5),
-.admin-table-block .rooms-table td:nth-child(5) { width: 12%; min-width: 100px; text-align: center; }
-.admin-table-block .rooms-table th:nth-child(6),
-.admin-table-block .rooms-table td:nth-child(6) { width: 12%; min-width: 130px; text-align: right; }
+.admin-table-block .rooms-table .th-actions,
+.admin-table-block .rooms-table .td-actions {
+  width: 150px;
+  min-width: 140px;
+  text-align: right;
+}
+.admin-table-block .rooms-table th:not(.th-actions) {
+  min-width: 120px;
+}
 
 .sub-txt {
   font-size: 0.75rem;

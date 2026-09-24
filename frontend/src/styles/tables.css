@@ -220,123 +220,52 @@
 }
 
 /* ================================================================
-   Proportional Column Allocations (100% Screen Fit without Overflow)
+   Auto-Equalizing Table Architecture (Dynamic, Add/Delete Safe)
    ================================================================ */
 
-/* 1. Tenant Companies Table (.companies-table) */
-.companies-table th:nth-child(1),
-.companies-table td:nth-child(1),
-.companies-table th.th-checkbox,
-.companies-table td.td-checkbox {
+/* Checkbox Column (Strictly Fixed) */
+.superadmin-table .th-checkbox,
+.superadmin-table .td-checkbox,
+.companies-table .th-checkbox,
+.companies-table .td-checkbox,
+.admins-table .th-checkbox,
+.admins-table .td-checkbox {
   width: 48px;
   min-width: 48px;
+  max-width: 48px;
   text-align: center;
+  padding: 11px 6px !important;
 }
 
-.companies-table th:nth-child(2),
-.companies-table td:nth-child(2) {
-  width: 8%;
-  min-width: 85px;
-}
-
-.companies-table th:nth-child(3),
-.companies-table td:nth-child(3) {
-  width: 22%;
-  min-width: 170px;
-}
-
-.companies-table th:nth-child(4),
-.companies-table td:nth-child(4) {
-  width: 22%;
-  min-width: 170px;
-}
-
-.companies-table th:nth-child(5),
-.companies-table td:nth-child(5) {
-  width: 18%;
-  min-width: 140px;
-}
-
-.companies-table th:nth-child(6),
-.companies-table td:nth-child(6) {
-  width: 11%;
-  min-width: 110px;
-  text-align: center;
-}
-
-.companies-table th:nth-child(7),
-.companies-table td:nth-child(7) {
-  width: 9%;
-  min-width: 90px;
-  text-align: center;
-}
-
-.companies-table th:nth-child(8),
-.companies-table td:nth-child(8),
-.companies-table th.th-actions,
-.companies-table td.td-actions {
-  width: 10%;
+/* Action Columns (Strictly Fixed) */
+.superadmin-table .th-actions,
+.superadmin-table .td-actions,
+.companies-table .th-actions,
+.companies-table .td-actions,
+.admins-table .th-actions,
+.admins-table .td-actions {
+  width: 140px;
   min-width: 130px;
   text-align: right;
+  overflow: visible !important;
 }
 
-/* 2. Facility Administrators Table (.admins-table) */
-.admins-table th:nth-child(1),
-.admins-table td:nth-child(1),
-.admins-table th.th-checkbox,
-.admins-table td.td-checkbox {
-  width: 48px;
-  min-width: 48px;
+.audit-logs-table .th-actions,
+.audit-logs-table .td-actions {
+  width: 75px;
+  min-width: 65px;
   text-align: center;
 }
 
-.admins-table th:nth-child(2),
-.admins-table td:nth-child(2) {
-  width: 20%;
-  min-width: 160px;
-}
-
-.admins-table th:nth-child(3),
-.admins-table td:nth-child(3) {
-  width: 20%;
-  min-width: 160px;
-}
-
-.admins-table th:nth-child(4),
-.admins-table td:nth-child(4) {
-  width: 18%;
-  min-width: 150px;
-}
-
-.admins-table th:nth-child(5),
-.admins-table td:nth-child(5) {
-  width: 12%;
+/* Dynamic Data Columns (100% Equal Distribution by browser engine) */
+.superadmin-table th:not(.th-checkbox):not(.th-actions),
+.companies-table th:not(.th-checkbox):not(.th-actions),
+.admins-table th:not(.th-checkbox):not(.th-actions),
+.audit-logs-table th:not(.th-actions) {
   min-width: 110px;
 }
 
-.admins-table th:nth-child(6),
-.admins-table td:nth-child(6) {
-  width: 10%;
-  min-width: 95px;
-}
-
-.admins-table th:nth-child(7),
-.admins-table td:nth-child(7) {
-  width: 9%;
-  min-width: 85px;
-  text-align: center;
-}
-
-.admins-table th:nth-child(8),
-.admins-table td:nth-child(8),
-.admins-table th.th-actions,
-.admins-table td.td-actions {
-  width: 11%;
-  min-width: 130px;
-  text-align: right;
-}
-
-/* 3. System Audit Logs Table (.audit-logs-table) */
+/* 3. System Audit Logs Dense Formatting */
 .table--dense thead th,
 .superadmin-table--dense thead th,
 .audit-logs-table thead th {
@@ -352,51 +281,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.audit-logs-table th:nth-child(1),
-.audit-logs-table td:nth-child(1) {
-  width: 16%;
-  min-width: 150px;
-}
-
-.audit-logs-table th:nth-child(2),
-.audit-logs-table td:nth-child(2) {
-  width: 14%;
-  min-width: 130px;
-}
-
-.audit-logs-table th:nth-child(3),
-.audit-logs-table td:nth-child(3) {
-  width: 12%;
-  min-width: 110px;
-}
-
-.audit-logs-table th:nth-child(4),
-.audit-logs-table td:nth-child(4) {
-  width: 16%;
-  min-width: 130px;
-}
-
-.audit-logs-table th:nth-child(5),
-.audit-logs-table td:nth-child(5) {
-  width: 16%;
-  min-width: 130px;
-}
-
-.audit-logs-table th:nth-child(6),
-.audit-logs-table td:nth-child(6) {
-  width: 20%;
-  min-width: 160px;
-}
-
-.audit-logs-table th:nth-child(7),
-.audit-logs-table td:nth-child(7),
-.audit-logs-table th.th-actions,
-.audit-logs-table td.td-actions {
-  width: 6%;
-  min-width: 65px;
-  text-align: center;
 }
 
 .table--dense .action-btn,
