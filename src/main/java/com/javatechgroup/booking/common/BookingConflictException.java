@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.common;
+package com.javatechgroup.booking.common;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -6,7 +6,8 @@ import java.util.Map;
 
 @ResponseStatus(HttpStatus.CONFLICT)
 public class BookingConflictException extends RuntimeException {
-    private Map<String, String> details;
+    private static final long serialVersionUID = 1L;
+	private Map<String, String> details;
 
     public BookingConflictException(String message) {
         super(message);

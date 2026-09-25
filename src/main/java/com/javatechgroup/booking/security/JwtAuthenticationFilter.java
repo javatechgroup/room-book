@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.security;
+package com.javatechgroup.booking.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

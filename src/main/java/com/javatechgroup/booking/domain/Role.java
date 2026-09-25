@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.domain;
+package com.javatechgroup.booking.domain;
 
 public enum Role {
     SUPER_ADMIN,

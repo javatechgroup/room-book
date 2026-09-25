@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.dto;
+package com.javatechgroup.booking.dto;
 
 import com.javatechgroup.booking.domain.Role;
 import java.time.LocalDateTime;

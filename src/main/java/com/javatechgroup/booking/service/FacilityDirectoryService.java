@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.service;
+package com.javatechgroup.booking.service;
 
 import com.javatechgroup.booking.domain.Booking;
 import com.javatechgroup.booking.domain.Department;

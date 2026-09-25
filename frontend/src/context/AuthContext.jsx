@@ -21,6 +21,26 @@ export function AuthProvider({ children }) {
       const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
 
       if (savedToken && savedUser) {
+        // Validate JWT expiration if exp claim is present
+        try {
+          const parts = savedToken.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1]));
+            if (payload.exp && payload.exp * 1000 <= Date.now()) {
+              console.warn('Stored JWT session has expired. Clearing local credentials.');
+              localStorage.removeItem(STORAGE_KEYS.TOKEN);
+              localStorage.removeItem(STORAGE_KEYS.USER);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {
+          localStorage.removeItem(STORAGE_KEYS.TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.USER);
+          setLoading(false);
+          return;
+        }
+
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
       }
@@ -31,6 +51,17 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Listen for unauthorized or session expiry events from apiClient
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setUser(null);
+      setToken(null);
+      setIsLoginOpen(true);
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
   const login = async (email, password) => {

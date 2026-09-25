@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext';
+import { ToastProvider, useToast } from './context/ToastContext';
 import { ConfirmProvider } from './context/ConfirmContext';
 import Header from './components/Header/Header';
 import LoginGateway from './components/LoginGateway/LoginGateway';
@@ -16,12 +16,23 @@ import ToastContainer from './components/common/Toast/Toast';
 
 function AppContent() {
   const { user, isAuthenticated, openLogin, openConnect } = useAuth();
+  const { toast } = useToast();
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('modal') === 'login') openLogin();
     if (params.get('modal') === 'connect') openConnect();
   }, [openLogin, openConnect]);
+
+  React.useEffect(() => {
+    const handleUnauthorized = (e) => {
+      const msg = e.detail?.message || 'Your session has expired. Please sign in again.';
+      toast.warning('Session Expired', msg);
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [toast]);
 
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const isFacilityAdmin = user?.role === 'COMPANY_ADMIN';

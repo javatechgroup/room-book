@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.dto;
+package com.javatechgroup.booking.dto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

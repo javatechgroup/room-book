@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.auth;
+package com.javatechgroup.booking.auth;
 
 import com.javatechgroup.booking.common.ApiResponse;
 import jakarta.validation.Valid;

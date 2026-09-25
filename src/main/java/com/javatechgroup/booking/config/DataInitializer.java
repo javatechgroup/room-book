@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.config;
+package com.javatechgroup.booking.config;
 
 import com.javatechgroup.booking.domain.Role;
 import com.javatechgroup.booking.domain.User;

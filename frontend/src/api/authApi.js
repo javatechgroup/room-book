@@ -20,6 +20,33 @@ apiClient.interceptors.request.use((config) => {
   return config;
 }, (error) => Promise.reject(error));
 
+// Response interceptor to handle expired or unauthorized sessions
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // If request failed with 401 (Unauthorized) or 403 (Forbidden) on an authenticated endpoint
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      const isAuthLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isAuthLoginRequest) {
+        const hadToken = localStorage.getItem('meetspace_token');
+        if (hadToken) {
+          localStorage.removeItem('meetspace_token');
+          localStorage.removeItem('meetspace_user');
+          window.dispatchEvent(
+            new CustomEvent('auth:unauthorized', {
+              detail: {
+                status: error.response.status,
+                message: error.response.data?.message || 'Session expired. Please sign in again.',
+              },
+            })
+          );
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const authApi = {
   /**
    * Login user with email and password

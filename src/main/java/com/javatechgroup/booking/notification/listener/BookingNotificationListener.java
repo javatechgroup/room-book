@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.notification.listener;
+package com.javatechgroup.booking.notification.listener;
 
 import com.javatechgroup.booking.notification.email.EmailService;
 import com.javatechgroup.booking.notification.event.BookingCancelledEvent;

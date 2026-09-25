@@ -1,17 +1,19 @@
 ﻿package com.javatechgroup.booking.notification.listener;
 
-import com.javatechgroup.booking.domain.Booking;
-import com.javatechgroup.booking.domain.User;
-import com.javatechgroup.booking.notification.email.EmailService;
-import com.javatechgroup.booking.notification.event.BookingCancelledEvent;
-import com.javatechgroup.booking.notification.event.BookingCreatedEvent;
-import com.javatechgroup.booking.notification.event.BookingUpdatedEvent;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.mockito.Mockito.*;
+import com.javatechgroup.booking.domain.Booking;
+import com.javatechgroup.booking.notification.email.EmailService;
+import com.javatechgroup.booking.notification.event.BookingCancelledEvent;
+import com.javatechgroup.booking.notification.event.BookingCreatedEvent;
+import com.javatechgroup.booking.notification.event.BookingUpdatedEvent;
 
 class BookingNotificationListenerTest {
 

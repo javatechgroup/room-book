@@ -1,5 +1,22 @@
 ﻿package com.javatechgroup.booking;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import com.javatechgroup.booking.domain.BookingParticipant;
 import com.javatechgroup.booking.domain.Company;
 import com.javatechgroup.booking.domain.Role;
@@ -16,18 +33,6 @@ import com.javatechgroup.booking.repository.CompanyRepository;
 import com.javatechgroup.booking.repository.RoomRepository;
 import com.javatechgroup.booking.repository.UserRepository;
 import com.javatechgroup.booking.service.FacilityBookingService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class BookingEmailIntegrationTest {

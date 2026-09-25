@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.security;
+package com.javatechgroup.booking.security;
 
 import com.javatechgroup.booking.domain.Role;
 import com.javatechgroup.booking.domain.User;
@@ -11,7 +11,8 @@ import java.util.Collections;
 
 public class UserPrincipal implements UserDetails {
 
-    private Long id;
+    private static final long serialVersionUID = 1L;
+	private Long id;
     private String email;
     private String password;
     private Long companyId;

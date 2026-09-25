@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.common;
+package com.javatechgroup.booking.common;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

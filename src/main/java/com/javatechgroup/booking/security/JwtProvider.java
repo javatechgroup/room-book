@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.security;
+package com.javatechgroup.booking.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

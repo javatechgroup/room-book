@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.repository;
+package com.javatechgroup.booking.repository;
 
 import com.javatechgroup.booking.domain.Floor;
 import org.springframework.data.domain.Page;

@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.dto;
+package com.javatechgroup.booking.dto;
 
 public class ParticipantDto {
 

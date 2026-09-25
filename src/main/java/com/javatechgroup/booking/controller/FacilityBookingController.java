@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.controller;
+package com.javatechgroup.booking.controller;
 
 import com.javatechgroup.booking.common.ApiResponse;
 import com.javatechgroup.booking.common.PageResponse;

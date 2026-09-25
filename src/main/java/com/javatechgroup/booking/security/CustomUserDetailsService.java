@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.security;
+package com.javatechgroup.booking.security;
 
 import com.javatechgroup.booking.domain.User;
 import com.javatechgroup.booking.repository.UserRepository;

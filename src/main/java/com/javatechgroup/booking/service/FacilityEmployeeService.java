@@ -1,4 +1,16 @@
-﻿package com.javatechgroup.booking.service;
+package com.javatechgroup.booking.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.javatechgroup.booking.common.BookingConflictException;
 import com.javatechgroup.booking.common.PageResponse;
@@ -8,24 +20,12 @@ import com.javatechgroup.booking.domain.Company;
 import com.javatechgroup.booking.domain.Department;
 import com.javatechgroup.booking.domain.Role;
 import com.javatechgroup.booking.domain.User;
-import com.javatechgroup.booking.dto.BulkStatusUpdateRequest;
 import com.javatechgroup.booking.dto.EmployeeRequest;
 import com.javatechgroup.booking.dto.EmployeeResponse;
 import com.javatechgroup.booking.repository.AuditLogRepository;
 import com.javatechgroup.booking.repository.CompanyRepository;
 import com.javatechgroup.booking.repository.DepartmentRepository;
 import com.javatechgroup.booking.repository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FacilityEmployeeService {
