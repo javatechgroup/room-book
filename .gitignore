@@ -21,3 +21,7 @@ Thumbs.db
 .vscode/
 *.iml
 *.log
+.classpath
+.project
+.settings/
+.factorypath
