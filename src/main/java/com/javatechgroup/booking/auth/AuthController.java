@@ -30,7 +30,7 @@ public class AuthController {
     }
 
     @GetMapping("/verify-reset-token")
-    public ResponseEntity<ApiResponse<Map<String, Boolean>>> verifyResetToken(@RequestParam("token") String token) {
+    public ResponseEntity<ApiResponse<Map<String, Boolean>>> verifyResetToken(@RequestParam String token) {
         boolean valid = authService.verifyResetToken(token);
         return ResponseEntity.ok(ApiResponse.success(Map.of("valid", valid), valid ? "Reset token is valid." : "Reset token is invalid or expired."));
     }

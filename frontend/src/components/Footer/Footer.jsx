@@ -110,14 +110,14 @@ function Footer() {
           <div className="footer__brand">
             <a href="#" onClick={scrollToTop} className="footer__logo">
               <Building2 size={20} />
-              <span>Workplace Portal</span>
+              <span>MeetSpace</span>
             </a>
             <p className="footer__tagline">
-              Internal scheduling platform for corporate meeting rooms and physical facilities.
+              Enterprise scheduling platform for corporate meeting rooms, smart suggestions, and policy-governed physical facilities.
             </p>
             <div className="footer__status-badge">
               <span className="status-dot status-dot--online" />
-              <span>Campus System Active • Building A</span>
+              <span>Enterprise Platform Active • Multi-Tenant Ready</span>
             </div>
           </div>
 
@@ -138,9 +138,21 @@ function Footer() {
                 </a>
               </li>
               <li>
+                <a href="#booking-policies" onClick={(e) => scrollToSection(e, 'booking-policies')}>
+                  <ShieldCheck size={13} className="footer__link-icon" />
+                  Booking Policies
+                </a>
+              </li>
+              <li>
+                <a href="#role-portals" onClick={(e) => scrollToSection(e, 'role-portals')}>
+                  <Users size={13} className="footer__link-icon" />
+                  Role Portals
+                </a>
+              </li>
+              <li>
                 <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')}>
                   <Mail size={13} className="footer__link-icon" />
-                  Contact Facilities
+                  Contact Solutions
                 </a>
               </li>
             </ul>
@@ -148,11 +160,11 @@ function Footer() {
 
           {/* Column 2: Campus Info */}
           <div className="footer__column">
-            <h4 className="footer__heading">Campus Information</h4>
+            <h4 className="footer__heading">Enterprise Headquarters</h4>
             <ul className="footer__info-list">
               <li>
                 <MapPin size={13} className="footer__link-icon" />
-                <span>Workplace Headquarters</span>
+                <span>123 Workplace Plaza, Suite 400</span>
               </li>
               <li>
                 <Mail size={13} className="footer__link-icon" />
@@ -164,7 +176,7 @@ function Footer() {
 
         {/* Footer Bottom Bar */}
         <div className="footer__bottom">
-          <p>&copy; {currentYear} Workplace Room Portal. All rights reserved.</p>
+          <p>&copy; {currentYear} MeetSpace Corporate Room Platform. All rights reserved.</p>
           <button type="button" className="footer__back-to-top" onClick={scrollToTop}>
             <span>Back to top</span>
             <ArrowUp size={13} />

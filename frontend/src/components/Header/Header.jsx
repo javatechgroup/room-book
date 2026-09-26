@@ -26,6 +26,9 @@ function Header() {
     ? []
     : [
         { label: 'How It Works', href: '#how-it-works' },
+        { label: 'Booking Policies', href: '#booking-policies' },
+        { label: 'Role Portals', href: '#role-portals' },
+        { label: 'Contact', href: '#contact' },
         { label: 'Sign In', href: '#login-gateway' },
       ];
 
@@ -89,6 +92,13 @@ function Header() {
     } else if (link.label === 'Connect With Us') {
       e.preventDefault();
       openConnect();
+    } else if (link.href && link.href.startsWith('#')) {
+      const targetId = link.href.substring(1);
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        e.preventDefault();
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -104,10 +114,10 @@ function Header() {
           <Building2 size={26} className="header__logo-icon" />
           <div className="header__brand-text">
             <span className="header__logo-text">
-              {user?.role === 'SUPER_ADMIN' ? 'Super Admin Portal' : user?.role === 'COMPANY_ADMIN' ? 'Facility Admin Portal' : 'Workplace Portal'}
+              {user?.role === 'SUPER_ADMIN' ? 'Super Admin Portal' : user?.role === 'COMPANY_ADMIN' ? 'Facility Admin Portal' : 'MeetSpace'}
             </span>
             <span className="header__logo-sub">
-              {user?.role === 'SUPER_ADMIN' ? 'Tenant & Access Management' : user?.role === 'COMPANY_ADMIN' ? 'Office Facilities & Multi-Floor Spaces' : 'Meeting Room Booking & Availability'}
+              {user?.role === 'SUPER_ADMIN' ? 'Tenant & Access Management' : user?.role === 'COMPANY_ADMIN' ? 'Office Facilities & Multi-Floor Spaces' : 'Corporate Room Booking & Policy Platform'}
             </span>
           </div>
         </a>

@@ -8,6 +8,8 @@ import WorkplacePortal from './components/WorkplacePortal/WorkplacePortal';
 import SuperAdminPortal from './components/SuperAdminPortal/SuperAdminPortal';
 import FacilityAdminPortal from './components/FacilityAdminPortal/FacilityAdminPortal';
 import WalkthroughSection from './components/WalkthroughSection/WalkthroughSection';
+import PolicyShowcase from './components/PolicyShowcase/PolicyShowcase';
+import RoleMatrix from './components/RoleMatrix/RoleMatrix';
 import Contact from './components/Contact/Contact';
 import Footer from './components/Footer/Footer';
 import LoginModal from './components/LoginModal/LoginModal';
@@ -62,12 +64,14 @@ function AppContent() {
           <Footer />
         </>
       ) : (
-        /* Unauthenticated: Corporate Login Gateway + How We Simplify Booking Walkthrough + Client Contact Section */
+        /* Unauthenticated: Corporate Login Gateway + How It Works + Company Booking Policies + Role Portals + Contact */
         <>
           <Header />
           <main>
             <LoginGateway />
             <WalkthroughSection />
+            <PolicyShowcase />
+            <RoleMatrix />
             <Contact />
           </main>
           <Footer />

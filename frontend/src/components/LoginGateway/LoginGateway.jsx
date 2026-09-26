@@ -12,6 +12,7 @@ import {
   Sparkles,
   AlertCircle,
   LogIn,
+  Sliders,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './LoginGateway.css';
@@ -51,16 +52,16 @@ function LoginGateway() {
             <div className="brand-badge">
               <span className="pulse-dot" />
               <Building2 size={15} />
-              <span>Campus Facility Portal</span>
+              <span>Enterprise Workplace & Facility Management</span>
             </div>
             <h1 className="brand-title">
-              Workplace Meeting Room <br />
-              <span className="brand-title--accent">Management Portal</span>
+              Smart & Policy-Governed <br />
+              <span className="brand-title--accent">Room Booking Platform</span>
             </h1>
             <p className="brand-desc">
-              Internal scheduling platform for company physical meeting spaces.
+              All-in-one corporate scheduling platform for physical meeting spaces.
               Sign in with your corporate credentials to check room availability,
-              reserve slots, and view intelligent room suggestions.
+              reserve conflict-free slots with smart suggestions, and manage company booking policies.
             </p>
           </div>
 
@@ -77,6 +78,16 @@ function LoginGateway() {
 
             <div className="brand-feature-item">
               <div className="feature-icon">
+                <Sliders size={18} />
+              </div>
+              <div>
+                <strong>Company-Enforced Booking Policies</strong>
+                <p>Advance booking limits, duration safeguards, and automatic cancellation cutoffs.</p>
+              </div>
+            </div>
+
+            <div className="brand-feature-item">
+              <div className="feature-icon">
                 <Layers size={18} />
               </div>
               <div>
@@ -87,21 +98,11 @@ function LoginGateway() {
 
             <div className="brand-feature-item">
               <div className="feature-icon">
-                <CheckCircle2 size={18} />
-              </div>
-              <div>
-                <strong>Guaranteed Conflict-Free Allocation</strong>
-                <p>Prevents overlapping reservations across company meeting rooms with strict slot locking.</p>
-              </div>
-            </div>
-
-            <div className="brand-feature-item">
-              <div className="feature-icon">
                 <ShieldCheck size={18} />
               </div>
               <div>
                 <strong>Role-Based Workplace Privileges</strong>
-                <p>Employee room booking and Facility Admin maintenance & policy management.</p>
+                <p>Dedicated portals for Employees, Facility Admins, and Enterprise IT Super Admins.</p>
               </div>
             </div>
           </div>
