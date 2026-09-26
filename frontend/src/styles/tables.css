@@ -254,12 +254,13 @@
 /* 2. Actions Column (Fixed Width, Centered, Contained) */
 .th-actions,
 .td-actions {
-  width: 155px;
+  width: 180px;
+  min-width: 180px;
   white-space: nowrap;
   text-align: center !important;
-  padding-left: 6px !important;
-  padding-right: 6px !important;
-  overflow: hidden;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  overflow: visible;
   vertical-align: middle !important;
 }
 
@@ -273,6 +274,11 @@
   flex-shrink: 0 !important;
   margin: 0 auto !important;
   vertical-align: middle !important;
+}
+
+.td-actions__group .action-btn {
+  margin: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 /* 3. Data Columns (Equally Distributed Across Table Width):
