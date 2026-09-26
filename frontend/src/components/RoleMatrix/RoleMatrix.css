@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoleMatrix Component Styles
+   RoleMatrix Component Styles — Refined Enterprise Polish
    ========================================================================== */
 
 .role-matrix {
@@ -42,6 +42,11 @@
   border: 1px solid var(--border-card, #e2e8f0);
 }
 
+[data-theme='dark'] .role-matrix__tabs {
+  background-color: #0c1220;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .role-tab-btn {
   display: flex;
   align-items: center;
@@ -51,7 +56,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
   color: var(--text-muted, #64748b);
 }
@@ -87,8 +92,18 @@
   color: var(--primary-600, #2563eb);
 }
 
+[data-theme='dark'] .role-tab-btn--active {
+  background-color: #1e293b;
+  color: var(--primary-300, #93c5fd);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
 .role-tab-btn--active .role-tab-btn__text strong {
   color: var(--primary-600, #2563eb);
+}
+
+[data-theme='dark'] .role-tab-btn--active .role-tab-btn__text strong {
+  color: var(--primary-300, #93c5fd);
 }
 
 /* Panel Layout */
@@ -102,10 +117,13 @@
   border-radius: var(--radius-2xl, 24px);
   padding: 2rem 2.25rem;
   box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  transition: all 0.25s ease;
 }
 
 [data-theme='dark'] .role-panel {
-  background-color: rgba(15, 23, 42, 0.4);
+  background-color: #111726;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .role-badge {
@@ -125,8 +143,8 @@
 }
 
 .role-badge--amber {
-  background-color: rgba(217, 119, 6, 0.1);
-  color: #d97706;
+  background-color: var(--amber-50, #fffbeb);
+  color: var(--amber-600, #d97706);
 }
 
 .role-badge--purple {
@@ -165,7 +183,7 @@
 }
 
 .role-feature-item svg {
-  color: #10b981;
+  color: var(--emerald-500, #10b981);
   flex-shrink: 0;
   margin-top: 3px;
 }
@@ -184,6 +202,12 @@
   box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.08));
 }
 
+[data-theme='dark'] .preview-card {
+  background-color: #141d2e;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
 .preview-card__header {
   background-color: var(--bg-surface-alt, #f1f5f9);
   padding: 0.85rem 1.25rem;
@@ -191,6 +215,11 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+[data-theme='dark'] .preview-card__header {
+  background-color: #0f1624;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .window-dots {
@@ -205,9 +234,9 @@
   background-color: #cbd5e1;
 }
 
-.window-dots span:nth-child(1) { background-color: #f87171; }
-.window-dots span:nth-child(2) { background-color: #fbbf24; }
-.window-dots span:nth-child(3) { background-color: #34d399; }
+.window-dots span:nth-child(1) { background-color: var(--red-500, #ef4444); }
+.window-dots span:nth-child(2) { background-color: var(--amber-500, #f59e0b); }
+.window-dots span:nth-child(3) { background-color: var(--emerald-500, #10b981); }
 
 .preview-card__title {
   font-size: 0.78rem;
@@ -228,6 +257,12 @@
   border-radius: 12px;
   padding: 1rem;
   background-color: var(--bg-surface, #ffffff);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme='dark'] .preview-room-item {
+  background-color: #162033;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .preview-room-title {
@@ -251,12 +286,12 @@
 
 .preview-tag--green {
   background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--emerald-500, #10b981);
 }
 
 .preview-tag--amber {
   background-color: rgba(245, 158, 11, 0.1);
-  color: #d97706;
+  color: var(--amber-600, #d97706);
 }
 
 .preview-meta {
@@ -296,10 +331,14 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  color: #d97706;
-  background-color: rgba(245, 158, 11, 0.08);
+  color: var(--amber-600, #d97706);
+  background-color: var(--amber-50, #fffbeb);
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
+}
+
+[data-theme='dark'] .preview-smart-note {
+  background-color: rgba(245, 158, 11, 0.1);
 }
 
 /* Timeline Preview */
@@ -328,17 +367,17 @@
 }
 
 .time-block--busy {
-  background-color: #3b82f6;
+  background-color: var(--primary-500, #3b82f6);
   color: #ffffff;
 }
 
 .time-block--free {
-  background-color: #10b981;
+  background-color: var(--emerald-500, #10b981);
   color: #ffffff;
 }
 
 .time-block--maint {
-  background-color: #f59e0b;
+  background-color: var(--amber-500, #f59e0b);
   color: #ffffff;
 }
 
@@ -365,8 +404,8 @@
   flex-shrink: 0;
 }
 
-.audit-dot--green { background-color: #10b981; }
-.audit-dot--blue { background-color: #3b82f6; }
+.audit-dot--green { background-color: var(--emerald-500, #10b981); }
+.audit-dot--blue { background-color: var(--primary-500, #3b82f6); }
 .audit-dot--purple { background-color: #a855f7; }
 
 .preview-audit-item strong {
@@ -394,6 +433,6 @@
 
   .role-panel {
     grid-template-columns: 1fr;
-    padding: 2rem;
+    padding: 1.5rem;
   }
 }

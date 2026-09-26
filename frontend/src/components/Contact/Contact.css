@@ -1,5 +1,5 @@
 /* ================================================================
-   Contact Section — Streamlined & Compact Client Connection
+   Contact Section — Streamlined & Polished Client Connection
    ================================================================ */
 
 .contact {
@@ -38,7 +38,7 @@
 }
 
 [data-theme='dark'] .contact__header .section-tag {
-  color: #93c5fd;
+  color: var(--primary-300, #93c5fd);
   background-color: rgba(37, 99, 235, 0.18);
   border-color: rgba(59, 130, 246, 0.35);
 }
@@ -90,6 +90,7 @@
 [data-theme='dark'] .contact__channels-box {
   background-color: #111726;
   border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .channels-title {
@@ -109,7 +110,7 @@
   border-radius: 10px;
   background-color: var(--bg-surface-alt, #f8fafc);
   border: 1px solid var(--border-card, #f1f5f9);
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme='dark'] .channel-row {
@@ -119,6 +120,7 @@
 
 .channel-row:hover {
   border-color: var(--primary-300, #93c5fd);
+  transform: translateX(2px);
 }
 
 .channel-row__icon {
@@ -137,8 +139,8 @@
 }
 
 .channel-row__icon--emerald {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background-color: var(--emerald-50, #ecfdf5);
+  color: var(--emerald-600, #059669);
 }
 
 .channel-row__icon--purple {
@@ -205,6 +207,7 @@ a.channel-row__val:hover {
 [data-theme='dark'] .contact__compact-guarantee {
   background-color: #111726;
   border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .compact-guarantee__header {
@@ -241,7 +244,7 @@ a.channel-row__val:hover {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #10b981;
+  background-color: var(--emerald-500, #10b981);
   margin-top: 6px;
   flex-shrink: 0;
 }
@@ -252,12 +255,16 @@ a.channel-row__val:hover {
   gap: 0.4rem;
   font-size: 0.74rem;
   font-weight: 700;
-  color: #d97706;
-  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--amber-600, #d97706);
+  background-color: var(--amber-50, #fffbeb);
   padding: 0.25rem 0.65rem;
   border-radius: 9999px;
   align-self: flex-start;
   margin-top: auto;
+}
+
+[data-theme='dark'] .compact-sla {
+  background-color: rgba(245, 158, 11, 0.12);
 }
 
 /* Right Column: Form */
@@ -281,6 +288,7 @@ a.channel-row__val:hover {
 [data-theme='dark'] .contact__form {
   background-color: #111726;
   border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .contact__form-top {
@@ -313,7 +321,7 @@ a.channel-row__val:hover {
   background-color: var(--bg-surface-alt, #f8fafc);
   color: var(--text-muted, #64748b);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .inquiry-pill:hover {
@@ -325,12 +333,13 @@ a.channel-row__val:hover {
   background-color: var(--primary-600, #2563eb);
   color: #ffffff;
   border-color: var(--primary-600, #2563eb);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 [data-theme='dark'] .inquiry-pill {
   background-color: #161e2e;
   border-color: rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  color: var(--text-faint, #94a3b8);
 }
 
 [data-theme='dark'] .inquiry-pill--active {
@@ -358,7 +367,7 @@ a.channel-row__val:hover {
 }
 
 .contact__field label .req {
-  color: #ef4444;
+  color: var(--red-500, #ef4444);
 }
 
 .contact__input-wrap {
@@ -392,7 +401,7 @@ a.channel-row__val:hover {
   border-radius: var(--radius-md, 8px);
   outline: none;
   box-sizing: border-box;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 [data-theme='dark'] .contact__input-wrap input {
@@ -415,7 +424,7 @@ a.channel-row__val:hover {
   outline: none;
   resize: vertical;
   box-sizing: border-box;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 [data-theme='dark'] .contact__input-wrap textarea {
@@ -443,11 +452,12 @@ a.channel-row__val:hover {
   border-radius: var(--radius-md, 8px);
   margin-top: 0.25rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .contact__submit-btn:hover {
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .contact__reassurance {
@@ -472,7 +482,7 @@ a.channel-row__val:hover {
 }
 
 .success-icon {
-  color: #10b981;
+  color: var(--emerald-500, #10b981);
 }
 
 .contact__success h3 {
@@ -497,6 +507,11 @@ a.channel-row__val:hover {
   background-color: var(--primary-50, #eff6ff);
   padding: 0.25rem 0.7rem;
   border-radius: 6px;
+}
+
+[data-theme='dark'] .success-ref {
+  background-color: rgba(37, 99, 235, 0.2);
+  color: var(--primary-300, #93c5fd);
 }
 
 /* Responsive */
