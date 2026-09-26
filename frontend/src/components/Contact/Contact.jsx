@@ -18,15 +18,15 @@ import { useToast } from '../../context/ToastContext';
 import './Contact.css';
 
 const INQUIRY_TYPES = [
-  { id: 'deploy', label: '🏢 Deploy System', defaultMsg: 'We want to deploy MeetSpace across our office meeting rooms.' },
-  { id: 'policies', label: '🛡️ Policy Consultation', defaultMsg: 'We would like to configure custom room booking policies and duration limits.' },
-  { id: 'demo', label: '🔍 Live Demo', defaultMsg: 'We would like to schedule a 1-on-1 walkthrough of the platform.' },
-  { id: 'technical', label: '⚙️ IT & Security', defaultMsg: 'We have questions regarding multi-tenant provisioning, SSO, or security.' },
+  { id: 'register', label: '🏢 Register Company', defaultMsg: 'We would like to register our company on MeetSpace and provision our workplace portal.' },
+  { id: 'policies', label: '🛡️ Policy Setup', defaultMsg: 'We want to configure company-wide booking rules, advance notice windows, and duration limits.' },
+  { id: 'facility', label: '📍 Facility & Team', defaultMsg: 'We need assistance setting up our physical floors, meeting rooms, departments, and employee access.' },
+  { id: 'demo', label: '🔍 Live Demo', defaultMsg: 'We would like to schedule a 1-on-1 walkthrough of the employee portal and facility admin dashboard.' },
 ];
 
 function Contact() {
   const { toast } = useToast();
-  const [selectedType, setSelectedType] = useState('deploy');
+  const [selectedType, setSelectedType] = useState('register');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -79,7 +79,7 @@ function Contact() {
         phone: '',
         message: INQUIRY_TYPES[0].defaultMsg,
       });
-      setSelectedType('deploy');
+      setSelectedType('register');
     }, 5000);
   };
 
@@ -312,7 +312,7 @@ function Contact() {
 
                   <div className="contact__reassurance">
                     <ShieldCheck size={13} />
-                    <span>256-bit encryption • Non-disclosure protected • Zero spam</span>
+                    <span>Direct response within 24 hours • Zero double-booking guarantee • Zero spam</span>
                   </div>
                 </>
               )}

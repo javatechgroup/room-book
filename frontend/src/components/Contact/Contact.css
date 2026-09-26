@@ -305,23 +305,38 @@ a.channel-row__val:hover {
   letter-spacing: 0.04em;
 }
 
-/* Category Pills */
+/* Category Pills — Single Line Layout */
 .contact__pills-group {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.contact__pills-group::-webkit-scrollbar {
+  display: none;
 }
 
 .inquiry-pill {
-  font-size: 0.74rem;
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.3rem 0.7rem;
+  padding: 0.35rem 0.5rem;
   border-radius: 999px;
   border: 1px solid var(--border-card, #e2e8f0);
   background-color: var(--bg-surface-alt, #f8fafc);
   color: var(--text-muted, #64748b);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
 .inquiry-pill:hover {
@@ -598,10 +613,12 @@ a.channel-row__val:hover {
 
   .contact__pills-group {
     gap: 4px;
+    flex-wrap: nowrap;
   }
 
   .inquiry-pill {
-    font-size: 0.7rem;
-    padding: 4px 8px;
+    font-size: 0.68rem;
+    padding: 3px 6px;
+    white-space: nowrap;
   }
 }
