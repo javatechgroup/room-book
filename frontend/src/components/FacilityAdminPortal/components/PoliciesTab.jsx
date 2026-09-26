@@ -608,7 +608,7 @@ export default function PoliciesTab({ companyId, companyName }) {
             >
               <Info size={16} color="var(--primary-600, #2563eb)" style={{ flexShrink: 0, marginTop: '2px' }} />
               <span>
-                <strong>Facility Admin Exemption:</strong> Facility Admins and Super Admins retain override authority to cancel or reassign any meeting room at any time regardless of cancellation deadlines.
+                <strong>Facility Admin Exemption:</strong> Facility Admins retain override authority to cancel or reassign any meeting room at any time regardless of cancellation deadlines.
               </span>
             </div>
 
