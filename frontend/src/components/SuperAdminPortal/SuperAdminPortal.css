@@ -1525,16 +1525,13 @@
   border-color: rgba(239, 68, 68, 0.4);
 }
 
-.td-actions {
-  text-align: right;
+.td-actions,
+.th-actions {
+  text-align: center !important;
   white-space: nowrap;
   overflow: visible !important;
   text-overflow: clip !important;
-}
-
-.th-actions {
-  text-align: right;
-  overflow: visible !important;
+  vertical-align: middle !important;
 }
 
 .action-btn {

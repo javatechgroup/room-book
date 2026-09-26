@@ -3429,20 +3429,20 @@
 }
 
 /* ════════════════════ SUPER ADMIN ACTION BUTTONS ════════════════════ */
-.td-actions {
-  text-align: right;
-  white-space: nowrap;
-}
-
+.td-actions,
 .th-actions {
-  text-align: right;
+  text-align: center !important;
+  white-space: nowrap;
+  vertical-align: middle !important;
 }
 
 .td-actions__group {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  margin: 0 auto !important;
+  vertical-align: middle !important;
 }
 
 .action-btn {
@@ -3934,7 +3934,7 @@
 }
 
 /* ================================================================
-   Auto-Equalizing Table Architecture (Dynamic, Add/Delete Safe)
+   Facility Admin Tables — Inherit Global Responsive Auto-Alignment
    ================================================================ */
 .rooms-table,
 .departments-table,
@@ -3944,319 +3944,8 @@
 .my-bookings-table,
 .occupancy-table {
   width: 100%;
-  table-layout: fixed;
   border-collapse: collapse;
-}
-
-/* Dedicated Utility Columns: Fixed bounds only where strictly required */
-.rooms-table th.th-checkbox, .rooms-table td.td-checkbox,
-.employees-table th.th-checkbox, .employees-table td.td-checkbox { 
-  width: 48px; 
-  min-width: 48px;
-  max-width: 48px;
-  text-align: center; 
-  padding: 11px 6px !important;
-}
-
-.rooms-table th.th-actions, .rooms-table td.td-actions,
-.departments-table th.th-actions, .departments-table td.td-actions,
-.floors-table th.th-actions, .floors-table td.td-actions,
-.employees-table th.th-actions, .employees-table td.td-actions,
-.bookings-table th.th-actions, .bookings-table td.td-actions,
-.my-bookings-table th.th-actions, .my-bookings-table td.td-actions {
-  width: 155px;
-  min-width: 140px;
-  text-align: right;
-  padding-right: 14px !important;
-  padding-left: 4px !important;
-  overflow: visible !important;
-}
-
-.rooms-table td.td-actions .td-actions__group,
-.departments-table td.td-actions .td-actions__group,
-.floors-table td.td-actions .td-actions__group,
-.employees-table td.td-actions .td-actions__group,
-.bookings-table td.td-actions .td-actions__group,
-.rooms-table td.td-actions .td-actions__group,
-.departments-table td.td-actions .td-actions__group,
-.floors-table td.td-actions .td-actions__group,
-.employees-table td.td-actions .td-actions__group,
-.bookings-table td.td-actions .td-actions__group,
-.my-bookings-table td.td-actions .td-actions__group {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  width: auto;
-  flex-wrap: nowrap;
-  margin: 0 auto;
-}
-
-/* ════════════════════════════════════════════════════════════════
-   Dedicated Proportional Column Layout (Fits Data Beautifully)
-   ════════════════════════════════════════════════════════════════ */
-
-/* 1. Rooms Table: Balanced proportions & centered badges */
-.rooms-table th.th-room-name,
-.rooms-table td.td-room-name {
-  width: 35%;
-  min-width: 240px;
-  text-align: left !important;
-}
-
-.rooms-table th.th-floor,
-.rooms-table td.td-floor {
-  width: 16%;
-  min-width: 110px;
-  text-align: center !important;
-}
-
-.rooms-table th.th-capacity,
-.rooms-table td.td-capacity {
-  width: 15%;
-  min-width: 110px;
-  text-align: center !important;
-}
-
-.rooms-table th.th-status,
-.rooms-table td.td-status {
-  width: 16%;
-  min-width: 110px;
-  text-align: center !important;
-}
-
-.rooms-table th.th-actions,
-.rooms-table td.td-actions {
-  width: 18%;
-  min-width: 155px;
-  text-align: center !important;
-}
-
-.rooms-table td.td-floor .code-pill,
-.rooms-table td.td-capacity .capacity-pill,
-.rooms-table td.td-status .status-badge-btn {
-  margin: 0 auto;
-}
-
-/* 2. Employees Table: Staff member primary, crisp meta tags */
-.employees-table th.th-staff-member,
-.employees-table td.td-staff-member {
-  width: 32%;
-  min-width: 220px;
-  text-align: left !important;
-}
-
-.employees-table th.th-department,
-.employees-table td.td-department {
-  width: 18%;
-  min-width: 130px;
-  text-align: center !important;
-}
-
-.employees-table th.th-role,
-.employees-table td.td-role {
-  width: 13%;
-  min-width: 110px;
-  text-align: center !important;
-}
-
-.employees-table th.th-status,
-.employees-table td.td-status {
-  width: 12%;
-  min-width: 100px;
-  text-align: center !important;
-}
-
-.employees-table th.th-onboarded,
-.employees-table td.td-onboarded {
-  width: 12%;
-  min-width: 105px;
-  text-align: center !important;
-}
-
-.employees-table th.th-actions,
-.employees-table td.td-actions {
-  width: 13%;
-  min-width: 140px;
-  text-align: center !important;
-}
-
-.employees-table td.td-department .department-badge,
-.employees-table td.td-role .role-badge,
-.employees-table td.td-status .status-badge-btn,
-.employees-table td.td-onboarded .table-date {
-  margin: 0 auto;
-}
-
-/* 3. Departments Table */
-.departments-table th.th-dept-name,
-.departments-table td.td-dept-name {
-  width: 38%;
-  min-width: 200px;
-}
-
-.departments-table th.th-dept-staff,
-.departments-table td.td-dept-staff {
-  width: 18%;
-  min-width: 120px;
-}
-
-.departments-table th.th-status,
-.departments-table td.td-status {
-  width: 14%;
-  min-width: 100px;
-}
-
-.departments-table th.th-created,
-.departments-table td.td-created {
-  width: 16%;
-  min-width: 115px;
-}
-
-/* 4. Floors Table */
-.floors-table th.th-floor-name,
-.floors-table td.td-floor-name {
-  width: 24%;
-  min-width: 160px;
-}
-
-.floors-table th.th-floor-rooms,
-.floors-table td.td-floor-rooms {
-  width: 15%;
-  min-width: 115px;
-}
-
-.floors-table th.th-floor-desc,
-.floors-table td.td-floor-desc {
-  width: 32%;
-  min-width: 180px;
-}
-
-.floors-table th.th-status,
-.floors-table td.td-status {
-  width: 12%;
-  min-width: 95px;
-}
-
-.floors-table th.th-created,
-.floors-table td.td-created {
-  width: 14%;
-  min-width: 110px;
-}
-
-/* 5. Bookings Monitor Master Log */
-.bookings-table th.th-booking-time,
-.bookings-table td.td-booking-time {
-  width: 155px;
-  min-width: 140px;
-}
-
-.bookings-table th.th-booking-title,
-.bookings-table td.td-booking-title {
-  width: 26%;
-  min-width: 180px;
-}
-
-.bookings-table th.th-booking-room,
-.bookings-table td.td-booking-room {
-  width: 19%;
-  min-width: 135px;
-}
-
-.bookings-table th.th-booking-user,
-.bookings-table td.td-booking-user {
-  width: 17%;
-  min-width: 130px;
-}
-
-.bookings-table th.th-booking-attendees,
-.bookings-table td.td-booking-attendees {
-  width: 105px;
-  min-width: 95px;
-}
-
-.bookings-table th.th-status,
-.bookings-table td.td-status {
-  width: 120px;
-  min-width: 105px;
-}
-
-/* 6. Facility My Bookings Table */
-.my-bookings-table th.th-booking-time,
-.my-bookings-table td.td-booking-time {
-  width: 160px;
-  min-width: 145px;
-}
-
-.my-bookings-table th.th-booking-title,
-.my-bookings-table td.td-booking-title {
-  width: 30%;
-  min-width: 190px;
-}
-
-.my-bookings-table th.th-booking-room,
-.my-bookings-table td.td-booking-room {
-  width: 22%;
-  min-width: 150px;
-}
-
-.my-bookings-table th.th-booking-attendees,
-.my-bookings-table td.td-booking-attendees {
-  width: 115px;
-  min-width: 95px;
-}
-
-.my-bookings-table th.th-status,
-.my-bookings-table td.td-status {
-  width: 125px;
-  min-width: 110px;
-}
-
-/* 7. Occupancy Table */
-.occupancy-table th.th-occ-room,
-.occupancy-table td.td-occ-room {
-  width: 25%;
-  min-width: 180px;
-}
-
-.occupancy-table th.th-occ-floor,
-.occupancy-table td.td-occ-floor {
-  width: 15%;
-  min-width: 120px;
-}
-
-.occupancy-table th.th-occ-capacity,
-.occupancy-table td.td-occ-capacity {
-  width: 12%;
-  min-width: 100px;
-}
-
-.occupancy-table th.th-occ-status,
-.occupancy-table td.td-occ-status {
-  width: 16%;
-  min-width: 125px;
-}
-
-.occupancy-table th.th-occ-session,
-.occupancy-table td.td-occ-session {
-  width: 22%;
-  min-width: 150px;
-}
-
-.occupancy-table th.th-actions,
-.occupancy-table td.td-actions {
-  width: 110px;
-  min-width: 95px;
-}
-
-/* Fallback for unclassified dynamic columns */
-.rooms-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
-.departments-table th:not(.th-actions):not([class*="th-"]),
-.floors-table th:not(.th-actions):not([class*="th-"]),
-.employees-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
-.bookings-table th:not(.th-actions):not([class*="th-"]),
-.my-bookings-table th:not(.th-actions):not([class*="th-"]) {
-  min-width: 110px;
+  table-layout: fixed; /* Automatically and equally distributes space across all data columns */
 }
 
 .rooms-table-responsive,
@@ -4354,7 +4043,7 @@
 
 .directory-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
 }
 

@@ -20,20 +20,22 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Universal Table Base */
+/* Universal Responsive Auto-Layout Table Base */
 .app-table,
 .superadmin-table,
-.rooms-table {
+.rooms-table,
+.departments-table,
+.floors-table,
+.employees-table,
+.bookings-table,
+.my-bookings-table,
+.occupancy-table,
+.directory-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.885rem;
   text-align: left;
-}
-
-/* Strict Fixed Layout for Super Admin Tables */
-.superadmin-table {
-  table-layout: fixed;
-  width: 100%;
+  table-layout: fixed; /* Automatically and equally distributes space across all data columns */
 }
 
 /* High-Contrast Table Headers */
@@ -221,8 +223,98 @@
 }
 
 /* ================================================================
-   Global Table Alignment Standards
+   Universal Auto-Alignment & Dynamic Column Architecture
+   - Fully dynamic: Automatically recalculates when columns are added/removed.
+   - Text & primary columns: Default left-aligned, auto-expanding across remaining space.
+   - Compact columns (checkbox, status, pills, codes, actions): Auto-shrink to fit snuggly.
+   - Badges, pills, toggles: Automatically centered under their headers.
    ================================================================ */
+
+/* Default alignment: All table headers and data cells are left-aligned */
+.app-table th,
+.app-table td,
+.superadmin-table th,
+.superadmin-table td,
+.rooms-table th,
+.rooms-table td,
+.departments-table th,
+.departments-table td,
+.floors-table th,
+.floors-table td,
+.employees-table th,
+.employees-table td,
+.bookings-table th,
+.bookings-table td,
+.my-bookings-table th,
+.my-bookings-table td,
+.occupancy-table th,
+.occupancy-table td,
+.directory-table th,
+.directory-table td {
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Explicit Utility Alignment Classes */
+.th-left, .td-left, .text-left {
+  text-align: left !important;
+}
+
+.th-center, .td-center, .text-center {
+  text-align: center !important;
+}
+
+.th-right, .td-right, .text-right {
+  text-align: right !important;
+}
+
+.th-right .th-content {
+  justify-content: flex-end !important;
+}
+
+/* 1. Checkbox Column (Strictly Fixed, Centered) */
+.th-checkbox,
+.td-checkbox {
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  text-align: center !important;
+  padding: 11px 6px !important;
+  white-space: nowrap;
+}
+
+/* 2. Actions Column (Strictly Fixed, Centered, Never Wraps) */
+.th-actions,
+.td-actions {
+  width: 170px;
+  min-width: 160px;
+  white-space: nowrap;
+  text-align: center !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  overflow: visible !important;
+  vertical-align: middle !important;
+}
+
+.td-actions__group {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin: 0 auto !important;
+  vertical-align: middle !important;
+}
+
+/* 3. Data Columns (Equally Distributed Across Table Width):
+   In table-layout: fixed, all data columns without an explicit width 
+   automatically and equally divide the remaining space across the card. */
+th:not(.th-checkbox):not(.th-actions),
+td:not(.td-checkbox):not(.td-actions) {
+  min-width: 110px;
+}
 
 /* Primary Descriptive Content: Left-Aligned */
 .th-room-name, .td-room-name,
@@ -233,6 +325,10 @@
 .th-company-name, .td-company-name,
 .th-admin-name, .td-admin-name,
 .th-booking-title, .td-booking-title,
+.th-booking-room, .td-booking-room,
+.th-booking-user, .td-booking-user,
+.th-occ-room, .td-occ-room,
+.th-occ-session, .td-occ-session,
 .th-contact, .td-contact,
 .th-campus, .td-campus,
 .th-email, .td-email {
@@ -241,18 +337,18 @@
 
 /* Badges, Pills, Status, Capacities, Counts & Dates: Centered */
 .th-center, .td-center,
+.th-status, .td-status,
 .th-floor, .td-floor,
 .th-capacity, .td-capacity,
-.th-status, .td-status,
 .th-code, .td-code,
 .th-role, .td-role,
+.th-admins, .td-admins,
 .th-department, .td-department,
 .th-dept-staff, .td-dept-staff,
 .th-floor-rooms, .td-floor-rooms,
 .th-onboarded, .td-onboarded,
 .th-created, .td-created,
 .th-activity, .td-activity,
-.th-admins, .td-admins,
 .th-booking-time, .td-booking-time,
 .th-booking-attendees, .td-booking-attendees,
 .th-occ-floor, .td-occ-floor,
@@ -261,170 +357,69 @@
   text-align: center !important;
 }
 
-/* Ensure centered headers have centered content */
-th.th-center .th-content,
-th.th-floor .th-content,
-th.th-capacity .th-content,
-th.th-status .th-content,
-th.th-code .th-content,
-th.th-role .th-content,
-th.th-department .th-content,
-th.th-dept-staff .th-content,
-th.th-floor-rooms .th-content,
-th.th-onboarded .th-content,
-th.th-created .th-content,
-th.th-activity .th-content,
-th.th-admins .th-content,
-th.th-booking-time .th-content,
-th.th-booking-attendees .th-content,
-th.th-occ-floor .th-content,
-th.th-occ-capacity .th-content,
-th.th-occ-status .th-content {
+/* Header sort icon / text centering for centered columns */
+.th-center .th-content,
+.th-status .th-content,
+.th-floor .th-content,
+.th-capacity .th-content,
+.th-code .th-content,
+.th-role .th-content,
+.th-admins .th-content,
+.th-department .th-content,
+.th-dept-staff .th-content,
+.th-floor-rooms .th-content,
+.th-onboarded .th-content,
+.th-created .th-content,
+.th-activity .th-content,
+.th-booking-time .th-content,
+.th-booking-attendees .th-content,
+.th-occ-floor .th-content,
+.th-occ-capacity .th-content,
+.th-occ-status .th-content {
   justify-content: center !important;
   margin: 0 auto;
 }
 
-/* Ensure centered cell elements align in the middle of cell */
-td.td-center > *,
-td.td-floor > *,
-td.td-capacity > *,
-td.td-status > *,
-td.td-code > *,
-td.td-role > *,
-td.td-department > *,
-td.td-dept-staff > *,
-td.td-floor-rooms > *,
-td.td-onboarded > *,
-td.td-created > *,
-td.td-activity > *,
-td.td-admins > *,
-td.td-booking-time > *,
-td.td-booking-attendees > *,
-td.td-occ-floor > *,
-td.td-occ-capacity > *,
-td.td-occ-status > * {
+/* Centered cell children alignment */
+.td-center > *,
+.td-status > *,
+.td-floor > *,
+.td-capacity > *,
+.td-code > *,
+.td-role > *,
+.td-admins > *,
+.td-department > *,
+.td-dept-staff > *,
+.td-floor-rooms > *,
+.td-onboarded > *,
+.td-created > *,
+.td-activity > *,
+.td-booking-time > *,
+.td-booking-attendees > *,
+.td-occ-floor > *,
+.td-occ-capacity > *,
+.td-occ-status > * {
   display: inline-flex;
   vertical-align: middle;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* ================================================================
-   Auto-Equalizing Table Architecture (Dynamic, Add/Delete Safe)
-   ================================================================ */
-
-/* Checkbox Column (Strictly Fixed) */
-.superadmin-table .th-checkbox,
-.superadmin-table .td-checkbox,
-.companies-table .th-checkbox,
-.companies-table .td-checkbox,
-.admins-table .th-checkbox,
-.admins-table .td-checkbox {
-  width: 48px;
-  min-width: 48px;
-  max-width: 48px;
-  text-align: center;
-  padding: 11px 6px !important;
-}
-
-/* Action Columns (Strictly Fixed) */
-.superadmin-table .th-actions,
-.superadmin-table .td-actions,
-.companies-table .th-actions,
-.companies-table .td-actions,
-.admins-table .th-actions,
-.admins-table .td-actions {
-  width: 140px;
-  min-width: 130px;
-  text-align: right;
-  overflow: visible !important;
-}
-
-.audit-logs-table .th-actions,
-.audit-logs-table .td-actions {
-  width: 75px;
-  min-width: 65px;
-  text-align: center;
-}
-
-/* Companies Table Proportional Layout */
-.companies-table th.th-code,
-.companies-table td.td-code {
-  width: 110px;
-  min-width: 90px;
-}
-
-.companies-table th.th-company-name,
-.companies-table td.td-company-name {
-  width: 28%;
-  min-width: 190px;
-}
-
-.companies-table th.th-contact,
-.companies-table td.td-contact {
-  width: 20%;
-  min-width: 150px;
-}
-
-.companies-table th.th-campus,
-.companies-table td.td-campus {
-  width: 16%;
-  min-width: 130px;
-}
-
-.companies-table th.th-admins,
-.companies-table td.td-admins {
-  width: 120px;
-  min-width: 100px;
-}
-
-.companies-table th.th-status,
-.companies-table td.td-status {
-  width: 115px;
-  min-width: 95px;
-}
-
-/* Admins Table Proportional Layout */
-.admins-table th.th-admin-name,
-.admins-table td.td-admin-name {
-  width: 26%;
-  min-width: 180px;
-}
-
-.admins-table th.th-email,
-.admins-table td.td-email {
-  width: 24%;
-  min-width: 170px;
-}
-
-.admins-table th.th-company,
-.admins-table td.td-company {
-  width: 20%;
-  min-width: 140px;
-}
-
-.admins-table th.th-role,
-.admins-table td.td-role {
-  width: 125px;
-  min-width: 105px;
-}
-
-.admins-table th.th-activity,
-.admins-table td.td-activity {
-  width: 125px;
-  min-width: 105px;
-}
-
-.admins-table th.th-status,
-.admins-table td.td-status {
-  width: 115px;
-  min-width: 95px;
-}
-
-/* Fallback for unclassified dynamic data columns */
-.superadmin-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
-.companies-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
-.admins-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
-.audit-logs-table th:not(.th-actions):not([class*="th-"]) {
-  min-width: 110px;
+/* Universal badge / pill / button centering fallback for any table cell across all portals */
+td > .code-pill,
+td > .capacity-pill,
+td > .status-badge-btn,
+td > .status-pill,
+td > .level-chip,
+td > .admin-count-pill,
+td > .role-tag,
+td > .role-badge,
+td > .department-badge,
+td > .badge {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* 3. System Audit Logs Dense Formatting */
