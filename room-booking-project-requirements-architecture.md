@@ -302,9 +302,16 @@ flowchart TD
 
 ### 6.6 Quick Search Filter Reset Architecture
 
-Across high-density enterprise grids (Rooms, Employees, Live Monitor, and Scheduled Reservations), multi-criteria filters (search query, floor, status, department, role, date) can leave users with zero results or obscured views.
-- **Dedicated Reset Action**: Unified "Reset Filters" action button integrated across all management toolbars (`SlotFinderTab`, `RoomsTab`, `EmployeesTab`, `BookingMonitorTab`, `MyBookingsTab`, `FacilityMyBookingsTab`).
-- **One-Click Purge**: Clears text search, resets status pills to `ALL`, restores floor/department selectors to company-wide defaults, and resets pagination to page 1 instantly without page reloads.
+### 6.7 Company-Level Booking Policies & Rules Management
+
+To empower tenant administrators and accommodate varying workplace cultures, booking policies are enforced at the company level rather than globally:
+- **Tenant Autonomy**: Managed by the **Facility Admin** (`ROLE_COMPANY_ADMIN`) through a dedicated "Policies" control panel.
+- **Configurable Constraints**:
+  - `max_advance_booking_days`: Maximum future reservation horizon (e.g. 7, 14, 30, 60, 90 days; default 30).
+  - `min_booking_duration_minutes`: Minimum meeting length to eliminate calendar fragmentation (e.g. 15, 30, 45, 60 mins; default 30).
+  - `max_booking_duration_hours`: Upper bound on single reservations to prevent room monopolization (e.g. 1, 2, 4, 8, 12 hours; default 4).
+  - `cancellation_cutoff_minutes`: Lead time required before start time for employee self-cancellations (e.g. 0, 15, 30, 60 mins; default 30).
+- **Service-Level Enforcement**: Validated dynamically in `FacilityBookingService` during booking creation, rescheduling, and cancellation. Facility and Super Admins retain emergency override privileges to cancel or adjust reservations at any time.
 
 ---
 
@@ -320,7 +327,7 @@ frontend/src/
 │   └── superAdminApi.js        # Company CRUD, admin provisioning, platform audit logs
 ├── components/
 │   ├── SuperAdminPortal/       # Super Admin dashboard (Companies, Admins, Logs)
-│   ├── FacilityAdminPortal/    # Facility operations (Rooms, Floors, Depts, Emps, Occupancy)
+│   ├── FacilityAdminPortal/    # Facility operations (Rooms, Floors, Depts, Emps, Occupancy, Policies)
 │   ├── WorkplacePortal/        # Employee workspace (Interactive Booking, Smart Slots)
 │   ├── Header/                 # Navigation, active session info, theme toggle, sign out
 │   ├── LoginGateway/           # Corporate hero sign-in screen (with Forgot Password entry)
@@ -386,6 +393,8 @@ frontend/src/
 | `GET` | `/book/api/facility/bookings/my-bookings` | All Roles | Retrieve personal bookings for logged-in user |
 | `GET` | `/book/api/facility/bookings/occupancy` | All Roles | Get full timeline of room occupancy for a specific date |
 | `GET` | `/book/api/facility/directory/summary` | All Roles | High-level metrics (rooms, depts, employees, bookings) |
+| `GET` | `/book/api/facility/policy` | All Roles | Fetch company-specific booking policies and rules |
+| `PUT` | `/book/api/facility/policy` | `COMPANY_ADMIN`, `SUPER_ADMIN` | Update company booking policies (advance days, min/max duration, cancellation cutoff) |
 
 ---
 

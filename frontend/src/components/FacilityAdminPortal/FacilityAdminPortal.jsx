@@ -23,6 +23,7 @@ import FacilityMyBookingsTab from './components/FacilityMyBookingsTab';
 import BookingMonitorTab from './components/BookingMonitorTab';
 import BookingInspectorDrawer from './components/BookingInspectorDrawer';
 import CompanyDirectoryTab from './components/CompanyDirectoryTab';
+import PoliciesTab from './components/PoliciesTab';
 import { formatDate, formatDateTime } from '../../utils/dateUtils';
 import '../WorkplacePortal/WorkplacePortal.css';
 import './FacilityAdminPortal.css';
@@ -51,7 +52,7 @@ export default function FacilityAdminPortal() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      const validTabs = ['rooms', 'floors', 'departments', 'employees', 'book-room', 'my-bookings', 'monitor', 'directory'];
+      const validTabs = ['rooms', 'floors', 'departments', 'employees', 'book-room', 'my-bookings', 'monitor', 'directory', 'policies'];
       if (tabParam && validTabs.includes(tabParam)) return tabParam;
     }
     return 'rooms';
@@ -1537,6 +1538,14 @@ export default function FacilityAdminPortal() {
               departments={departments}
               employees={employees}
               onExportCSV={handleExportEmployeesCSV}
+            />
+          )}
+
+          {/* Tab 8: Booking Policies & Workplace Rules */}
+          {activeTab === 'policies' && (
+            <PoliciesTab
+              companyId={user?.companyId}
+              companyName={user?.companyName}
             />
           )}
         </div>

@@ -170,8 +170,8 @@ export default function WorkplacePortal() {
     setIsLoadingRooms(true);
     const companyId = user?.companyId;
     try {
-      // Fetch rooms, floors, real company departments, and employees from DB
-      const [roomsRes, floorsRes, deptsRes, dirRes] = await Promise.all([
+      // Fetch rooms, floors, real company departments, employees, and policies from DB
+      const [roomsRes, floorsRes, deptsRes, dirRes, policyRes] = await Promise.all([
         facilityApi.getRooms({ companyId, pageSize: 100 }),
         facilityApi.getFloors({ companyId }),
         facilityApi.getAllDepartments({ companyId }).then((res) => {
@@ -181,7 +181,17 @@ export default function WorkplacePortal() {
           return facilityApi.getDepartments({ companyId, size: 100 });
         }),
         facilityApi.getCompanyDirectory({ companyId }),
+        facilityApi.getBookingPolicy({ companyId }),
       ]);
+
+      if (policyRes && policyRes.success && policyRes.data) {
+        setPolicies({
+          maxSlotHours: policyRes.data.maxBookingDurationHours ?? 4,
+          minSlotMinutes: policyRes.data.minBookingDurationMinutes ?? 30,
+          advanceBookingDays: policyRes.data.maxAdvanceBookingDays ?? 30,
+          cancellationCutoffMinutes: policyRes.data.cancellationCutoffMinutes ?? 30,
+        });
+      }
 
       let loadedRooms = [];
       if (roomsRes && roomsRes.success && Array.isArray(roomsRes.data)) {

@@ -499,4 +499,38 @@ export const facilityApi = {
     return { success: false, error: 'Failed to delete floor' };
   },
 
+  // ════════════════════ BOOKING POLICIES ════════════════════
+  async getBookingPolicy(params = {}) {
+    try {
+      const response = await apiClient.get('/facility/policy', { params });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (e) {
+      console.warn('Backend /facility/policy request failed:', e.message);
+      return { success: false, error: e.response?.data?.message || e.message };
+    }
+    return {
+      success: true,
+      data: {
+        maxAdvanceBookingDays: 30,
+        minBookingDurationMinutes: 30,
+        maxBookingDurationHours: 4,
+        cancellationCutoffMinutes: 30,
+      },
+    };
+  },
+
+  async updateBookingPolicy(policyData, params = {}) {
+    try {
+      const response = await apiClient.put('/facility/policy', policyData, { params });
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+      return { success: true, data: response.data };
+    } catch (e) {
+      const errMsg = e.response?.data?.message || e.message;
+      return { success: false, error: errMsg };
+    }
+  },
 };

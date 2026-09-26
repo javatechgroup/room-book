@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { DoorOpen, Layers, Building2, Users, CalendarPlus, CalendarCheck2, Activity, BookOpen } from 'lucide-react';
+import { DoorOpen, Layers, Building2, Users, CalendarPlus, CalendarCheck2, Activity, BookOpen, ShieldCheck } from 'lucide-react';
 
 export default function FacilityAdminTabs({
   activeTab = 'rooms',
@@ -109,6 +109,16 @@ export default function FacilityAdminTabs({
         >
           <BookOpen size={15} />
           <span>Directory</span>
+        </button>
+
+        <button
+          type="button"
+          className={`superadmin-tab ${activeTab === 'policies' ? 'superadmin-tab--active' : ''}`}
+          onClick={() => onTabChange && onTabChange('policies')}
+          title="Booking Policies & Rules"
+        >
+          <ShieldCheck size={15} />
+          <span>Policies</span>
         </button>
       </div>
     </div>

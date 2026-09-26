@@ -34,17 +34,31 @@ public class FacilityBookingService {
 	private final UserRepository userRepository;
 	private final CompanyRepository companyRepository;
 	private final AuditLogRepository auditLogRepository;
+	private final BookingPolicyRepository policyRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
 	public FacilityBookingService(BookingRepository bookingRepository, RoomRepository roomRepository,
 			UserRepository userRepository, CompanyRepository companyRepository, AuditLogRepository auditLogRepository,
+			BookingPolicyRepository policyRepository,
 			ApplicationEventPublisher eventPublisher) {
 		this.bookingRepository = bookingRepository;
 		this.roomRepository = roomRepository;
 		this.userRepository = userRepository;
 		this.companyRepository = companyRepository;
 		this.auditLogRepository = auditLogRepository;
+		this.policyRepository = policyRepository;
 		this.eventPublisher = eventPublisher;
+	}
+
+	private BookingPolicy getEffectivePolicy(Long companyId) {
+		return policyRepository.findByCompanyId(companyId).orElseGet(() -> {
+			BookingPolicy defaultPolicy = new BookingPolicy();
+			defaultPolicy.setMaxAdvanceBookingDays(30);
+			defaultPolicy.setMinBookingDurationMinutes(30);
+			defaultPolicy.setMaxBookingDurationHours(4);
+			defaultPolicy.setCancellationCutoffMinutes(30);
+			return defaultPolicy;
+		});
 	}
 
 	private List<LocalDateTime[]> generateOccurrences(
@@ -129,6 +143,18 @@ public class FacilityBookingService {
 		LocalDateTime now = LocalDateTime.now();
 		if (request.getStartTime().isBefore(now)) {
 			throw new BookingConflictException("Cannot book a room in the past. Please select a future date and time.");
+		}
+
+		BookingPolicy policy = getEffectivePolicy(companyId);
+		long durationMinutes = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toMinutes();
+		if (policy.getMinBookingDurationMinutes() != null && durationMinutes < policy.getMinBookingDurationMinutes()) {
+			throw new BookingConflictException("Meeting duration (" + durationMinutes + " mins) is shorter than company minimum of " + policy.getMinBookingDurationMinutes() + " minutes.");
+		}
+		if (policy.getMaxBookingDurationHours() != null && durationMinutes > (policy.getMaxBookingDurationHours() * 60L)) {
+			throw new BookingConflictException("Meeting duration (" + (durationMinutes / 60.0) + " hrs) exceeds company maximum of " + policy.getMaxBookingDurationHours() + " hours.");
+		}
+		if (policy.getMaxAdvanceBookingDays() != null && request.getStartTime().toLocalDate().isAfter(now.toLocalDate().plusDays(policy.getMaxAdvanceBookingDays()))) {
+			throw new BookingConflictException("Bookings can only be scheduled up to " + policy.getMaxAdvanceBookingDays() + " days in advance.");
 		}
 
 		boolean isRecurring = request.getRecurrenceRule() != null && !"NONE".equalsIgnoreCase(request.getRecurrenceRule().trim());
@@ -224,6 +250,17 @@ public class FacilityBookingService {
 			throw new UnauthorizedAccessException("You are only authorized to cancel bookings made by yourself.");
 		}
 
+		if (!isSuperAdminOrFacilityAdmin) {
+			BookingPolicy policy = getEffectivePolicy(companyId);
+			if (policy.getCancellationCutoffMinutes() != null && policy.getCancellationCutoffMinutes() > 0) {
+				long minutesUntilStart = java.time.Duration.between(LocalDateTime.now(), booking.getStartTime()).toMinutes();
+				if (minutesUntilStart < policy.getCancellationCutoffMinutes()) {
+					throw new BookingConflictException("This booking cannot be cancelled less than "
+							+ policy.getCancellationCutoffMinutes() + " minutes prior to start time.");
+				}
+			}
+		}
+
 		if (cancelSeries && booking.getRecurrenceId() != null && !booking.getRecurrenceId().isBlank()) {
 			List<Booking> futureSeries = bookingRepository.findFutureActiveBookingsInSeries(
 					booking.getRecurrenceId(), booking.getStartTime());
@@ -309,6 +346,18 @@ public class FacilityBookingService {
 		if (request.getStartTime().isBefore(now)) {
 			throw new BookingConflictException(
 					"Cannot reschedule start time to a past date and time. Please select a future slot.");
+		}
+
+		BookingPolicy policy = getEffectivePolicy(companyId);
+		long durationMinutes = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toMinutes();
+		if (policy.getMinBookingDurationMinutes() != null && durationMinutes < policy.getMinBookingDurationMinutes()) {
+			throw new BookingConflictException("Meeting duration (" + durationMinutes + " mins) is shorter than company minimum of " + policy.getMinBookingDurationMinutes() + " minutes.");
+		}
+		if (policy.getMaxBookingDurationHours() != null && durationMinutes > (policy.getMaxBookingDurationHours() * 60L)) {
+			throw new BookingConflictException("Meeting duration (" + (durationMinutes / 60.0) + " hrs) exceeds company maximum of " + policy.getMaxBookingDurationHours() + " hours.");
+		}
+		if (policy.getMaxAdvanceBookingDays() != null && request.getStartTime().toLocalDate().isAfter(now.toLocalDate().plusDays(policy.getMaxAdvanceBookingDays()))) {
+			throw new BookingConflictException("Bookings can only be rescheduled up to " + policy.getMaxAdvanceBookingDays() + " days in advance.");
 		}
 
 		// Conflict check excluding the booking itself
