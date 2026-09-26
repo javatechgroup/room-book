@@ -101,12 +101,37 @@ export function AuthProvider({ children }) {
   };
 
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [resetToken, setResetToken] = useState('');
 
-  const openLogin = () => setIsLoginOpen(true);
+  const openLogin = () => {
+    setIsForgotOpen(false);
+    setIsResetOpen(false);
+    setIsLoginOpen(true);
+  };
   const closeLogin = () => setIsLoginOpen(false);
 
   const openConnect = () => setIsConnectOpen(true);
   const closeConnect = () => setIsConnectOpen(false);
+
+  const openForgotPassword = () => {
+    setIsLoginOpen(false);
+    setIsResetOpen(false);
+    setIsForgotOpen(true);
+  };
+  const closeForgotPassword = () => setIsForgotOpen(false);
+
+  const openResetPassword = (token = '') => {
+    setIsLoginOpen(false);
+    setIsForgotOpen(false);
+    if (token) setResetToken(token);
+    setIsResetOpen(true);
+  };
+  const closeResetPassword = () => {
+    setIsResetOpen(false);
+    setResetToken('');
+  };
 
   const value = {
     user,
@@ -119,6 +144,13 @@ export function AuthProvider({ children }) {
     isConnectOpen,
     openConnect,
     closeConnect,
+    isForgotOpen,
+    openForgotPassword,
+    closeForgotPassword,
+    isResetOpen,
+    resetToken,
+    openResetPassword,
+    closeResetPassword,
     login,
     logout,
   };

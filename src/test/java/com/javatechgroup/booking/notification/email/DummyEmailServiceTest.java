@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.notification.email;
+package com.javatechgroup.booking.notification.email;
 
 import com.javatechgroup.booking.domain.Booking;
 import com.javatechgroup.booking.domain.Company;

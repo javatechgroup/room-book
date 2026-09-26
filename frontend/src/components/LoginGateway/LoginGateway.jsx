@@ -17,7 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import './LoginGateway.css';
 
 function LoginGateway() {
-  const { login, openLogin, openConnect } = useAuth();
+  const { login, openLogin, openConnect, openForgotPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -178,7 +178,16 @@ function LoginGateway() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="corp-password">Password</label>
+                <div className="label-with-link">
+                  <label htmlFor="corp-password">Password</label>
+                  <button
+                    type="button"
+                    className="gateway-forgot-link"
+                    onClick={openForgotPassword}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 <div className="input-wrap">
                   <Lock size={16} className="input-icon" />
                   <input

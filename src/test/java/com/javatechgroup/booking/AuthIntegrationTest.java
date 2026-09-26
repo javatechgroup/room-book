@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking;
+package com.javatechgroup.booking;
 
 import com.javatechgroup.booking.auth.LoginRequest;
 import com.javatechgroup.booking.domain.Company;

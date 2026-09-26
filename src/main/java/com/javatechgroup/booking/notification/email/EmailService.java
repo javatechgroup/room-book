@@ -57,6 +57,15 @@ public interface EmailService {
     void sendWelcomeEmail(User user, String temporaryPassword);
 
     /**
+     * Dispatches a password reset email with secure token link and expiry.
+     *
+     * @param user the recipient user
+     * @param resetToken the generated reset token
+     * @param expiryDate the token expiration timestamp
+     */
+    void sendPasswordResetEmail(User user, String resetToken, java.time.LocalDateTime expiryDate);
+
+    /**
      * Returns an unmodifiable view of sent/simulated emails in chronological order (most recent first).
      */
     List<EmailMessage> getSentEmails();

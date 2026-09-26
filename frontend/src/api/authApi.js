@@ -80,6 +80,79 @@ export const authApi = {
       };
     }
   },
+
+  /**
+   * Request password reset token via email
+   * Calls POST /book/api/auth/forgot-password
+   */
+  async forgotPassword(email) {
+    try {
+      const response = await apiClient.post('/auth/forgot-password', { email });
+      return {
+        success: true,
+        message: response.data?.message || 'If an account matches that email address, password reset instructions have been sent.',
+      };
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.details ||
+        'Failed to request password reset. Please try again later.';
+      return {
+        success: false,
+        error: message,
+      };
+    }
+  },
+
+  /**
+   * Verify if a reset token is valid and unexpired
+   * Calls GET /book/api/auth/verify-reset-token
+   */
+  async verifyResetToken(token) {
+    try {
+      const response = await apiClient.get('/auth/verify-reset-token', {
+        params: { token },
+      });
+      const valid = Boolean(response.data?.data?.valid);
+      return {
+        success: true,
+        valid,
+        message: response.data?.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        valid: false,
+        error: error.response?.data?.message || 'Invalid or expired reset token.',
+      };
+    }
+  },
+
+  /**
+   * Reset password with valid token and new password
+   * Calls POST /book/api/auth/reset-password
+   */
+  async resetPassword(token, newPassword) {
+    try {
+      const response = await apiClient.post('/auth/reset-password', {
+        token,
+        newPassword,
+      });
+      return {
+        success: true,
+        message: response.data?.message || 'Password has been reset successfully.',
+      };
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.details ||
+        'Failed to reset password. The token may be expired or already used.';
+      return {
+        success: false,
+        error: message,
+      };
+    }
+  },
 };
 
 export default apiClient;

@@ -152,6 +152,28 @@
   letter-spacing: 0.01em;
 }
 
+.login-modal__form-group .label-with-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.login-forgot-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--primary-600, #2563eb);
+  cursor: pointer;
+  font-weight: 550;
+  transition: color 0.15s ease;
+}
+
+.login-forgot-link:hover {
+  color: var(--primary-700, #1d4ed8);
+  text-decoration: underline;
+}
+
 .login-modal__form .input-with-icon {
   position: relative;
   display: flex;

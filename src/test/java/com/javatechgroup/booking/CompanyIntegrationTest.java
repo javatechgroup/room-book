@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking;
+package com.javatechgroup.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javatechgroup.booking.domain.Company;

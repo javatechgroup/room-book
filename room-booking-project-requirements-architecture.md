@@ -12,7 +12,7 @@ The system is implemented as a **modular monolith** with Spring Boot powering th
 - **Concurrency & High Throughput**: Java 21 Project Loom **Virtual Threads** enabled (`spring.threads.virtual.enabled=true`) for Tomcat request processing and asynchronous task dispatching
 - **Security**: Spring Security 6 + JJWT (0.12.6) Stateless Token Authentication
 - **Database**: H2 Persistent Disk Database (`jdbc:h2:file:D:/booking-db/roombookdb;AUTO_SERVER=TRUE`) with HikariCP High-Throughput Connection Pooling (portable to MySQL / PostgreSQL)
-- **Database Migrations**: Flyway (Migrations V1 through V10)
+- **Database Migrations**: Flyway (Migrations V1 through V11)
 - **Frontend**: React 18 + Vite (Tailwind/CSS corporate design tokens, Lucide React icons)
 - **Build & Packaging**: Maven (`frontend-maven-plugin` integrates Vite build directly into Spring Boot static resources for single-JAR deployment)
 - **Notifications**: Spring Event-Driven architecture (`ApplicationEventPublisher`) with `DummyEmailService` (supports pluggable SMTP/SendGrid providers)
@@ -135,6 +135,7 @@ The persistent schema is governed by automated Flyway versioned migrations:
 | **V8** | `V8__create_floors_table.sql` | Introduces first-class `floors` entity (`company_id`, `floor_number`, `name`, `status`, `sort_order`). |
 | **V9** | `V9__add_attendees_and_department_to_bookings.sql` | Adds attendee count and department attribution directly to bookings table. |
 | **V10** | `V10__add_participants_support.sql` | Introduces `booking_participants` junction table linking bookings to company user records. |
+| **V11** | `V11__create_password_reset_tokens_table.sql` | Introduces `password_reset_tokens` table with indexes for secure self-service account recovery. |
 
 ### Core Database Entities
 
@@ -152,6 +153,7 @@ erDiagram
     BOOKING ||--o{ BOOKING_PARTICIPANT : invites
     BOOKING ||--o{ BOOKING_HISTORY : records
     USER ||--o{ BOOKING_PARTICIPANT : attends
+    USER ||--o{ PASSWORD_RESET_TOKEN : requests
 ```
 
 ---
@@ -198,6 +200,46 @@ flowchart TD
    - Custom `AuthenticationEntryPoint` returns HTTP **401 Unauthorized** with structured JSON when the token is missing, corrupted, or expired.
    - `AccessDeniedHandler` returns HTTP **403 Forbidden** specifically when an authenticated user lacks the required role.
 
+### 5.3 Password Reset & Account Recovery Architecture
+
+To ensure enterprise account recovery without exposing vulnerability vectors:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Frontend as React Client (LoginGateway / Modals)
+    participant AuthCtrl as AuthController (/api/auth)
+    participant AuthService as AuthService
+    participant DB as H2 Database (Flyway V11)
+    participant Email as DummyEmailService / SMTP
+
+    User->>Frontend: Clicks "Forgot Password?" & submits work email
+    Frontend->>AuthCtrl: POST /api/auth/forgot-password { email }
+    AuthCtrl->>AuthService: requestPasswordReset(email)
+    AuthService->>DB: Lookup user (returns generic success regardless to block enumeration)
+    AuthService->>DB: Invalidate previous unconsumed tokens & persist PasswordResetToken (30m expiry)
+    AuthService->>Email: sendPasswordResetEmail(user, token, expiry)
+    Email-->>AuthService: Outgoing email envelope logged to console with reset URL
+    AuthService-->>Frontend: HTTP 200 "If an account matches, instructions have been sent"
+
+    User->>Frontend: Clicks email URL (?resetToken=XYZ) or enters token manually
+    Frontend->>AuthCtrl: GET /api/auth/verify-reset-token?token=XYZ
+    AuthCtrl-->>Frontend: HTTP 200 { valid: true }
+    User->>Frontend: Enters new password (min 6 chars) and submits
+    Frontend->>AuthCtrl: POST /api/auth/reset-password { token, newPassword }
+    AuthCtrl->>AuthService: resetPassword(token, newPassword)
+    AuthService->>DB: Validate token (not expired, used = false)
+    AuthService->>DB: Update user.passwordHash (BCrypt) & mark token used = true
+    AuthService->>DB: Save AuditLog (PASSWORD_RESET_COMPLETED)
+    AuthCtrl-->>Frontend: HTTP 200 "Password reset successfully"
+    Frontend->>User: Displays success modal & opens Sign-In dialog
+```
+
+1. **Enumeration-Resistant Request**: Requesting a reset for non-existent or inactive emails returns the exact same generic success message without leaking account existence.
+2. **Single-Use Expiring Tokens**: Tokens are cryptographically unique UUIDs valid for 30 minutes. Once consumed, `used` is set to `true`, preventing replay attacks.
+3. **Audit Trails**: Both token issuance (`PASSWORD_RESET_REQUESTED`) and password completion (`PASSWORD_RESET_COMPLETED`) are logged into `audit_logs`.
+
 ---
 
 ## 6. Booking Engine & Conflict Prevention
@@ -240,8 +282,10 @@ frontend/src/
 │   ├── FacilityAdminPortal/    # Facility operations (Rooms, Floors, Depts, Emps, Occupancy)
 │   ├── WorkplacePortal/        # Employee workspace (Interactive Booking, Smart Slots)
 │   ├── Header/                 # Navigation, active session info, theme toggle, sign out
-│   ├── LoginGateway/           # Corporate hero sign-in screen
-│   ├── LoginModal/             # Re-usable modal authentication dialog
+│   ├── LoginGateway/           # Corporate hero sign-in screen (with Forgot Password entry)
+│   ├── LoginModal/             # Re-usable modal authentication dialog (with Forgot Password link)
+│   ├── ForgotPasswordModal/    # Self-service password recovery email submission dialog
+│   ├── ResetPasswordModal/     # Token-verified password reset dialog with query param deep linking
 │   └── common/
 │       ├── ParticipantPicker/  # Searchable multi-employee attendee picker
 │       ├── Toast/              # Global notification toast container
@@ -262,6 +306,9 @@ frontend/src/
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/book/api/auth/login` | Public | Authenticates user; returns JWT Bearer token and user info |
+| `POST` | `/book/api/auth/forgot-password` | Public | Generates password reset token and dispatches simulated email |
+| `GET` | `/book/api/auth/verify-reset-token` | Public | Validates reset token existence, expiry, and consumption status |
+| `POST` | `/book/api/auth/reset-password` | Public | Consumes reset token and securely updates user password hash |
 
 ### 8.2 Super Administrator (`/book/api/admin/**`)
 | Method | Endpoint | Access | Description |
@@ -330,5 +377,6 @@ PRODUCTION PACKAGING (Single Executable JAR):
 - [x] **Graceful Expiration**: Frontend intercepts 401/403, purges dead tokens, and alerts the user with automatic login modal display.
 - [x] **Audit Trails**: Critical operations (company creation, room updates, employee edits, cancellations) logged into `audit_logs`.
 - [x] **Decoupled Notifications**: Email notifications dispatched via Spring Application Events without blocking HTTP request threads.
+- [x] **Account Recovery Safety**: Self-service password reset guarded with expiring single-use UUID tokens, enumeration-resistant endpoints, and BCrypt password rehashing.
 - [x] **Virtual Threads Concurrency**: Project Loom enabled for Tomcat request handling and Spring task execution with zero thread pool bottlenecks.
 - [x] **Modular Build**: Monolith builds cleanly with zero compilation errors (`BUILD SUCCESS`).

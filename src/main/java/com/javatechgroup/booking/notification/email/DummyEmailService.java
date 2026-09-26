@@ -385,6 +385,46 @@ public class DummyEmailService implements EmailService {
     }
 
     @Override
+    public void sendPasswordResetEmail(User user, String resetToken, LocalDateTime expiryDate) {
+        if (user == null || user.getEmail() == null) {
+            log.warn("[DUMMY EMAIL SERVICE] Cannot send password reset email: user or email is null");
+            return;
+        }
+
+        String companyName = user.getCompany() != null ? user.getCompany().getName() : "MeetSpace";
+        String subject = String.format("[RoomBook] Password Reset Request for %s", user.getEmail());
+        String formattedExpiry = formatDateTime(expiryDate);
+
+        StringBuilder body = new StringBuilder();
+        body.append(String.format("Dear %s,%n%n", user.getFullName()));
+        body.append(String.format("We received a request to reset the password for your account at %s.%n%n", companyName));
+        body.append("Password Reset Details:\n");
+        body.append(String.format("  • Account Email:     %s%n", user.getEmail()));
+        body.append(String.format("  • Reset Token:       %s%n", resetToken));
+        body.append(String.format("  • Token Expires At:  %s%n%n", formattedExpiry));
+        body.append("To set a new password, you may either paste the reset token into the Reset Password screen,\n");
+        body.append(String.format("or open the direct link below:%n"));
+        body.append(String.format("  http://localhost:3000/book/?resetToken=%s%n%n", resetToken));
+        body.append("If you did not request this password reset, please ignore this email or notify your facility administrator.\n");
+        body.append("Your current password remains unchanged until you confirm a new one.\n\n");
+        body.append("Warm regards,\nCorporate Room Booking Security Team");
+
+        EmailMessage message = new EmailMessage(
+                generateMessageId(),
+                user.getEmail(),
+                user.getFullName(),
+                defaultSender,
+                subject,
+                body.toString(),
+                "PASSWORD_RESET",
+                LocalDateTime.now(),
+                true
+        );
+
+        sendEmail(message);
+    }
+
+    @Override
     public List<EmailMessage> getSentEmails() {
         return Collections.unmodifiableList(new ArrayList<>(sentEmails));
     }

@@ -11,18 +11,25 @@ import WalkthroughSection from './components/WalkthroughSection/WalkthroughSecti
 import Contact from './components/Contact/Contact';
 import Footer from './components/Footer/Footer';
 import LoginModal from './components/LoginModal/LoginModal';
+import ForgotPasswordModal from './components/ForgotPasswordModal/ForgotPasswordModal';
+import ResetPasswordModal from './components/ResetPasswordModal/ResetPasswordModal';
 import ContactModal from './components/ContactModal/ContactModal';
 import ToastContainer from './components/common/Toast/Toast';
 
 function AppContent() {
-  const { user, isAuthenticated, openLogin, openConnect } = useAuth();
+  const { user, isAuthenticated, openLogin, openConnect, openResetPassword } = useAuth();
   const { toast } = useToast();
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('modal') === 'login') openLogin();
     if (params.get('modal') === 'connect') openConnect();
-  }, [openLogin, openConnect]);
+
+    const resetTokenParam = params.get('resetToken') || params.get('token');
+    if (resetTokenParam) {
+      openResetPassword(resetTokenParam);
+    }
+  }, [openLogin, openConnect, openResetPassword]);
 
   React.useEffect(() => {
     const handleUnauthorized = (e) => {
@@ -69,6 +76,8 @@ function AppContent() {
 
       {/* Global Modals & Notifications */}
       <LoginModal />
+      <ForgotPasswordModal />
+      <ResetPasswordModal />
       <ContactModal />
       <ToastContainer />
     </div>

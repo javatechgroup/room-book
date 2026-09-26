@@ -15,7 +15,7 @@ import { useToast } from '../../context/ToastContext';
 import './LoginModal.css';
 
 function LoginModal() {
-  const { isLoginOpen, closeLogin, login } = useAuth();
+  const { isLoginOpen, closeLogin, login, openForgotPassword } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -120,7 +120,16 @@ function LoginModal() {
           </div>
 
           <div className="login-modal__form-group">
-            <label htmlFor="login-password">Password</label>
+            <div className="label-with-link">
+              <label htmlFor="login-password">Password</label>
+              <button
+                type="button"
+                className="login-forgot-link"
+                onClick={openForgotPassword}
+              >
+                Forgot password?
+              </button>
+            </div>
             <div className="input-with-icon">
               <Lock size={16} className="input-icon" />
               <input

@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking;
+package com.javatechgroup.booking;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

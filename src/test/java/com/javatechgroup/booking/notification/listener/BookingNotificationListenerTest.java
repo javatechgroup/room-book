@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking.notification.listener;
+package com.javatechgroup.booking.notification.listener;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;

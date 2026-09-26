@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking;
+package com.javatechgroup.booking;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

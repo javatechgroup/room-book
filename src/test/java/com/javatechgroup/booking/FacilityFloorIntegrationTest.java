@@ -1,4 +1,4 @@
-﻿package com.javatechgroup.booking;
+package com.javatechgroup.booking;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
