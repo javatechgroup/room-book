@@ -65,6 +65,20 @@ function LoginGateway() {
             </p>
           </div>
 
+          {/* Mobile Only: Sign-In CTA placed right below intro so it is visible above the fold */}
+          <div className="gateway-mobile-auth-cta">
+            <button
+              type="button"
+              className="btn btn--primary btn--full"
+              onClick={openLogin}
+            >
+              <LogIn size={16} /> Sign In to Workplace Portal
+            </button>
+            <span className="gateway-mobile-auth-hint">
+              Tap to open the secure corporate sign-in dialog
+            </span>
+          </div>
+
           <div className="brand-features">
             <div className="brand-feature-item">
               <div className="feature-icon">
@@ -123,20 +137,6 @@ function LoginGateway() {
                 Connect With Our Team <ArrowRight size={14} />
               </button>
             </div>
-          </div>
-
-          {/* Mobile Only: Button to open Sign-In Popup */}
-          <div className="gateway-mobile-auth-cta">
-            <button
-              type="button"
-              className="btn btn--primary btn--full"
-              onClick={openLogin}
-            >
-              <LogIn size={16} /> Sign In to Workplace Portal
-            </button>
-            <span className="gateway-mobile-auth-hint">
-              Tap to open the secure corporate sign-in dialog
-            </span>
           </div>
         </div>
 

@@ -54,7 +54,7 @@ export default function PolicyShowcase() {
             <ShieldCheck size={14} /> Company-Level Governance
           </span>
           <h2 className="policy-title">
-            Company Booking Policies Enforced in Real-Time
+            Company Booking Policies in Real Time
           </h2>
           <p className="policy-subtitle">
             Every company defines its own global booking guardrails. Our backend engine

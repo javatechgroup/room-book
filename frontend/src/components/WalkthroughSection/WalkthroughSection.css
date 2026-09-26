@@ -526,28 +526,32 @@
 /* Responsive */
 @media (max-width: 900px) {
   .walkthrough-section {
-    padding: 60px 0;
+    padding: 2.25rem 0 !important;
   }
 
   .walkthrough-title {
-    font-size: 1.95rem;
+    font-size: 1.75rem;
   }
 
   .walkthrough-steps {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 12px;
   }
 
   .sim-context-bar {
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 12px;
   }
 
   .sim-suggestions-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .walkthrough-stats {
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   .sim-available-card {
@@ -567,11 +571,80 @@
 }
 
 @media (max-width: 768px) {
+  .walkthrough-section {
+    padding: 1.75rem 0 !important;
+  }
+
+  .walkthrough-header {
+    margin-bottom: 14px;
+  }
+
+  .walkthrough-title {
+    font-size: 1.55rem;
+    margin: 8px 0 6px;
+  }
+
+  .walkthrough-subtitle {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .walkthrough-steps {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .step-card {
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+    border-radius: var(--radius-lg);
+  }
+
+  .step-card__badge {
+    position: static;
+    font-size: 0.62rem;
+    padding: 2px 6px;
+    margin-bottom: 2px;
+    width: fit-content;
+  }
+
+  .step-card__icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    grid-row: span 2;
+  }
+
+  .step-card__title {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+  }
+
+  .step-card__description {
+    font-size: 0.78rem;
+    line-height: 1.35;
+    margin-bottom: 0;
+  }
+
+  .step-card__meta {
+    display: none !important; /* Hide redundant sub-bullets on small screens */
+  }
+
+  /* Compact Live Simulation on Mobile */
+  .walkthrough-sim {
+    margin-bottom: 16px;
+    border-radius: var(--radius-lg);
+  }
+
   .sim-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
-    padding: 16px;
+    gap: 8px;
+    padding: 10px 12px;
   }
 
   .sim-header__title {
@@ -580,125 +653,91 @@
   }
 
   .sim-toggle-group {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
-    gap: 8px;
+    gap: 6px;
   }
 
   .sim-toggle-btn {
     width: 100%;
     justify-content: center;
-    font-size: 0.8rem;
-    padding: 10px 12px;
+    font-size: 0.74rem;
+    padding: 6px 8px;
     text-align: center;
   }
 
   .sim-body {
-    padding: 18px 16px;
-  }
-}
-
-@media (max-width: 640px) {
-  .walkthrough-section {
-    padding: 44px 0;
-  }
-
-  .walkthrough-header {
-    margin-bottom: 32px;
-  }
-
-  .walkthrough-title {
-    font-size: 1.65rem;
-    line-height: 1.25;
-  }
-
-  .walkthrough-subtitle {
-    font-size: 0.925rem;
-  }
-
-  .walkthrough-steps {
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-
-  .step-card {
-    padding: 24px 18px 18px;
-  }
-
-  .step-card__title {
-    font-size: 1.05rem;
+    padding: 10px 12px;
   }
 
   .sim-context-bar {
-    gap: 10px;
-    padding: 12px 14px;
-    margin-bottom: 18px;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+  }
+
+  .sim-context-item .label {
+    font-size: 0.65rem;
+  }
+
+  .sim-context-item .val {
+    font-size: 0.78rem;
   }
 
   .sim-status-banner {
-    padding: 12px 14px;
-    gap: 10px;
+    padding: 10px 12px;
+    gap: 8px;
+    margin-bottom: 12px;
   }
 
   .sim-status-banner strong {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .sim-status-banner p {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
-  .walkthrough-stats {
+  .sim-available-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .sim-room-detail h5 {
+    font-size: 0.92rem;
+  }
+
+  .sim-suggestions-grid {
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  .stat-box {
-    padding: 14px 10px;
-  }
-
-  .stat-box__value {
-    font-size: 1.45rem;
-  }
-
-  .stat-box__label {
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .walkthrough-title {
-    font-size: 1.45rem;
-  }
-
-  .sim-context-bar {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .sim-body {
-    padding: 14px 10px;
-  }
-
-  .alt-room-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .alt-room-row .status-chip {
-    align-self: flex-start;
+  .suggestion-box__header {
+    padding: 8px 12px;
   }
 
   .suggestion-box__body {
-    padding: 14px;
-    gap: 10px;
-  }
-
-  .slot-pill {
     padding: 10px 12px;
+    gap: 8px;
   }
 
   .walkthrough-stats {
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-box {
+    padding: 10px 8px;
+    gap: 4px;
+  }
+
+  .stat-box__value {
+    font-size: 1.35rem;
+  }
+
+  .stat-box__label {
+    font-size: 0.72rem;
   }
 }

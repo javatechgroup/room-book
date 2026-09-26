@@ -517,21 +517,91 @@ a.channel-row__val:hover {
 /* Responsive */
 @media (max-width: 820px) {
   .contact {
-    padding: 2.75rem 0;
+    padding: 1.75rem 0 !important;
+  }
+
+  .contact__header {
+    margin-bottom: 1rem;
+  }
+
+  .contact__title {
+    font-size: 1.55rem;
+    margin: 0.5rem 0 0.5rem;
+  }
+
+  .contact__subtitle {
+    font-size: 0.86rem;
+    line-height: 1.45;
   }
 
   .contact__wrapper {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
-  .contact__title {
-    font-size: 1.6rem;
+  /* Hide bulky guarantee bullet list on mobile so the form isn't pushed off screen */
+  .contact__compact-guarantee {
+    display: none !important;
+  }
+
+  .contact__channels-box {
+    padding: 10px 12px;
+    gap: 6px;
+    border-radius: var(--radius-lg);
+  }
+
+  .channels-title {
+    font-size: 0.72rem;
+    margin-bottom: 2px;
+  }
+
+  .channel-row {
+    padding: 4px 8px;
+    gap: 8px;
+  }
+
+  .channel-row__icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .channel-row__icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .channel-row__label {
+    font-size: 0.65rem;
+  }
+
+  .channel-row__val {
+    font-size: 0.8rem;
+  }
+
+  .contact__form {
+    padding: 14px 14px;
+    gap: 10px;
+    border-radius: var(--radius-lg);
+  }
+
+  .contact__submit-btn {
+    padding: 10px;
+    font-size: 0.86rem;
   }
 }
 
 @media (max-width: 480px) {
   .contact__form-grid {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .contact__pills-group {
+    gap: 4px;
+  }
+
+  .inquiry-pill {
+    font-size: 0.7rem;
+    padding: 4px 8px;
   }
 }

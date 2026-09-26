@@ -427,12 +427,106 @@
 }
 
 @media (max-width: 900px) {
+  .role-matrix {
+    padding: 1.75rem 0 !important;
+  }
+
+  .role-matrix__header {
+    margin-bottom: 1rem;
+  }
+
+  .role-matrix__title {
+    font-size: 1.55rem;
+    margin: 0.5rem 0 0.5rem;
+  }
+
+  .role-matrix__subtitle {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
   .role-matrix__tabs {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px;
+    padding: 3px;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+  }
+
+  .role-tab-btn {
+    padding: 8px 6px;
+    gap: 4px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 8px;
+  }
+
+  .role-tab-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .role-tab-btn__text strong {
+    font-size: 0.74rem;
+    line-height: 1.2;
+    text-align: center;
+    margin-bottom: 0;
+  }
+
+  .role-tab-btn__text span {
+    display: none !important; /* Hide long subtitle on mobile tab switcher to keep it ultra compact */
   }
 
   .role-panel {
     grid-template-columns: 1fr;
-    padding: 1.5rem;
+    padding: 14px 14px;
+    gap: 12px;
+    border-radius: var(--radius-lg);
+  }
+
+  .role-badge {
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    margin-bottom: 0.5rem;
+  }
+
+  .role-panel__details h3 {
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+  }
+
+  .role-panel__details p {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  .role-feature-list {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .role-feature-item {
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+
+  .role-feature-item svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .role-panel__cta .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px;
+    font-size: 0.86rem;
+  }
+
+  /* Hide bulky desktop window mockup on mobile screens to save hundreds of pixels */
+  .role-panel__preview {
+    display: none !important;
   }
 }

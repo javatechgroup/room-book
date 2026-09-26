@@ -383,111 +383,148 @@
 }
 
 @media (max-width: 768px) {
+  .login-gateway {
+    padding: 84px 0 20px !important;
+  }
+
+  .login-gateway__container {
+    gap: 16px;
+  }
+
+  .login-gateway__brand-panel {
+    gap: 12px;
+  }
+
+  .brand-badge {
+    margin-bottom: 6px;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+
+  .brand-title {
+    font-size: 1.75rem !important;
+    line-height: 1.2;
+  }
+
+  .brand-desc {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
   /* Sign-in form is NOT displayed by default in mobile version — opens as popup */
   .login-gateway__form-panel {
     display: none !important;
   }
 
+  /* Above-the-fold primary mobile CTA */
   .gateway-mobile-auth-cta {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    margin-top: 14px;
+    gap: 6px;
+    margin: 4px 0 10px;
     width: 100%;
   }
 
   .gateway-mobile-auth-cta .btn {
     width: 100%;
-    padding: 13px;
+    padding: 12px;
     font-size: 0.95rem;
     font-weight: 700;
     box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
   }
 
   .gateway-mobile-auth-hint {
-    font-size: 0.775rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     text-align: center;
   }
-}
 
-@media (max-width: 640px) {
-  .login-gateway {
-    padding: 86px 0 32px;
-  }
-
-  .login-gateway__container {
-    gap: 28px;
-  }
-
-  .brand-title {
-    font-size: 1.8rem;
-  }
-
-  .brand-subtitle {
-    font-size: 0.925rem;
-  }
-
-  .gateway-card {
-    padding: 24px 18px;
-  }
-
-  .gateway-card__header h2 {
-    font-size: 1.3rem;
-  }
-
+  /* Compact 2x2 Feature Glance on Mobile */
   .brand-features {
-    gap: 16px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-top: 4px;
+  }
+
+  .brand-feature-item {
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    gap: 8px;
+    align-items: center;
+  }
+
+  .brand-feature-item .feature-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .brand-feature-item .feature-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .brand-feature-item p {
+    display: none; /* Hide verbose paragraph on small mobile screens */
+  }
+
+  .brand-feature-item strong {
+    font-size: 0.78rem;
+    line-height: 1.2;
+    display: block;
+    color: var(--text-heading);
   }
 
   .gateway-contact-callout {
-    padding: 14px 16px;
-    gap: 12px;
+    padding: 10px 12px;
+    margin-top: 4px;
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+
+  .gateway-contact-callout p {
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
   .login-gateway {
-    padding: 80px 0 24px;
+    padding: 80px 0 16px !important;
   }
 
   .brand-title {
-    font-size: 1.55rem;
-    line-height: 1.22;
+    font-size: 1.5rem !important;
+    line-height: 1.2;
   }
 
   .brand-badge {
-    font-size: 0.725rem;
-    padding: 4px 10px;
-    margin-bottom: 12px;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    margin-bottom: 6px;
   }
 
-
-  .gateway-card {
-    padding: 20px 14px;
-    border-radius: var(--radius-lg);
+  .brand-features {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
   }
 
-  .gateway-card__header h2 {
-    font-size: 1.2rem;
+  .brand-feature-item {
+    padding: 6px 8px;
   }
 
-  .input-wrap input,
-  .gateway-form .input-wrap input {
-    padding: 10px 38px 10px 38px !important;
-    font-size: 0.875rem;
-  }
-
-  .gateway-submit-btn {
-    padding: 11px;
-    font-size: 0.9rem;
+  .brand-feature-item strong {
+    font-size: 0.74rem;
   }
 
   .gateway-contact-callout {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 14px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
   }
 }
