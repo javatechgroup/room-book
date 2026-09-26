@@ -19,6 +19,8 @@ import {
   Search,
   Filter,
   Edit2,
+  Repeat,
+  RotateCcw,
 } from 'lucide-react';
 import RoomInfoCard from './RoomInfoCard';
 import SearchInput from '../../common/SearchInput/SearchInput';
@@ -102,7 +104,30 @@ export default function SlotFinderTab({
   const [participants, setParticipants] = useState([]);
   const [sizeFilter, setSizeFilter] = useState('all');
   const [roomSearch, setRoomSearch] = useState('');
+  const [recurrenceRule, setRecurrenceRule] = useState('NONE');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    return d.toISOString().split('T')[0];
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleResetFilters = () => {
+    setSizeFilter('all');
+    setRoomSearch('');
+    onFloorChange?.('All Floors');
+    const today = new Date().toISOString().split('T')[0];
+    onDateChange?.(today);
+    const initialTime = getInitialUpcomingTime();
+    setStartHour(initialTime.hour);
+    setStartMin(initialTime.min);
+    setStartPeriod(initialTime.period);
+    setDurationMinutes(60);
+    setRecurrenceRule('NONE');
+    if (rooms && rooms.length > 0) {
+      onRoomSelect?.(rooms[0].id);
+    }
+  };
 
   // Check if the reservation being edited has already begun
   const isMeetingAlreadyBegun = useMemo(() => {
@@ -413,6 +438,8 @@ export default function SlotFinderTab({
       department: department || currentUser?.department || 'General',
       attendeesCount: Number(attendeesCount) || Math.max(2, participants.length + 1),
       participants: participants,
+      recurrenceRule: !editingBooking && recurrenceRule !== 'NONE' ? recurrenceRule : undefined,
+      recurrenceEndDate: !editingBooking && recurrenceRule !== 'NONE' ? recurrenceEndDate : undefined,
     });
     setIsSubmitting(false);
 
@@ -421,6 +448,7 @@ export default function SlotFinderTab({
       setDescription('');
       onDepartmentChange('');
       setParticipants([]);
+      setRecurrenceRule('NONE');
       if (onCancelEdit) onCancelEdit();
     }
   };
@@ -491,6 +519,40 @@ export default function SlotFinderTab({
           )}
         </div>
       )}
+
+      {/* ───────────────── QUICK SEARCH & RESET BAR ───────────────── */}
+      <div className="finder-filter-bar">
+        <div className="finder-filter-bar__search">
+          <SearchInput
+            placeholder="Search meeting rooms or wings..."
+            value={roomSearch}
+            onChange={(val) => setRoomSearch(typeof val === 'string' ? val : val?.target?.value || '')}
+          />
+        </div>
+        <div className="finder-filter-bar__actions">
+          <div className="finder-size-pills">
+            {['all', 'small', 'medium', 'large'].map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`finder-size-btn ${sizeFilter === s ? 'finder-size-btn--active' : ''}`}
+                onClick={() => setSizeFilter(s)}
+              >
+                {s === 'all' ? 'All Sizes' : s === 'small' ? '1-4 Seats' : s === 'medium' ? '5-10 Seats' : '11+ Seats'}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="btn btn--outline btn--sm finder-reset-btn"
+            onClick={handleResetFilters}
+            title="Reset filters to default"
+          >
+            <RotateCcw size={13} />
+            <span>Reset Filters</span>
+          </button>
+        </div>
+      </div>
 
       {/* ───────────────── CONTROLS BAR ───────────────── */}
       <div className="finder-controls">
@@ -1040,6 +1102,69 @@ export default function SlotFinderTab({
                     />
                   </div>
                 </div>
+
+                {/* Recurrence / Repeating Meeting Selector */}
+                {!editingBooking && (
+                  <div
+                    className="booking-form-grid-row"
+                    style={{
+                      marginTop: '12px',
+                      padding: '12px',
+                      background: 'var(--bg-surface-alt, rgba(37, 99, 235, 0.04))',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-card, #e2e8f0)',
+                      display: 'grid',
+                      gridTemplateColumns: recurrenceRule !== 'NONE' ? '1fr 1fr' : '1fr',
+                      gap: '14px',
+                      alignItems: 'start',
+                    }}
+                  >
+                    <Select
+                      id="bp-recurrence"
+                      label="Repeat Schedule"
+                      icon={<Repeat size={13} />}
+                      value={recurrenceRule}
+                      onChange={(val) => setRecurrenceRule(val)}
+                      placeholder={null}
+                      options={[
+                        { value: 'NONE', label: 'Does not repeat (One-time)' },
+                        { value: 'DAILY', label: 'Daily (Monday to Friday)' },
+                        { value: 'WEEKLY', label: 'Weekly (Same day every week)' },
+                        { value: 'BI_WEEKLY', label: 'Bi-weekly (Every 2 weeks)' },
+                        { value: 'MONTHLY', label: 'Monthly (Same day every month)' },
+                      ]}
+                    />
+
+                    {recurrenceRule !== 'NONE' && (
+                      <div className="input-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label htmlFor="bp-recurrence-end" className="common-select__label">
+                          <span className="common-select__label-icon"><Calendar size={13} /></span>
+                          <span>Repeat Until</span>
+                          <span className="common-select__required-mark">*</span>
+                        </label>
+                        <input
+                          id="bp-recurrence-end"
+                          type="date"
+                          value={recurrenceEndDate}
+                          min={selectedDate}
+                          onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                          required
+                          style={{
+                            height: '40px',
+                            borderRadius: '8px',
+                            border: '1.5px solid var(--border-input, #cbd5e1)',
+                            padding: '0 12px',
+                            background: 'var(--bg-input, #ffffff)',
+                            color: 'var(--text-body)',
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            fontSize: '0.88rem',
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Google-like Participant Picker with external warning */}
                 <div className="booking-form-participants-row" style={{ marginTop: '14px', marginBottom: '6px' }}>

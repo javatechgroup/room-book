@@ -14,10 +14,13 @@ import {
   CalendarPlus,
   DoorOpen,
   FileText,
+  Repeat,
+  RotateCcw,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
 import BookingInspectorDrawer from '../../FacilityAdminPortal/components/BookingInspectorDrawer';
+import CancelRecurringModal from '../../common/CancelRecurringModal/CancelRecurringModal';
 import { formatDate } from '../../../utils/dateUtils';
 
 const formatTimeRange = (startISO, endISO, slotFallback) => {
@@ -50,6 +53,15 @@ export default function MyBookingsTab({
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [recurringBookingToCancel, setRecurringBookingToCancel] = useState(null);
+
+  const handleRequestCancel = useCallback((booking) => {
+    if (booking?.recurrenceId) {
+      setRecurringBookingToCancel(booking);
+    } else {
+      onCancelBooking && onCancelBooking(booking, false);
+    }
+  }, [onCancelBooking]);
 
   const getBookingState = useCallback((booking) => {
     if (!booking) {
@@ -199,6 +211,23 @@ export default function MyBookingsTab({
             </button>
           </div>
 
+          {(search || statusFilter !== 'ALL') && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('ALL');
+                setPage(1);
+              }}
+              title="Reset filters"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
+
           {onGoToSlotFinder && (
             <button
               type="button"
@@ -288,6 +317,26 @@ export default function MyBookingsTab({
                             <span className="entity-cell__name" title={b.title || b.purpose}>
                               {b.title || b.purpose || 'Meeting'}
                             </span>
+                            {b.recurrenceId && (
+                              <span
+                                className="recurrence-badge"
+                                title={`Recurring reservation (${b.recurrenceRule || 'Series'})`}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                  fontSize: '0.68rem',
+                                  fontWeight: 600,
+                                  padding: '1px 6px',
+                                  borderRadius: '4px',
+                                  background: 'rgba(245, 158, 11, 0.12)',
+                                  color: '#d97706',
+                                  border: '1px solid rgba(245, 158, 11, 0.25)',
+                                }}
+                              >
+                                <Repeat size={10} /> {b.recurrenceRule || 'RECURRING'}
+                              </span>
+                            )}
                             {(b.departmentName || b.department) && (
                               <span className="entity-cell__dept-badge">
                                 {b.departmentName || b.department}
@@ -361,7 +410,7 @@ export default function MyBookingsTab({
                           <button
                             type="button"
                             className="action-btn action-btn--deactivate"
-                            onClick={() => onCancelBooking(b)}
+                            onClick={() => handleRequestCancel(b)}
                             disabled={!state.canCancel}
                             title={
                               state.canCancel
@@ -401,6 +450,28 @@ export default function MyBookingsTab({
                       <span className="mobile-card__subtitle">
                         {b.roomName} • {b.floor || b.location || 'Floor'}
                       </span>
+                      {b.recurrenceId && (
+                        <div style={{ marginTop: '4px' }}>
+                          <span
+                            className="recurrence-badge"
+                            title={`Recurring reservation (${b.recurrenceRule || 'Series'})`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              fontSize: '0.68rem',
+                              fontWeight: 600,
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              background: 'rgba(245, 158, 11, 0.12)',
+                              color: '#d97706',
+                              border: '1px solid rgba(245, 158, 11, 0.25)',
+                            }}
+                          >
+                            <Repeat size={10} /> {b.recurrenceRule || 'RECURRING'}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <span className={`status-pill ${state.colorClass}`}>
                       {state.key === 'IN_PROGRESS' && <Radio size={12} className="blinking-live-icon" />}
@@ -469,7 +540,7 @@ export default function MyBookingsTab({
                       <button
                         type="button"
                         className="action-btn action-btn--deactivate"
-                        onClick={() => onCancelBooking(b)}
+                        onClick={() => handleRequestCancel(b)}
                         disabled={!state.canCancel}
                         title={state.canCancel ? 'Release Slot Early' : 'Cannot release slot'}
                         aria-label="Release slot early"
@@ -504,15 +575,30 @@ export default function MyBookingsTab({
           booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
           onCancelBooking={async (bookingToCancel) => {
-            const success = await onCancelBooking(bookingToCancel);
-            if (success) {
-              setSelectedBooking(null);
-            }
+            handleRequestCancel(bookingToCancel);
+            setSelectedBooking(null);
           }}
           onEditBooking={(bookingToEdit) => {
             setSelectedBooking(null);
             if (onEditBooking) onEditBooking(bookingToEdit);
           }}
+        />
+      )}
+
+      {/* Recurrence Cancellation Scope Modal */}
+      {recurringBookingToCancel && (
+        <CancelRecurringModal
+          isOpen={Boolean(recurringBookingToCancel)}
+          booking={recurringBookingToCancel}
+          onCancelSingle={(target) => {
+            setRecurringBookingToCancel(null);
+            onCancelBooking && onCancelBooking(target, false);
+          }}
+          onCancelSeries={(target) => {
+            setRecurringBookingToCancel(null);
+            onCancelBooking && onCancelBooking(target, true);
+          }}
+          onClose={() => setRecurringBookingToCancel(null)}
         />
       )}
     </div>

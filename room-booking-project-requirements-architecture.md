@@ -12,7 +12,7 @@ The system is implemented as a **modular monolith** with Spring Boot powering th
 - **Concurrency & High Throughput**: Java 21 Project Loom **Virtual Threads** enabled (`spring.threads.virtual.enabled=true`) for Tomcat request processing and asynchronous task dispatching
 - **Security**: Spring Security 6 + JJWT (0.12.6) Stateless Token Authentication
 - **Database**: H2 Persistent Disk Database (`jdbc:h2:file:D:/booking-db/roombookdb;AUTO_SERVER=TRUE`) with HikariCP High-Throughput Connection Pooling (portable to MySQL / PostgreSQL)
-- **Database Migrations**: Flyway (Migrations V1 through V11)
+- **Database Migrations**: Flyway (Migrations V1 through V12)
 - **Frontend**: React 18 + Vite (Tailwind/CSS corporate design tokens, Lucide React icons)
 - **Build & Packaging**: Maven (`frontend-maven-plugin` integrates Vite build directly into Spring Boot static resources for single-JAR deployment)
 - **Notifications**: Spring Event-Driven architecture (`ApplicationEventPublisher`) with `DummyEmailService` (supports pluggable SMTP/SendGrid providers)
@@ -262,8 +262,49 @@ When a collision is detected, `FacilityBookingService` automatically calculates 
 ### 6.4 High-Throughput Concurrency with Project Loom Virtual Threads
 Spring Boot 3.3 runs on Java 21 with Project Loom Virtual Threads enabled via `spring.threads.virtual.enabled=true`:
 - **Lightweight Thread-per-Request**: The embedded Tomcat servlet container uses `TomcatProtocolHandlerVirtualThreadExecutor`. Every incoming HTTP request executes on its own lightweight virtual thread instead of blocking an expensive platform OS thread.
-- **Non-blocking Carrier Unmounting**: Whenever a thread executes blocking operations (e.g. HikariCP database query execution, disk I/O, or notification dispatch delay), the virtual thread unmounts from its carrier OS thread, allowing carrier threads to process thousands of other concurrent requests.
 - **Asynchronous Task Execution**: Spring `@Async` task executors and scheduled jobs automatically leverage virtual thread pools without requiring manual executor tuning or risk of thread exhaustion.
+
+### 6.5 Recurring & Repeated Meetings Architecture
+
+To empower enterprise teams to coordinate recurring cadence (e.g. daily standups, weekly syncs, bi-weekly reviews, and monthly planning) without manually booking individual slots:
+
+```mermaid
+flowchart TD
+    A[Booking Request with Recurrence] --> B{Recurrence Rule?}
+    B -->|NONE| C[Standard Single Slot Booking]
+    B -->|DAILY / WEEKLY / BI_WEEKLY / MONTHLY| D[Generate Bounded Occurrence Slots]
+    D --> E[Validate Max Window <= 90 Days / 24 Slots]
+    E --> F[Atomic Multi-Slot Conflict Scan]
+    F -->|Conflict Found on Any Slot| G[Rollback & Throw Conflict with Offending Date]
+    F -->|All Slots Clear| H[Generate Shared UUID recurrenceId]
+    H --> I[Assign isRecurrenceParent=true to 1st Slot]
+    I --> J[Batch Persist Occurrences in Single Transaction]
+    J --> K[Dispatch BookingCreatedEvent & Async Notifications]
+```
+
+1. **Recurrence Rules Supported**:
+   - `DAILY`: Every consecutive day up to end date.
+   - `WEEKLY`: Same weekday each week (7-day intervals).
+   - `BI_WEEKLY`: Every two weeks on the scheduled weekday (14-day intervals).
+   - `MONTHLY`: Same calendar day of the subsequent months.
+2. **Safety Guardrails**:
+   - Series cannot exceed **90 days** in advance or **24 occurrences** per request, preventing runaway database bloat.
+3. **Atomic Multi-Slot Conflict Checks**:
+   - Before inserting any record, `FacilityBookingService` checks all generated occurrences against active reservations in the requested room. If even a single slot collides, the entire batch is rejected with an informative error stating the conflicting date/time.
+4. **Flexible Cancellation Scopes**:
+   - **Single Occurrence Cancellation** (`cancelSeries = false`): Cancels only the specific slot on that date, leaving all remaining occurrences active.
+   - **Series Cancellation** (`cancelSeries = true`): Cancels the target meeting and all future scheduled occurrences belonging to the same `recurrenceId`.
+5. **Database Schema Additions (Flyway V12)**:
+   - `recurrence_id VARCHAR(64)`: Shared UUID linking all occurrences of a series.
+   - `recurrence_rule VARCHAR(32)`: Frequency rule (`DAILY`, `WEEKLY`, `BI_WEEKLY`, `MONTHLY`).
+   - `is_recurrence_parent BOOLEAN`: Flags the founding occurrence of the series.
+   - Index `idx_booking_recurrence_id` for $O(1)$ series lookups and bulk status updates.
+
+### 6.6 Quick Search Filter Reset Architecture
+
+Across high-density enterprise grids (Rooms, Employees, Live Monitor, and Scheduled Reservations), multi-criteria filters (search query, floor, status, department, role, date) can leave users with zero results or obscured views.
+- **Dedicated Reset Action**: Unified "Reset Filters" action button integrated across all management toolbars (`SlotFinderTab`, `RoomsTab`, `EmployeesTab`, `BookingMonitorTab`, `MyBookingsTab`, `FacilityMyBookingsTab`).
+- **One-Click Purge**: Clears text search, resets status pills to `ALL`, restores floor/department selectors to company-wide defaults, and resets pagination to page 1 instantly without page reloads.
 
 ---
 
@@ -339,9 +380,9 @@ frontend/src/
 | `GET` | `/book/api/facility/employees` | `COMPANY_ADMIN`, `SUPER_ADMIN` | Search employee directory with department/role filters |
 | `POST` | `/book/api/facility/employees` | `COMPANY_ADMIN`, `SUPER_ADMIN` | Register new employee |
 | `PUT` | `/book/api/facility/employees/{id}` | `COMPANY_ADMIN`, `SUPER_ADMIN` | Update employee information |
-| `POST` | `/book/api/facility/bookings` | All Roles | Create booking with conflict checking & attendee invites |
+| `POST` | `/book/api/facility/bookings` | All Roles | Create booking with conflict checking, recurrence generation & attendee invites |
 | `PUT` | `/book/api/facility/bookings/{id}` | All Roles | Update scheduled booking |
-| `POST` | `/book/api/facility/bookings/{id}/cancel` | All Roles | Cancel booking (owner or admin) |
+| `POST` | `/book/api/facility/bookings/{id}/cancel` | All Roles | Cancel booking (supports `?cancelSeries=true` to cancel all future occurrences in series) |
 | `GET` | `/book/api/facility/bookings/my-bookings` | All Roles | Retrieve personal bookings for logged-in user |
 | `GET` | `/book/api/facility/bookings/occupancy` | All Roles | Get full timeline of room occupancy for a specific date |
 | `GET` | `/book/api/facility/directory/summary` | All Roles | High-level metrics (rooms, depts, employees, bookings) |
@@ -378,5 +419,7 @@ PRODUCTION PACKAGING (Single Executable JAR):
 - [x] **Audit Trails**: Critical operations (company creation, room updates, employee edits, cancellations) logged into `audit_logs`.
 - [x] **Decoupled Notifications**: Email notifications dispatched via Spring Application Events without blocking HTTP request threads.
 - [x] **Account Recovery Safety**: Self-service password reset guarded with expiring single-use UUID tokens, enumeration-resistant endpoints, and BCrypt password rehashing.
+- [x] **Recurring Meetings Engine**: Full support for Daily, Weekly, Bi-weekly, and Monthly recurrence with atomic multi-slot conflict detection and single vs. series cancellation.
+- [x] **Instant Search Filter Reset**: High-density management toolbars equipped with one-click filter purge to immediately restore default views.
 - [x] **Virtual Threads Concurrency**: Project Loom enabled for Tomcat request handling and Spring task execution with zero thread pool bottlenecks.
 - [x] **Modular Build**: Monolith builds cleanly with zero compilation errors (`BUILD SUCCESS`).

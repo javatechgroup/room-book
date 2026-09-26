@@ -24,6 +24,10 @@ public class BookingResponse {
     private String status;
     private Integer attendeesCount;
     private List<ParticipantDto> participants = new ArrayList<>();
+    private String recurrenceId;
+    private String recurrenceRule;
+    private Boolean isRecurrenceParent;
+    private Integer recurringCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -88,4 +92,16 @@ public class BookingResponse {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getRecurrenceId() { return recurrenceId; }
+    public void setRecurrenceId(String recurrenceId) { this.recurrenceId = recurrenceId; }
+
+    public String getRecurrenceRule() { return recurrenceRule; }
+    public void setRecurrenceRule(String recurrenceRule) { this.recurrenceRule = recurrenceRule; }
+
+    public Boolean getIsRecurrenceParent() { return isRecurrenceParent; }
+    public void setIsRecurrenceParent(Boolean isRecurrenceParent) { this.isRecurrenceParent = isRecurrenceParent; }
+
+    public Integer getRecurringCount() { return recurringCount; }
+    public void setRecurringCount(Integer recurringCount) { this.recurringCount = recurringCount; }
 }

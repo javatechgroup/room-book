@@ -95,7 +95,7 @@ export default function DepartmentsTab({
           <table className="superadmin-table departments-table">
             <thead>
               <tr>
-                <th className="th-sortable" onClick={() => onSort && onSort('name')}>
+                <th className="th-sortable th-dept-name" onClick={() => onSort && onSort('name')}>
                   <div className="th-content">
                     <span>Department Unit</span>
                     {sortBy === 'name' ? (
@@ -105,8 +105,8 @@ export default function DepartmentsTab({
                     )}
                   </div>
                 </th>
-                <th>Assigned Staff</th>
-                <th className="th-sortable" onClick={() => onSort && onSort('status')}>
+                <th className="th-dept-staff">Assigned Staff</th>
+                <th className="th-sortable th-status" onClick={() => onSort && onSort('status')}>
                   <div className="th-content">
                     <span>Status</span>
                     {sortBy === 'status' ? (
@@ -116,7 +116,7 @@ export default function DepartmentsTab({
                     )}
                   </div>
                 </th>
-                <th>Created Date</th>
+                <th className="th-created">Created Date</th>
                 <th className="th-actions">Actions</th>
               </tr>
             </thead>
@@ -159,7 +159,7 @@ export default function DepartmentsTab({
                       onClick={() => onInspectDepartment && onInspectDepartment(dept)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <td className="td-strong">
+                      <td className="td-dept-name td-strong">
                         <div className="entity-cell">
                           <div className="entity-cell__icon entity-cell__icon--purple">
                             <Building2 size={16} />
@@ -170,7 +170,7 @@ export default function DepartmentsTab({
                           </div>
                         </div>
                       </td>
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td className="td-dept-staff" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className="admin-count-pill"
@@ -182,7 +182,7 @@ export default function DepartmentsTab({
                           <ChevronRight size={12} />
                         </button>
                       </td>
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td className="td-status" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className={`status-badge-btn ${isActive ? 'status-badge-btn--active' : 'status-badge-btn--inactive'}`}
@@ -193,7 +193,7 @@ export default function DepartmentsTab({
                           <span>{isActive ? 'Active' : 'Inactive'}</span>
                         </button>
                       </td>
-                      <td>
+                      <td className="td-created">
                         <span className="table-date">{formatDate(dept.createdAt)}</span>
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>

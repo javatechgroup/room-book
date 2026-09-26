@@ -14,6 +14,7 @@ import {
   Ban,
   Radio,
   Edit2,
+  Repeat,
 } from 'lucide-react';
 import { formatDate } from '../../../utils/dateUtils';
 
@@ -78,6 +79,18 @@ export default function BookingInspectorDrawer({
               {state.key === 'COMPLETED' && <CheckCircle2 size={13} />}
               <span>{state.label}</span>
             </span>
+            {booking.recurrenceId && (
+              <span
+                className="status-badge"
+                style={{
+                  background: 'rgba(245, 158, 11, 0.14)',
+                  color: '#d97706',
+                  border: '1px solid rgba(245, 158, 11, 0.28)',
+                }}
+              >
+                <Repeat size={12} /> {booking.recurrenceRule || 'Recurring Series'}
+              </span>
+            )}
             <span className="capacity-badge">
               <Users size={14} /> {booking.attendeesCount || 2} Attendees
             </span>
@@ -147,6 +160,15 @@ export default function BookingInspectorDrawer({
                 </span>
                 <span className="meta-value">{booking.floor} ({booking.location || 'Main Zone'})</span>
               </div>
+
+              {booking.recurrenceRule && (
+                <div className="inspector-meta-item">
+                  <span className="meta-label">
+                    <Repeat size={14} /> Recurrence
+                  </span>
+                  <span className="meta-value">{booking.recurrenceRule}</span>
+                </div>
+              )}
             </div>
           </div>
 

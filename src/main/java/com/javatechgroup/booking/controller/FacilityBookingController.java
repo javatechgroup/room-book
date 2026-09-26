@@ -49,13 +49,14 @@ public class FacilityBookingController {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<BookingResponse>> cancelBooking(
             @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "false") boolean cancelSeries,
             @RequestParam(required = false) Long companyId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         Long resolvedCompanyId = resolveCompanyId(currentUser, companyId);
         Long userId = currentUser != null ? currentUser.getId() : 1L;
         boolean isAdmin = currentUser != null && (currentUser.getRole() == Role.SUPER_ADMIN || currentUser.getRole() == Role.COMPANY_ADMIN);
-        BookingResponse response = bookingService.cancelBooking(id, resolvedCompanyId, userId, isAdmin);
-        return ResponseEntity.ok(ApiResponse.success(response, "Reservation cancelled and room slot released"));
+        BookingResponse response = bookingService.cancelBooking(id, resolvedCompanyId, userId, isAdmin, cancelSeries);
+        return ResponseEntity.ok(ApiResponse.success(response, cancelSeries ? "Recurring series cancelled successfully" : "Reservation cancelled and room slot released"));
     }
 
     @PutMapping("/{id}")

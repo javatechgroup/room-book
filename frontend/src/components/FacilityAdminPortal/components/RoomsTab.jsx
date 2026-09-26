@@ -21,6 +21,7 @@ import {
   Video,
   Wifi,
   Monitor,
+  RotateCcw,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
@@ -181,6 +182,23 @@ export default function RoomsTab({
             </button>
           </div>
 
+          {(search || floorFilter !== 'ALL' || statusFilter !== 'ALL') && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={() => {
+                onSearchChange?.('');
+                onFloorFilterChange?.('ALL');
+                onStatusFilterChange?.('ALL');
+              }}
+              title="Reset room filters"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
+
           <div className="view-mode-toggle">
             <button
               type="button"
@@ -264,7 +282,7 @@ export default function RoomsTab({
                       aria-label="Select all rooms"
                     />
                   </th>
-                  <th className="th-sortable" onClick={() => onSort && onSort('name')}>
+                  <th className="th-sortable th-room-name" onClick={() => onSort && onSort('name')}>
                     <div className="th-content">
                       <span>Room Name & Specs</span>
                       {sortBy === 'name' ? (
@@ -274,7 +292,7 @@ export default function RoomsTab({
                       )}
                     </div>
                   </th>
-                  <th className="th-sortable" onClick={() => onSort && onSort('floor')}>
+                  <th className="th-sortable th-floor" onClick={() => onSort && onSort('floor')}>
                     <div className="th-content">
                       <span>Floor Location</span>
                       {sortBy === 'floor' ? (
@@ -284,7 +302,7 @@ export default function RoomsTab({
                       )}
                     </div>
                   </th>
-                  <th className="th-sortable" onClick={() => onSort && onSort('capacity')}>
+                  <th className="th-sortable th-capacity" onClick={() => onSort && onSort('capacity')}>
                     <div className="th-content">
                       <span>Capacity</span>
                       {sortBy === 'capacity' ? (
@@ -294,7 +312,7 @@ export default function RoomsTab({
                       )}
                     </div>
                   </th>
-                  <th className="th-sortable" onClick={() => onSort && onSort('status')}>
+                  <th className="th-sortable th-status" onClick={() => onSort && onSort('status')}>
                     <div className="th-content">
                       <span>Status</span>
                       {sortBy === 'status' ? (
@@ -356,35 +374,31 @@ export default function RoomsTab({
                             aria-label={`Select room ${room.name}`}
                           />
                         </td>
-                        <td className="td-strong">
+                        <td className="td-room-name td-strong">
                           <div className="entity-cell">
                             <div className="entity-cell__icon entity-cell__icon--blue">
                               <DoorOpen size={16} />
                             </div>
                             <div className="entity-cell__content">
                               <div className="entity-cell__name">{room.name}</div>
-                              <div className="entity-cell__sub">
-                                {room.description
-                                  ? room.description.length > 55
-                                    ? `${room.description.substring(0, 55)}...`
-                                    : room.description
-                                  : room.location || 'General Zone'}
+                              <div className="entity-cell__sub" title={room.description || room.location || 'General Zone'}>
+                                {room.description || room.location || 'General Zone'}
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td>
+                        <td className="td-floor">
                           <span className="code-pill">
                             <Layers size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                             {room.floor}
                           </span>
                         </td>
-                        <td>
+                        <td className="td-capacity">
                           <span className="capacity-pill">
                             <Users size={12} /> {room.capacity} People
                           </span>
                         </td>
-                        <td onClick={(e) => e.stopPropagation()}>
+                        <td className="td-status" onClick={(e) => e.stopPropagation()}>
                           <button
                             type="button"
                             className={`status-badge-btn ${isMaintenance ? 'status-badge-btn--inactive' : 'status-badge-btn--active'}`}

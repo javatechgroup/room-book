@@ -15,6 +15,7 @@ import {
   ArrowDown,
   ArrowUpDown,
   ChevronDown,
+  RotateCcw,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
@@ -107,6 +108,24 @@ export default function EmployeesTab({
               Suspended <span>{inactiveCount}</span>
             </button>
           </div>
+
+          {(search || departmentFilter !== 'ALL' || statusFilter !== 'ALL' || (roleFilter && roleFilter !== 'ALL')) && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={() => {
+                onSearchChange?.('');
+                onDepartmentFilterChange?.('ALL');
+                onStatusFilterChange?.('ALL');
+                onRoleFilterChange?.('ALL');
+              }}
+              title="Reset employee filters"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -211,7 +230,7 @@ export default function EmployeesTab({
                     aria-label="Select all employees"
                   />
                 </th>
-                <th className="th-sortable" onClick={() => onSort && onSort('fullName')}>
+                <th className="th-sortable th-staff-member" onClick={() => onSort && onSort('fullName')}>
                   <div className="th-content">
                     <span>Staff Member</span>
                     {sortBy === 'fullName' ? (
@@ -221,9 +240,9 @@ export default function EmployeesTab({
                     )}
                   </div>
                 </th>
-                <th>Department</th>
-                <th>Role Scope</th>
-                <th className="th-sortable" onClick={() => onSort && onSort('status')}>
+                <th className="th-department">Department</th>
+                <th className="th-role">Role Scope</th>
+                <th className="th-sortable th-status" onClick={() => onSort && onSort('status')}>
                   <div className="th-content">
                     <span>Status</span>
                     {sortBy === 'status' ? (
@@ -233,7 +252,7 @@ export default function EmployeesTab({
                     )}
                   </div>
                 </th>
-                <th>Onboarded</th>
+                <th className="th-onboarded">Onboarded</th>
                 <th className="th-actions">Actions</th>
               </tr>
             </thead>
@@ -292,7 +311,7 @@ export default function EmployeesTab({
                           aria-label={`Select employee ${emp.fullName}`}
                         />
                       </td>
-                      <td className="td-strong">
+                      <td className="td-staff-member td-strong">
                         <div className="entity-cell">
                           <div className="entity-cell__icon entity-cell__icon--indigo">
                             <User size={16} />
@@ -303,17 +322,17 @@ export default function EmployeesTab({
                           </div>
                         </div>
                       </td>
-                      <td>
+                      <td className="td-department">
                         <span className="department-badge">
                           <Building2 size={13} /> {emp.departmentName || 'Admin'}
                         </span>
                       </td>
-                      <td>
+                      <td className="td-role">
                         <span className={`role-badge ${isFacilityAdmin ? 'role-badge--admin' : 'role-badge--employee'}`}>
                           {isFacilityAdmin ? 'Facility Admin' : 'Employee'}
                         </span>
                       </td>
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td className="td-status" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className={`status-badge-btn ${isActive ? 'status-badge-btn--active' : 'status-badge-btn--inactive'}`}
@@ -324,7 +343,7 @@ export default function EmployeesTab({
                           <span>{isActive ? 'Active' : 'Suspended'}</span>
                         </button>
                       </td>
-                      <td>
+                      <td className="td-onboarded">
                         <span className="table-date">{formatDate(emp.createdAt)}</span>
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>

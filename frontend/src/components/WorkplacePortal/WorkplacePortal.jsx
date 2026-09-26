@@ -392,7 +392,7 @@ export default function WorkplacePortal() {
     }
   };
 
-  const handleCancelBooking = async (booking) => {
+  const handleCancelBooking = async (booking, cancelSeries = false) => {
     if (!booking) return false;
 
     const bookingTitle = booking.title || booking.purpose || 'Meeting Reservation';
@@ -403,12 +403,14 @@ export default function WorkplacePortal() {
     const targetSub = [roomName, booking.floor, timeInfo].filter(Boolean).join(' • ');
 
     const ok = await confirm({
-      title: 'Release Room Slot?',
-      subtitle: 'Slot Release Confirmation',
-      message: `Are you sure you want to release the slot for "${bookingTitle}" in ${roomName}? This will cancel your reservation and make the room immediately available to other colleagues.`,
+      title: cancelSeries ? 'Cancel Recurring Series?' : 'Release Room Slot?',
+      subtitle: cancelSeries ? 'Series Cancellation' : 'Slot Release Confirmation',
+      message: cancelSeries
+        ? `Are you sure you want to cancel all future recurring meetings in this series for "${bookingTitle}" in ${roomName}?`
+        : `Are you sure you want to release the slot for "${bookingTitle}" in ${roomName}? This will cancel your reservation and make the room immediately available to other colleagues.`,
       targetName: bookingTitle,
       targetSub: targetSub,
-      confirmText: 'Release Slot',
+      confirmText: cancelSeries ? 'Cancel Series' : 'Release Slot',
       cancelText: 'Keep Reservation',
       type: 'danger',
     });
@@ -417,11 +419,13 @@ export default function WorkplacePortal() {
 
     const bookingId = booking.id;
     try {
-      const res = await facilityApi.cancelBooking(bookingId);
+      const res = await facilityApi.cancelBooking(bookingId, cancelSeries);
       if (res && res.success) {
         toast.info(
-          'Slot Released',
-          `Reservation for ${roomName} has been cancelled and is now vacant for colleagues.`
+          cancelSeries ? 'Meeting Series Cancelled' : 'Slot Released',
+          cancelSeries
+            ? `All upcoming recurring meetings for "${bookingTitle}" have been cancelled.`
+            : `Reservation for ${roomName} has been cancelled and is now vacant for colleagues.`
         );
         await Promise.all([fetchDayOccupancy(selectedDate), fetchMyBookings()]);
         return true;

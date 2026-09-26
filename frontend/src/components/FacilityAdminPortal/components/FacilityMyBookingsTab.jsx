@@ -14,10 +14,13 @@ import {
   CalendarPlus,
   Radio,
   Download,
+  Repeat,
+  RotateCcw,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
 import Select from '../../common/Select/Select';
+import CancelRecurringModal from '../../common/CancelRecurringModal/CancelRecurringModal';
 import { formatDate } from '../../../utils/dateUtils';
 
 export default function FacilityMyBookingsTab({
@@ -35,6 +38,15 @@ export default function FacilityMyBookingsTab({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [recurringBookingToCancel, setRecurringBookingToCancel] = useState(null);
+
+  const handleRequestCancel = useCallback((booking) => {
+    if (booking?.recurrenceId) {
+      setRecurringBookingToCancel(booking);
+    } else {
+      onCancelBooking && onCancelBooking(booking, false);
+    }
+  }, [onCancelBooking]);
 
   // 15s real-time heartbeat ticker to dynamically transition meetings from In Progress -> Completed
   useEffect(() => {
@@ -236,6 +248,19 @@ export default function FacilityMyBookingsTab({
             </button>
           </div>
 
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={handleResetFilters}
+              title="Reset all filters"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
+
           {onOpenBookRoom && (
             <button
               type="button"
@@ -259,11 +284,11 @@ export default function FacilityMyBookingsTab({
           <table className="superadmin-table my-bookings-table">
             <thead>
               <tr>
-                <th>Time Slot</th>
-                <th>Meeting Title</th>
-                <th>Room & Floor</th>
-                <th>Attendees</th>
-                <th>Status</th>
+                <th className="th-booking-time">Time Slot</th>
+                <th className="th-booking-title">Meeting Title</th>
+                <th className="th-booking-room">Room & Floor</th>
+                <th className="th-booking-attendees">Attendees</th>
+                <th className="th-status">Status</th>
                 <th className="th-actions">Actions</th>
               </tr>
             </thead>
@@ -297,7 +322,7 @@ export default function FacilityMyBookingsTab({
                       className={state.key === 'IN_PROGRESS' ? 'tr--in-progress' : ''}
                       onClick={() => onInspectBooking && onInspectBooking(booking)}
                     >
-                      <td>
+                      <td className="td-booking-time">
                         <div className="schedule-time-col">
                           <div className="schedule-time-pill">
                             <Clock size={13} />
@@ -306,7 +331,7 @@ export default function FacilityMyBookingsTab({
                           <span className="sub-date">{formatDate(booking.startTime)}</span>
                         </div>
                       </td>
-                      <td className="td-strong">
+                      <td className="td-booking-title td-strong">
                         <div className="entity-cell entity-cell--single-row">
                           <div className={`entity-cell__icon ${state.key === 'IN_PROGRESS' ? 'entity-cell__icon--blue' : 'entity-cell__icon--blue'}`}>
                             {state.key === 'IN_PROGRESS' ? (
@@ -317,6 +342,26 @@ export default function FacilityMyBookingsTab({
                           </div>
                           <div className="entity-cell__content entity-cell__content--single-row">
                             <span className="entity-cell__name" title={booking.title}>{booking.title}</span>
+                            {booking.recurrenceId && (
+                              <span
+                                className="recurrence-badge"
+                                title={`Recurring reservation (${booking.recurrenceRule || 'Series'})`}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                  fontSize: '0.68rem',
+                                  fontWeight: 600,
+                                  padding: '1px 6px',
+                                  borderRadius: '4px',
+                                  background: 'rgba(245, 158, 11, 0.12)',
+                                  color: '#d97706',
+                                  border: '1px solid rgba(245, 158, 11, 0.25)',
+                                }}
+                              >
+                                <Repeat size={10} /> {booking.recurrenceRule || 'RECURRING'}
+                              </span>
+                            )}
                             {(booking.departmentName || booking.companyName) && (
                               <span className="entity-cell__dept-badge">
                                 {booking.departmentName || booking.companyName}
@@ -330,24 +375,24 @@ export default function FacilityMyBookingsTab({
                           </div>
                         </div>
                       </td>
-                      <td>
+                      <td className="td-booking-room">
                         <div className="room-floor-inline">
                           <strong>{booking.roomName}</strong>
                           <span className="room-floor-inline__floor">
                             • {booking.floor
-                              ? booking.floor.toString().toLowerCase().includes('floor')
+                              ? (booking.floor.toString().toLowerCase().includes('floor')
                                 ? booking.floor
-                                : `Floor ${booking.floor}`
+                                : `Floor ${booking.floor}`)
                               : booking.location || 'Main Floor'}
                           </span>
                         </div>
                       </td>
-                      <td>
+                      <td className="td-booking-attendees">
                         <span className="capacity-pill" title={`${booking.attendeesCount || 2} Attendees`}>
                           <Users size={12} /> {booking.attendeesCount || 2}
                         </span>
                       </td>
-                      <td>
+                      <td className="td-status">
                         <span className={`status-pill ${state.colorClass}`}>
                           {state.key === 'IN_PROGRESS' && <Radio size={12} className="blinking-live-icon" />}
                           {state.key === 'CANCELLED' && <XCircle size={12} />}
@@ -391,7 +436,7 @@ export default function FacilityMyBookingsTab({
                             <button
                               type="button"
                               className="action-btn action-btn--deactivate"
-                              onClick={() => onCancelBooking(booking)}
+                              onClick={() => handleRequestCancel(booking)}
                               disabled={!state.canCancel}
                               title={state.canCancel ? 'Cancel Reservation & Free Room' : 'Cannot cancel past or cancelled reservation'}
                               aria-label={`Cancel ${booking.title}`}
@@ -461,6 +506,28 @@ export default function FacilityMyBookingsTab({
                       <span className="mobile-card__subtitle">
                         {booking.roomName} • {booking.floor}
                       </span>
+                      {booking.recurrenceId && (
+                        <div style={{ marginTop: '4px' }}>
+                          <span
+                            className="recurrence-badge"
+                            title={`Recurring reservation (${booking.recurrenceRule || 'Series'})`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              fontSize: '0.68rem',
+                              fontWeight: 600,
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              background: 'rgba(245, 158, 11, 0.12)',
+                              color: '#d97706',
+                              border: '1px solid rgba(245, 158, 11, 0.25)',
+                            }}
+                          >
+                            <Repeat size={10} /> {booking.recurrenceRule || 'RECURRING'}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <span className={`status-pill ${state.colorClass}`}>
@@ -506,7 +573,7 @@ export default function FacilityMyBookingsTab({
                       <button
                         type="button"
                         className="action-btn action-btn--deactivate"
-                        onClick={() => onCancelBooking(booking)}
+                        onClick={() => handleRequestCancel(booking)}
                         title="Cancel Reservation"
                         aria-label={`Cancel ${booking.title}`}
                       >
@@ -534,6 +601,23 @@ export default function FacilityMyBookingsTab({
           }}
           pageSizeOptions={[3, 5, 10, 20]}
           className="bookings-log-pagination mobile-only-pagination"
+        />
+      )}
+
+      {/* Recurrence Cancellation Scope Modal */}
+      {recurringBookingToCancel && (
+        <CancelRecurringModal
+          isOpen={Boolean(recurringBookingToCancel)}
+          booking={recurringBookingToCancel}
+          onCancelSingle={(target) => {
+            setRecurringBookingToCancel(null);
+            onCancelBooking && onCancelBooking(target, false);
+          }}
+          onCancelSeries={(target) => {
+            setRecurringBookingToCancel(null);
+            onCancelBooking && onCancelBooking(target, true);
+          }}
+          onClose={() => setRecurringBookingToCancel(null)}
         />
       )}
     </div>

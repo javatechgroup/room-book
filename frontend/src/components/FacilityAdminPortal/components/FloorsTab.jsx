@@ -93,11 +93,11 @@ export default function FloorsTab({
           <table className="superadmin-table floors-table">
             <thead>
               <tr>
-                <th>Floor Name & Level</th>
-                <th>Assigned Rooms</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Created Date</th>
+                <th className="th-floor-name">Floor Name & Level</th>
+                <th className="th-floor-rooms">Assigned Rooms</th>
+                <th className="th-floor-desc">Description</th>
+                <th className="th-status">Status</th>
+                <th className="th-created">Created Date</th>
                 <th className="th-actions">Actions</th>
               </tr>
             </thead>
@@ -142,7 +142,7 @@ export default function FloorsTab({
                       onClick={() => onInspectFloor && onInspectFloor(floor)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <td className="td-strong">
+                      <td className="td-floor-name td-strong">
                         <div className="entity-cell">
                           <div className="entity-cell__icon entity-cell__icon--blue">
                             <Layers size={16} />
@@ -157,18 +157,18 @@ export default function FloorsTab({
                         </div>
                       </td>
 
-                      <td>
+                      <td className="td-floor-rooms">
                         <span className="admin-count-pill">
                           <DoorOpen size={12} />
                           <span>{floor.roomCount || 0} {floor.roomCount === 1 ? 'Room' : 'Rooms'}</span>
                         </span>
                       </td>
 
-                      <td>
+                      <td className="td-floor-desc">
                         <span className="table-notes">{floor.description || '—'}</span>
                       </td>
 
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td className="td-status" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className={`status-badge-btn ${isActive ? 'status-badge-btn--active' : 'status-badge-btn--inactive'}`}
@@ -180,7 +180,7 @@ export default function FloorsTab({
                         </button>
                       </td>
 
-                      <td>
+                      <td className="td-created">
                         <span className="table-date">{formatDate(floor.createdAt)}</span>
                       </td>
 

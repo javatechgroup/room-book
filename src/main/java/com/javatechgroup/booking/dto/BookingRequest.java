@@ -34,6 +34,10 @@ public class BookingRequest {
 
     private java.util.List<String> participantEmails = new java.util.ArrayList<>();
 
+    private String recurrenceRule; // NONE, DAILY, WEEKLY, BI_WEEKLY, MONTHLY
+
+    private java.time.LocalDate recurrenceEndDate;
+
     public BookingRequest() {}
 
     public Long getCompanyId() { return companyId; }
@@ -65,4 +69,10 @@ public class BookingRequest {
 
     public java.util.List<String> getParticipantEmails() { return participantEmails; }
     public void setParticipantEmails(java.util.List<String> participantEmails) { this.participantEmails = participantEmails; }
+
+    public String getRecurrenceRule() { return recurrenceRule; }
+    public void setRecurrenceRule(String recurrenceRule) { this.recurrenceRule = recurrenceRule; }
+
+    public java.time.LocalDate getRecurrenceEndDate() { return recurrenceEndDate; }
+    public void setRecurrenceEndDate(java.time.LocalDate recurrenceEndDate) { this.recurrenceEndDate = recurrenceEndDate; }
 }

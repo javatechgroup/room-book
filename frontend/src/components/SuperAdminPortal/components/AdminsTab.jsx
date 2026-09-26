@@ -154,7 +154,7 @@ export default function AdminsTab({
                     aria-label="Select all on this page"
                   />
                 </th>
-                <th className="th-sortable" onClick={() => onSort && onSort('fullName')}>
+                <th className="th-sortable th-admin-name" onClick={() => onSort && onSort('fullName')}>
                   <div className="th-content">
                     <span>Administrator Name</span>
                     {sort.field === 'fullName' ? (
@@ -164,8 +164,8 @@ export default function AdminsTab({
                     )}
                   </div>
                 </th>
-                <th>Corporate Email</th>
-                <th className="th-sortable" onClick={() => onSort && onSort('companyName')}>
+                <th className="th-email">Corporate Email</th>
+                <th className="th-sortable th-company" onClick={() => onSort && onSort('companyName')}>
                   <div className="th-content">
                     <span>Assigned Company</span>
                     {sort.field === 'companyName' ? (
@@ -175,9 +175,9 @@ export default function AdminsTab({
                     )}
                   </div>
                 </th>
-                <th>Role Scope</th>
-                <th>Last Active</th>
-                <th className="th-sortable" onClick={() => onSort && onSort('status')}>
+                <th className="th-role">Role Scope</th>
+                <th className="th-activity">Last Active</th>
+                <th className="th-sortable th-status" onClick={() => onSort && onSort('status')}>
                   <div className="th-content">
                     <span>Status</span>
                     {sort.field === 'status' ? (
@@ -228,7 +228,7 @@ export default function AdminsTab({
                         onChange={() => onToggleSelect && onToggleSelect(a.id)}
                       />
                     </td>
-                    <td className="td-strong">
+                    <td className="td-admin-name td-strong">
                       <div className="admin-user-cell">
                         <div className="admin-avatar">
                           {a.fullName.charAt(0).toUpperCase()}
@@ -239,23 +239,23 @@ export default function AdminsTab({
                         </div>
                       </div>
                     </td>
-                    <td onClick={(e) => e.stopPropagation()}>
+                    <td className="td-email" onClick={(e) => e.stopPropagation()}>
                       <span className="contact-chip">
                         <Mail size={12} />
                         <a href={`mailto:${a.email}`}>{a.email}</a>
                       </span>
                     </td>
-                    <td>
+                    <td className="td-company">
                       <span className="company-badge">
                         <Building2 size={12} />
                         {a.companyName}
                       </span>
                     </td>
-                    <td>
+                    <td className="td-role">
                       <span className="role-tag">COMPANY_ADMIN</span>
                     </td>
-                    <td className="td-subtle">{a.lastLogin || 'Recent'}</td>
-                    <td>
+                    <td className="td-activity td-subtle">{a.lastLogin || 'Recent'}</td>
+                    <td className="td-status">
                       <span
                         className={`status-pill ${
                           a.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'

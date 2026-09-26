@@ -82,4 +82,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findBookingsForDay(@Param("companyId") Long companyId,
                                      @Param("dayStart") LocalDateTime dayStart,
                                      @Param("dayEnd") LocalDateTime dayEnd);
+
+    List<Booking> findByRecurrenceId(String recurrenceId);
+
+    @Query("SELECT b FROM Booking b WHERE b.recurrenceId = :recurrenceId AND b.startTime >= :startTime AND b.status = 'CONFIRMED' ORDER BY b.startTime ASC")
+    List<Booking> findFutureActiveBookingsInSeries(@Param("recurrenceId") String recurrenceId, @Param("startTime") LocalDateTime startTime);
+
+    long countByRecurrenceIdAndStatus(String recurrenceId, String status);
 }

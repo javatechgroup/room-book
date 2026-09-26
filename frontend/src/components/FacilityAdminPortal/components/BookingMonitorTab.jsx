@@ -19,6 +19,8 @@ import {
   ChevronDown,
   Radio,
   Edit2,
+  RotateCcw,
+  Repeat,
 } from 'lucide-react';
 import Pagination from '../../common/Pagination/Pagination';
 import SearchInput from '../../common/SearchInput/SearchInput';
@@ -330,6 +332,19 @@ export default function BookingMonitorTab({
             <Download size={14} />
             <span>Export CSV</span>
           </button>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              onClick={handleResetFilters}
+              title="Reset all filters and search"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -450,11 +465,11 @@ export default function BookingMonitorTab({
             <table className="superadmin-table occupancy-table">
               <thead>
                 <tr>
-                  <th>Room Name</th>
-                  <th>Floor & Zone</th>
-                  <th>Capacity</th>
-                  <th>Current Live Status</th>
-                  <th>Current Active Session</th>
+                  <th className="th-occ-room">Room Name</th>
+                  <th className="th-occ-floor">Floor & Zone</th>
+                  <th className="th-occ-capacity">Capacity</th>
+                  <th className="th-occ-status">Current Live Status</th>
+                  <th className="th-occ-session">Current Active Session</th>
                   <th className="th-actions">Actions</th>
                 </tr>
               </thead>
@@ -496,7 +511,7 @@ export default function BookingMonitorTab({
                         onClick={() => onInspectRoom && onInspectRoom(room)}
                         style={{ cursor: 'pointer' }}
                       >
-                        <td className="td-strong">
+                        <td className="td-occ-room td-strong">
                           <div className="entity-cell">
                             <div className={`entity-cell__icon ${occ.isInProgress ? 'entity-cell__icon--blue' : 'entity-cell__icon--indigo'}`}>
                               <DoorOpen size={15} />
@@ -507,18 +522,18 @@ export default function BookingMonitorTab({
                             </div>
                           </div>
                         </td>
-                        <td>
+                        <td className="td-occ-floor">
                           <div className="room-floor-tag">
                             <strong>{room.floor}</strong>
                             <span>{room.location || 'Main Zone'}</span>
                           </div>
                         </td>
-                        <td>
+                        <td className="td-occ-capacity">
                           <span className="capacity-pill">
                             <Users size={12} /> {room.capacity} seats
                           </span>
                         </td>
-                        <td>
+                        <td className="td-occ-status">
                           {occ.isInProgress ? (
                             <span className="occupancy-status-pill occupancy-status-pill--live">
                               <Radio size={12} className="blinking-live-icon" /> In Session Now
@@ -529,7 +544,7 @@ export default function BookingMonitorTab({
                             </span>
                           )}
                         </td>
-                        <td>
+                        <td className="td-occ-session">
                           {occ.status === 'OCCUPIED' && occ.booking ? (
                             <div className="table-active-session">
                               <strong>"{occ.booking.title}"</strong>
@@ -591,12 +606,12 @@ export default function BookingMonitorTab({
           <table className="superadmin-table bookings-table">
             <thead>
               <tr>
-                <th>Time Slot</th>
-                <th>Meeting Title</th>
-                <th>Room & Floor</th>
-                <th>Reserved By</th>
-                <th>Attendees</th>
-                <th>Status</th>
+                <th className="th-booking-time">Time Slot</th>
+                <th className="th-booking-title">Meeting Title</th>
+                <th className="th-booking-room">Room & Floor</th>
+                <th className="th-booking-user">Reserved By</th>
+                <th className="th-booking-attendees">Attendees</th>
+                <th className="th-status">Status</th>
                 <th className="th-actions">Actions</th>
               </tr>
             </thead>
@@ -630,14 +645,14 @@ export default function BookingMonitorTab({
                       className={state.key === 'IN_PROGRESS' ? 'tr--in-progress' : ''}
                       onClick={() => onInspectBooking(booking)}
                     >
-                      <td>
+                      <td className="td-booking-time">
                         <div className="schedule-time-pill">
                           <Clock size={13} />
                           <span>{startTimeDisplay} - {endTimeDisplay}</span>
                         </div>
                         <span className="sub-date">{formatDate(booking.startTime)}</span>
                       </td>
-                      <td className="td-strong">
+                      <td className="td-booking-title td-strong">
                         <div className="entity-cell">
                           <div className={`entity-cell__icon ${state.key === 'IN_PROGRESS' ? 'entity-cell__icon--blue' : 'entity-cell__icon--blue'}`}>
                             {state.key === 'IN_PROGRESS' ? (
@@ -647,29 +662,53 @@ export default function BookingMonitorTab({
                             )}
                           </div>
                           <div className="entity-cell__content">
-                            <div className="entity-cell__name">{booking.title}</div>
+                            <div className="entity-cell__name">
+                              {booking.title}
+                              {booking.recurrenceId && (
+                                <span
+                                  className="recurrence-badge"
+                                  title={`Recurring reservation (${booking.recurrenceRule || 'Series'})`}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                    fontSize: '0.66rem',
+                                    fontWeight: 600,
+                                    padding: '1px 5px',
+                                    borderRadius: '4px',
+                                    background: 'rgba(245, 158, 11, 0.12)',
+                                    color: '#d97706',
+                                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                                    marginLeft: '6px',
+                                    verticalAlign: 'middle',
+                                  }}
+                                >
+                                  <Repeat size={10} /> {booking.recurrenceRule || 'RECURRING'}
+                                </span>
+                              )}
+                            </div>
                             <div className="entity-cell__sub">ID: #{booking.id}</div>
                           </div>
                         </div>
                       </td>
-                      <td>
+                      <td className="td-booking-room">
                         <div className="room-floor-tag">
                           <strong>{booking.roomName}</strong>
                           <span>{booking.floor}</span>
                         </div>
                       </td>
-                      <td>
+                      <td className="td-booking-user">
                         <div className="booker-cell">
                           <span className="booker-name">{booking.bookerName}</span>
                           <span className="booker-dept">{booking.departmentName || 'Admin'}</span>
                         </div>
                       </td>
-                      <td>
+                      <td className="td-booking-attendees">
                         <span className="capacity-pill">
                           <Users size={12} /> {booking.attendeesCount || 2}
                         </span>
                       </td>
-                      <td>
+                      <td className="td-status">
                         <span className={`status-pill ${state.colorClass}`}>
                           {state.key === 'IN_PROGRESS' && <Radio size={12} className="blinking-live-icon" />}
                           {state.key === 'CANCELLED' && <XCircle size={12} />}

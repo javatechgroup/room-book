@@ -125,7 +125,7 @@ export default function CompaniesTab({
                     aria-label="Select all on this page"
                   />
                 </th>
-                <th className="th-sortable" onClick={() => onSort && onSort('companyCode')}>
+                <th className="th-sortable th-code" onClick={() => onSort && onSort('companyCode')}>
                   <div className="th-content">
                     <span>Code</span>
                     {sort.field === 'companyCode' ? (
@@ -135,7 +135,7 @@ export default function CompaniesTab({
                     )}
                   </div>
                 </th>
-                <th className="th-sortable" onClick={() => onSort && onSort('name')}>
+                <th className="th-sortable th-company-name" onClick={() => onSort && onSort('name')}>
                   <div className="th-content">
                     <span>Tenant Company</span>
                     {sort.field === 'name' ? (
@@ -145,10 +145,10 @@ export default function CompaniesTab({
                     )}
                   </div>
                 </th>
-                <th>Contact Info</th>
-                <th>Location / Campus</th>
-                <th>Facility Admins</th>
-                <th className="th-sortable" onClick={() => onSort && onSort('status')}>
+                <th className="th-contact">Contact Info</th>
+                <th className="th-campus">Location / Campus</th>
+                <th className="th-admins">Facility Admins</th>
+                <th className="th-sortable th-status" onClick={() => onSort && onSort('status')}>
                   <div className="th-content">
                     <span>Status</span>
                     {sort.field === 'status' ? (
@@ -199,16 +199,16 @@ export default function CompaniesTab({
                           onChange={() => onToggleSelect && onToggleSelect(c.id)}
                         />
                       </td>
-                      <td>
+                      <td className="td-code">
                         <span className="code-pill">{c.companyCode}</span>
                       </td>
-                      <td className="td-strong">
+                      <td className="td-company-name td-strong">
                         <div className="company-title-cell">
                           <span className="company-name">{c.name}</span>
                           <span className="company-created">{formatEstDate(c.createdAt)}</span>
                         </div>
                       </td>
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td className="td-contact" onClick={(e) => e.stopPropagation()}>
                         <div className="contact-cell">
                           <span className="contact-item">
                             <Mail size={13} />
@@ -227,13 +227,13 @@ export default function CompaniesTab({
                           )}
                         </div>
                       </td>
-                      <td>
+                      <td className="td-campus">
                         <span className="address-snippet" title={c.address}>
                           <MapPin size={12} />
                           {c.address || 'Not specified'}
                         </span>
                       </td>
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td className="td-admins" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className="admin-count-pill"
@@ -245,7 +245,7 @@ export default function CompaniesTab({
                           <ChevronRight size={12} />
                         </button>
                       </td>
-                      <td>
+                      <td className="td-status">
                         <span
                           className={`status-pill ${
                             c.status === 'ACTIVE' ? 'status-pill--active' : 'status-pill--inactive'

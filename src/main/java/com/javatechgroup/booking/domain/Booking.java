@@ -52,6 +52,15 @@ public class Booking {
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<BookingParticipant> participants = new java.util.ArrayList<>();
 
+    @Column(name = "recurrence_id", length = 50)
+    private String recurrenceId;
+
+    @Column(name = "recurrence_rule", length = 30)
+    private String recurrenceRule;
+
+    @Column(name = "is_recurrence_parent")
+    private Boolean isRecurrenceParent = false;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -105,6 +114,15 @@ public class Booking {
         participants.remove(participant);
         participant.setBooking(null);
     }
+
+    public String getRecurrenceId() { return recurrenceId; }
+    public void setRecurrenceId(String recurrenceId) { this.recurrenceId = recurrenceId; }
+
+    public String getRecurrenceRule() { return recurrenceRule; }
+    public void setRecurrenceRule(String recurrenceRule) { this.recurrenceRule = recurrenceRule; }
+
+    public Boolean getIsRecurrenceParent() { return isRecurrenceParent; }
+    public void setIsRecurrenceParent(Boolean isRecurrenceParent) { this.isRecurrenceParent = isRecurrenceParent; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

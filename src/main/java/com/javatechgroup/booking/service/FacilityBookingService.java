@@ -47,6 +47,66 @@ public class FacilityBookingService {
 		this.eventPublisher = eventPublisher;
 	}
 
+	private List<LocalDateTime[]> generateOccurrences(
+			LocalDateTime startTime,
+			LocalDateTime endTime,
+			String recurrenceRule,
+			LocalDate recurrenceEndDate) {
+		List<LocalDateTime[]> slots = new ArrayList<>();
+		slots.add(new LocalDateTime[]{startTime, endTime});
+
+		if (recurrenceRule == null || "NONE".equalsIgnoreCase(recurrenceRule.trim())) {
+			return slots;
+		}
+
+		String rule = recurrenceRule.trim().toUpperCase();
+		LocalDate maxDate = recurrenceEndDate != null ? recurrenceEndDate : startTime.toLocalDate().plusMonths(1);
+		LocalDate hardLimit = startTime.toLocalDate().plusDays(90);
+		if (maxDate.isAfter(hardLimit)) {
+			maxDate = hardLimit;
+		}
+
+		LocalDateTime currentStart = startTime;
+		LocalDateTime currentEnd = endTime;
+
+		while (slots.size() < 24) {
+			switch (rule) {
+				case "DAILY":
+					currentStart = currentStart.plusDays(1);
+					currentEnd = currentEnd.plusDays(1);
+					if (currentStart.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) {
+						currentStart = currentStart.plusDays(2);
+						currentEnd = currentEnd.plusDays(2);
+					} else if (currentStart.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+						currentStart = currentStart.plusDays(1);
+						currentEnd = currentEnd.plusDays(1);
+					}
+					break;
+				case "WEEKLY":
+					currentStart = currentStart.plusWeeks(1);
+					currentEnd = currentEnd.plusWeeks(1);
+					break;
+				case "BI_WEEKLY":
+					currentStart = currentStart.plusWeeks(2);
+					currentEnd = currentEnd.plusWeeks(2);
+					break;
+				case "MONTHLY":
+					currentStart = currentStart.plusMonths(1);
+					currentEnd = currentEnd.plusMonths(1);
+					break;
+				default:
+					return slots;
+			}
+
+			if (currentStart.toLocalDate().isAfter(maxDate)) {
+				break;
+			}
+			slots.add(new LocalDateTime[]{currentStart, currentEnd});
+		}
+
+		return slots;
+	}
+
 	@Transactional
 	public BookingResponse createBooking(BookingRequest request, Long companyId, Long currentUserId) {
 		Company company = companyRepository.findById(companyId)
@@ -71,72 +131,120 @@ public class FacilityBookingService {
 			throw new BookingConflictException("Cannot book a room in the past. Please select a future date and time.");
 		}
 
-		// Conflict check
-		List<Booking> conflicts = bookingRepository.findConflictingBookings(room.getId(), request.getStartTime(),
-				request.getEndTime());
-		if (!conflicts.isEmpty()) {
-			Booking conflict = conflicts.get(0);
-			throw new BookingConflictException(
-					"Time slot overlaps with an existing confirmed reservation ('" + conflict.getTitle() + "' by "
-							+ conflict.getBooker().getFullName() + "). Please choose another slot.");
+		boolean isRecurring = request.getRecurrenceRule() != null && !"NONE".equalsIgnoreCase(request.getRecurrenceRule().trim());
+		List<LocalDateTime[]> occurrences = generateOccurrences(
+				request.getStartTime(),
+				request.getEndTime(),
+				request.getRecurrenceRule(),
+				request.getRecurrenceEndDate()
+		);
+
+		// Conflict checks across all occurrences
+		for (LocalDateTime[] occ : occurrences) {
+			List<Booking> conflicts = bookingRepository.findConflictingBookings(room.getId(), occ[0], occ[1]);
+			if (!conflicts.isEmpty()) {
+				Booking conflict = conflicts.get(0);
+				String dateStr = occ[0].toLocalDate().toString();
+				throw new BookingConflictException(
+						"Time slot on " + dateStr + " overlaps with an existing confirmed reservation ('"
+								+ conflict.getTitle() + "' by " + conflict.getBooker().getFullName() + "). Please choose another slot or adjust recurrence.");
+			}
 		}
 
 		User booker = userRepository.findById(currentUserId)
 				.orElseThrow(() -> new ResourceNotFoundException("Booker user not found with ID: " + currentUserId));
 
-		Booking booking = new Booking();
-		booking.setCompany(company);
-		booking.setRoom(room);
-		booking.setBooker(booker);
-		booking.setTitle(request.getTitle().trim());
-		booking.setDescription(request.getDescription());
-		booking.setStartTime(request.getStartTime());
-		booking.setEndTime(request.getEndTime());
-		booking.setStatus("CONFIRMED");
-		if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
-			booking.setDepartment(request.getDepartment().trim());
-		} else if (booker.getDepartment() != null) {
-			booking.setDepartment(booker.getDepartment().getName());
+		String recurrenceId = isRecurring ? UUID.randomUUID().toString() : null;
+		List<Booking> series = new ArrayList<>();
+
+		for (int i = 0; i < occurrences.size(); i++) {
+			LocalDateTime[] occ = occurrences.get(i);
+			Booking booking = new Booking();
+			booking.setCompany(company);
+			booking.setRoom(room);
+			booking.setBooker(booker);
+			booking.setTitle(request.getTitle().trim());
+			booking.setDescription(request.getDescription());
+			booking.setStartTime(occ[0]);
+			booking.setEndTime(occ[1]);
+			booking.setStatus("CONFIRMED");
+			if (request.getDepartment() != null && !request.getDepartment().trim().isEmpty()) {
+				booking.setDepartment(request.getDepartment().trim());
+			} else if (booker.getDepartment() != null) {
+				booking.setDepartment(booker.getDepartment().getName());
+			}
+
+			if (isRecurring) {
+				booking.setRecurrenceId(recurrenceId);
+				booking.setRecurrenceRule(request.getRecurrenceRule().trim().toUpperCase());
+				booking.setIsRecurrenceParent(i == 0);
+			}
+
+			syncParticipants(booking, request, companyId);
+
+			int effectiveAttendees = request.getAttendeesCount() != null ? request.getAttendeesCount() : 2;
+			if (booking.getParticipants() != null && !booking.getParticipants().isEmpty()) {
+				effectiveAttendees = Math.max(effectiveAttendees, booking.getParticipants().size() + 1);
+			}
+			booking.setAttendeesCount(effectiveAttendees);
+
+			series.add(booking);
 		}
 
-		// Sync participants to booking
-		syncParticipants(booking, request, companyId);
-
-		int effectiveAttendees = request.getAttendeesCount() != null ? request.getAttendeesCount() : 2;
-		if (booking.getParticipants() != null && !booking.getParticipants().isEmpty()) {
-			effectiveAttendees = Math.max(effectiveAttendees, booking.getParticipants().size() + 1);
-		}
-		booking.setAttendeesCount(effectiveAttendees);
-
-		Booking saved = bookingRepository.save(booking);
+		List<Booking> savedSeries = bookingRepository.saveAll(series);
+		Booking primary = savedSeries.get(0);
 
 		AuditLog audit = new AuditLog();
 		audit.setUserId(currentUserId);
 		audit.setCompanyId(companyId);
 		audit.setAction("CREATE_BOOKING");
 		audit.setEntityType("BOOKING");
-		audit.setEntityId(saved.getId());
-		audit.setNewValue("Booked Room: " + room.getName() + " on " + room.getFloor() + " from " + saved.getStartTime()
-				+ " to " + saved.getEndTime() + " ('" + saved.getTitle() + "') with "
-				+ (saved.getParticipants() != null ? saved.getParticipants().size() : 0) + " participants");
+		audit.setEntityId(primary.getId());
+		audit.setNewValue("Booked Room: " + room.getName() + " on " + room.getFloor() + " from " + primary.getStartTime()
+				+ " to " + primary.getEndTime() + (isRecurring ? " (" + savedSeries.size() + " recurring occurrences, rule: " + request.getRecurrenceRule() + ")" : "")
+				+ " with " + (primary.getParticipants() != null ? primary.getParticipants().size() : 0) + " participants");
 		audit.setTimestamp(LocalDateTime.now());
 		auditLogRepository.save(audit);
 
-		eventPublisher.publishEvent(new BookingCreatedEvent(saved));
+		eventPublisher.publishEvent(new BookingCreatedEvent(primary));
 
-		return mapToResponse(saved);
+		BookingResponse response = mapToResponse(primary);
+		response.setRecurringCount(savedSeries.size());
+		return response;
 	}
 
 	@Transactional
 	public BookingResponse cancelBooking(Long bookingId, Long companyId, Long currentUserId,
-			boolean isSuperAdminOrFacilityAdmin) {
+			boolean isSuperAdminOrFacilityAdmin, boolean cancelSeries) {
 		Booking booking = bookingRepository.findById(bookingId)
 				.filter(b -> b.getCompany().getId().equals(companyId))
 				.orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-		// Facility Admin can cancel any company booking or specifically their own booking
 		if (!isSuperAdminOrFacilityAdmin && !booking.getBooker().getId().equals(currentUserId)) {
 			throw new UnauthorizedAccessException("You are only authorized to cancel bookings made by yourself.");
+		}
+
+		if (cancelSeries && booking.getRecurrenceId() != null && !booking.getRecurrenceId().isBlank()) {
+			List<Booking> futureSeries = bookingRepository.findFutureActiveBookingsInSeries(
+					booking.getRecurrenceId(), booking.getStartTime());
+			for (Booking b : futureSeries) {
+				b.setStatus("CANCELLED");
+			}
+			bookingRepository.saveAll(futureSeries);
+
+			AuditLog audit = new AuditLog();
+			audit.setUserId(currentUserId);
+			audit.setCompanyId(companyId);
+			audit.setAction("CANCEL_RECURRING_SERIES");
+			audit.setEntityType("BOOKING");
+			audit.setEntityId(booking.getId());
+			audit.setNewValue("Cancelled " + futureSeries.size() + " recurring bookings in series " + booking.getRecurrenceId());
+			audit.setTimestamp(LocalDateTime.now());
+			auditLogRepository.save(audit);
+
+			eventPublisher.publishEvent(new BookingCancelledEvent(booking));
+			booking.setStatus("CANCELLED");
+			return mapToResponse(booking);
 		}
 
 		booking.setStatus("CANCELLED");
@@ -155,6 +263,12 @@ public class FacilityBookingService {
 		eventPublisher.publishEvent(new BookingCancelledEvent(updated));
 
 		return mapToResponse(updated);
+	}
+
+	@Transactional
+	public BookingResponse cancelBooking(Long bookingId, Long companyId, Long currentUserId,
+			boolean isSuperAdminOrFacilityAdmin) {
+		return cancelBooking(bookingId, companyId, currentUserId, isSuperAdminOrFacilityAdmin, false);
 	}
 
 	@Transactional
@@ -416,6 +530,19 @@ public class FacilityBookingService {
 		}
 		res.setCreatedAt(booking.getCreatedAt());
 		res.setUpdatedAt(booking.getUpdatedAt());
+		res.setRecurrenceId(booking.getRecurrenceId());
+		res.setRecurrenceRule(booking.getRecurrenceRule());
+		res.setIsRecurrenceParent(booking.getIsRecurrenceParent());
+		if (booking.getRecurrenceId() != null) {
+			try {
+				long count = bookingRepository.countByRecurrenceIdAndStatus(booking.getRecurrenceId(), "CONFIRMED");
+				res.setRecurringCount((int) count);
+			} catch (Exception ignored) {
+				res.setRecurringCount(1);
+			}
+		} else {
+			res.setRecurringCount(1);
+		}
 		return res;
 	}
 }

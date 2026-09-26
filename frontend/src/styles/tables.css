@@ -197,12 +197,12 @@
 /* Actions Column & Header - Never Truncate / Clip Buttons */
 .td-actions,
 .th-actions {
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
   overflow: visible !important;
   text-overflow: clip !important;
   padding-left: 6px !important;
-  padding-right: 14px !important;
+  padding-right: 6px !important;
 }
 
 .td-actions {
@@ -212,11 +212,99 @@
 .td-actions__group {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 6px;
   width: auto;
   white-space: nowrap;
   flex-shrink: 0;
+  margin: 0 auto;
+}
+
+/* ================================================================
+   Global Table Alignment Standards
+   ================================================================ */
+
+/* Primary Descriptive Content: Left-Aligned */
+.th-room-name, .td-room-name,
+.th-staff-member, .td-staff-member,
+.th-dept-name, .td-dept-name,
+.th-floor-name, .td-floor-name,
+.th-floor-desc, .td-floor-desc,
+.th-company-name, .td-company-name,
+.th-admin-name, .td-admin-name,
+.th-booking-title, .td-booking-title,
+.th-contact, .td-contact,
+.th-campus, .td-campus,
+.th-email, .td-email {
+  text-align: left !important;
+}
+
+/* Badges, Pills, Status, Capacities, Counts & Dates: Centered */
+.th-center, .td-center,
+.th-floor, .td-floor,
+.th-capacity, .td-capacity,
+.th-status, .td-status,
+.th-code, .td-code,
+.th-role, .td-role,
+.th-department, .td-department,
+.th-dept-staff, .td-dept-staff,
+.th-floor-rooms, .td-floor-rooms,
+.th-onboarded, .td-onboarded,
+.th-created, .td-created,
+.th-activity, .td-activity,
+.th-admins, .td-admins,
+.th-booking-time, .td-booking-time,
+.th-booking-attendees, .td-booking-attendees,
+.th-occ-floor, .td-occ-floor,
+.th-occ-capacity, .td-occ-capacity,
+.th-occ-status, .td-occ-status {
+  text-align: center !important;
+}
+
+/* Ensure centered headers have centered content */
+th.th-center .th-content,
+th.th-floor .th-content,
+th.th-capacity .th-content,
+th.th-status .th-content,
+th.th-code .th-content,
+th.th-role .th-content,
+th.th-department .th-content,
+th.th-dept-staff .th-content,
+th.th-floor-rooms .th-content,
+th.th-onboarded .th-content,
+th.th-created .th-content,
+th.th-activity .th-content,
+th.th-admins .th-content,
+th.th-booking-time .th-content,
+th.th-booking-attendees .th-content,
+th.th-occ-floor .th-content,
+th.th-occ-capacity .th-content,
+th.th-occ-status .th-content {
+  justify-content: center !important;
+  margin: 0 auto;
+}
+
+/* Ensure centered cell elements align in the middle of cell */
+td.td-center > *,
+td.td-floor > *,
+td.td-capacity > *,
+td.td-status > *,
+td.td-code > *,
+td.td-role > *,
+td.td-department > *,
+td.td-dept-staff > *,
+td.td-floor-rooms > *,
+td.td-onboarded > *,
+td.td-created > *,
+td.td-activity > *,
+td.td-admins > *,
+td.td-booking-time > *,
+td.td-booking-attendees > *,
+td.td-occ-floor > *,
+td.td-occ-capacity > *,
+td.td-occ-status > * {
+  display: inline-flex;
+  vertical-align: middle;
 }
 
 /* ================================================================
@@ -257,11 +345,85 @@
   text-align: center;
 }
 
-/* Dynamic Data Columns (100% Equal Distribution by browser engine) */
-.superadmin-table th:not(.th-checkbox):not(.th-actions),
-.companies-table th:not(.th-checkbox):not(.th-actions),
-.admins-table th:not(.th-checkbox):not(.th-actions),
-.audit-logs-table th:not(.th-actions) {
+/* Companies Table Proportional Layout */
+.companies-table th.th-code,
+.companies-table td.td-code {
+  width: 110px;
+  min-width: 90px;
+}
+
+.companies-table th.th-company-name,
+.companies-table td.td-company-name {
+  width: 28%;
+  min-width: 190px;
+}
+
+.companies-table th.th-contact,
+.companies-table td.td-contact {
+  width: 20%;
+  min-width: 150px;
+}
+
+.companies-table th.th-campus,
+.companies-table td.td-campus {
+  width: 16%;
+  min-width: 130px;
+}
+
+.companies-table th.th-admins,
+.companies-table td.td-admins {
+  width: 120px;
+  min-width: 100px;
+}
+
+.companies-table th.th-status,
+.companies-table td.td-status {
+  width: 115px;
+  min-width: 95px;
+}
+
+/* Admins Table Proportional Layout */
+.admins-table th.th-admin-name,
+.admins-table td.td-admin-name {
+  width: 26%;
+  min-width: 180px;
+}
+
+.admins-table th.th-email,
+.admins-table td.td-email {
+  width: 24%;
+  min-width: 170px;
+}
+
+.admins-table th.th-company,
+.admins-table td.td-company {
+  width: 20%;
+  min-width: 140px;
+}
+
+.admins-table th.th-role,
+.admins-table td.td-role {
+  width: 125px;
+  min-width: 105px;
+}
+
+.admins-table th.th-activity,
+.admins-table td.td-activity {
+  width: 125px;
+  min-width: 105px;
+}
+
+.admins-table th.th-status,
+.admins-table td.td-status {
+  width: 115px;
+  min-width: 95px;
+}
+
+/* Fallback for unclassified dynamic data columns */
+.superadmin-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
+.companies-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
+.admins-table th:not(.th-checkbox):not(.th-actions):not([class*="th-"]),
+.audit-logs-table th:not(.th-actions):not([class*="th-"]) {
   min-width: 110px;
 }
 
