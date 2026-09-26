@@ -11,7 +11,7 @@
     radial-gradient(ellipse 70% 60% at 20% 10%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
     radial-gradient(ellipse 60% 50% at 80% 90%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
     linear-gradient(180deg, var(--bg-body) 0%, var(--bg-surface-alt) 100%);
-  padding: 80px 0 28px;
+  padding: 104px 0 28px;
 }
 
 .login-gateway__container {

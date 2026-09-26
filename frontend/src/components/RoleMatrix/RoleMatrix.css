@@ -3,7 +3,7 @@
    ========================================================================== */
 
 .role-matrix {
-  padding: 5rem 0;
+  padding: 2.75rem 0;
   background-color: var(--bg-body, #ffffff);
   position: relative;
 }
@@ -11,7 +11,7 @@
 .role-matrix__header {
   text-align: center;
   max-width: 820px;
-  margin: 0 auto 3rem;
+  margin: 0 auto 1.75rem;
 }
 
 .role-matrix__title {
@@ -35,7 +35,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   max-width: 950px;
-  margin: 0 auto 3rem;
+  margin: 0 auto 1.75rem;
   background-color: var(--bg-surface-alt, #f1f5f9);
   padding: 0.5rem;
   border-radius: var(--radius-xl, 16px);
@@ -95,12 +95,12 @@
 .role-panel {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  gap: 3rem;
+  gap: 2rem;
   align-items: center;
   background-color: var(--bg-surface-alt, #f8fafc);
   border: 1px solid var(--border-card, #e2e8f0);
   border-radius: var(--radius-2xl, 24px);
-  padding: 3rem;
+  padding: 2rem 2.25rem;
   box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
 }
 
