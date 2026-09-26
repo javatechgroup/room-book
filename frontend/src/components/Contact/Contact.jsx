@@ -9,33 +9,67 @@ import {
   User,
   MessageSquare,
   ShieldCheck,
-  Sparkles,
+  Zap,
+  ArrowRight,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import './Contact.css';
 
+const INQUIRY_TYPES = [
+  { id: 'deploy', label: '🏢 Deploy System', defaultMsg: 'We want to deploy MeetSpace across our office meeting rooms.' },
+  { id: 'policies', label: '🛡️ Policy Consultation', defaultMsg: 'We would like to configure custom room booking policies and duration limits.' },
+  { id: 'demo', label: '🔍 Live Demo', defaultMsg: 'We would like to schedule a 1-on-1 walkthrough of the platform.' },
+  { id: 'technical', label: '⚙️ IT & Security', defaultMsg: 'We have questions regarding multi-tenant provisioning, SSO, or security.' },
+];
+
 function Contact() {
   const { toast } = useToast();
+  const [selectedType, setSelectedType] = useState('deploy');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     company: '',
     phone: '',
-    message: '',
+    message: INQUIRY_TYPES[0].defaultMsg,
   });
+  const [copiedEmail, setCopiedEmail] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleTypeSelect = (type) => {
+    setSelectedType(type.id);
+    setFormData((prev) => ({
+      ...prev,
+      message: type.defaultMsg,
+    }));
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleCopyEmail = () => {
+    navigator.clipboard?.writeText('inquiries@roombook.io');
+    setCopiedEmail(true);
+    toast.info('Email Copied', 'inquiries@roombook.io copied to clipboard');
+    setTimeout(() => setCopiedEmail(false), 2500);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    toast.success(
-      'Inquiry Received!',
-      `Thank you, ${formData.name || 'valued customer'}. Our team will contact you at ${formData.email} within 24 hours.`
-    );
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+      setSubmitted(true);
+      toast.success(
+        'Inquiry Received!',
+        `Thank you, ${formData.name || 'valued customer'}. Our team will contact you at ${formData.email} within 24 hours.`
+      );
+    }, 500);
+
     setTimeout(() => {
       setSubmitted(false);
       setFormData({
@@ -43,177 +77,247 @@ function Contact() {
         email: '',
         company: '',
         phone: '',
-        message: '',
+        message: INQUIRY_TYPES[0].defaultMsg,
       });
-    }, 4000);
+      setSelectedType('deploy');
+    }, 5000);
   };
 
   return (
     <section className="contact" id="contact">
       <div className="container">
-        <div className="contact__wrapper">
-          {/* Left Side: Contact Information & Value Promise */}
-          <div className="contact__info">
-            <span className="section-tag section-tag--light">Client Connections</span>
-            <h2 className="contact__title">
-              Connect With Our Workplace Team
-            </h2>
-            <p className="contact__subtitle">
-              Interested in deploying our physical room management and smart slot suggestion system for your company's offices?
-              Or have technical and setup inquiries? Connect with us directly.
-            </p>
+        {/* Section Header with high-contrast visible tag */}
+        <div className="contact__header">
+          <span className="section-tag section-tag--primary">
+            <Zap size={14} /> Enterprise Onboarding & Solutions
+          </span>
+          <h2 className="contact__title">Connect With Our Workplace Team</h2>
+          <p className="contact__subtitle">
+            Ready to bring conflict-free room scheduling and automated booking policies to your organization?
+            Reach out directly for customized deployment or enterprise assistance.
+          </p>
+        </div>
 
-            <div className="contact__details">
-              <div className="contact__detail">
-                <Mail size={20} />
-                <div>
-                  <span className="contact__detail-label">Client Solutions Email</span>
-                  <span className="contact__detail-value">inquiries@roombook.io</span>
+        <div className="contact__wrapper">
+          {/* Left Column: Compact Channels & Guarantees */}
+          <div className="contact__info">
+            {/* Consolidated Direct Channels Card */}
+            <div className="contact__channels-box">
+              <h4 className="channels-title">Direct Communication Channels</h4>
+              
+              <div className="channel-row">
+                <div className="channel-row__icon channel-row__icon--blue">
+                  <Mail size={16} />
+                </div>
+                <div className="channel-row__text">
+                  <span className="channel-row__label">Client Solutions</span>
+                  <a href="mailto:inquiries@roombook.io" className="channel-row__val">
+                    inquiries@roombook.io
+                  </a>
+                </div>
+                <button
+                  type="button"
+                  className="channel-row__copy-btn"
+                  onClick={handleCopyEmail}
+                  title="Copy email"
+                  aria-label="Copy email"
+                >
+                  {copiedEmail ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+              </div>
+
+              <div className="channel-row">
+                <div className="channel-row__icon channel-row__icon--emerald">
+                  <Phone size={16} />
+                </div>
+                <div className="channel-row__text">
+                  <span className="channel-row__label">Direct Enterprise Line</span>
+                  <a href="tel:+15552345678" className="channel-row__val">
+                    +1 (555) 234-5678
+                  </a>
                 </div>
               </div>
-              <div className="contact__detail">
-                <Phone size={20} />
-                <div>
-                  <span className="contact__detail-label">Direct Phone Line</span>
-                  <span className="contact__detail-value">+1 (555) 234-5678</span>
+
+              <div className="channel-row">
+                <div className="channel-row__icon channel-row__icon--purple">
+                  <MapPin size={16} />
                 </div>
-              </div>
-              <div className="contact__detail">
-                <MapPin size={20} />
-                <div>
-                  <span className="contact__detail-label">Headquarters</span>
-                  <span className="contact__detail-value">123 Workplace Plaza, Suite 400</span>
+                <div className="channel-row__text">
+                  <span className="channel-row__label">Headquarters</span>
+                  <span className="channel-row__val">123 Workplace Plaza, Suite 400</span>
                 </div>
               </div>
             </div>
 
-            <div className="contact__guarantee-box">
-              <h4>Why Companies Partner With Us:</h4>
-              <ul>
-                <li>✓ Tailored for physical room inventory, floors & meeting spaces</li>
-                <li>✓ Zero double-booking guarantee with anti-overlap engine</li>
-                <li>✓ Automated next-opening & alternative room suggestions</li>
-                <li>✓ Dedicated onboarding and facilities assistance</li>
+            {/* Compact Guarantee Box */}
+            <div className="contact__compact-guarantee">
+              <div className="compact-guarantee__header">
+                <ShieldCheck size={17} className="guarantee-icon" />
+                <strong>The MeetSpace Enterprise Advantage</strong>
+              </div>
+              <ul className="compact-guarantee__list">
+                <li>
+                  <span className="dot" />
+                  <span><strong>Zero Double-Bookings:</strong> Concurrency engine locks slots with 0% clash.</span>
+                </li>
+                <li>
+                  <span className="dot" />
+                  <span><strong>Custom Policy Setup:</strong> Enforce advance windows, max durations, & cutoffs.</span>
+                </li>
+                <li>
+                  <span className="dot" />
+                  <span><strong>Dedicated Specialist:</strong> Tenant provisioning & setup support within 48h.</span>
+                </li>
               </ul>
+              <div className="compact-sla">
+                <Zap size={12} />
+                <span>Guaranteed 24-hour response SLA</span>
+              </div>
             </div>
           </div>
 
-          {/* Right Side: Client Inquiry Form (matches ContactModal component) */}
-          <form className="contact__form" onSubmit={handleSubmit}>
-            {submitted ? (
-              <div className="contact__success">
-                <CheckCircle2 size={44} />
-                <h3>Thank You for Connecting!</h3>
-                <p>Our corporate workplace specialist will reach out to you within 24 hours.</p>
-              </div>
-            ) : (
-              <>
-                <div className="contact__form-header">
-                  <div className="contact__form-badge">
-                    <Sparkles size={13} />
-                    <span>Direct Solutions Inquiry</span>
-                  </div>
-                  <h3 className="contact__form-title">Send Us a Message</h3>
-                  <p className="contact__form-subtitle">
-                    Fill out the form below and our team will get back to you promptly.
+          {/* Right Column: Streamlined Form */}
+          <div className="contact__form-container">
+            <form className="contact__form" onSubmit={handleSubmit}>
+              {submitted ? (
+                <div className="contact__success animate-fadeIn">
+                  <CheckCircle2 size={44} className="success-icon" />
+                  <h3>Inquiry Received!</h3>
+                  <p>
+                    A workplace solutions specialist has received your request and will reach out to <strong>{formData.email}</strong> within 24 hours.
                   </p>
+                  <span className="success-ref">Ref: MS-{Math.floor(100000 + Math.random() * 900000)}</span>
                 </div>
+              ) : (
+                <>
+                  <div className="contact__form-top">
+                    <span className="form-legend">Select Inquiry Topic:</span>
+                    {/* Compact Category Pills */}
+                    <div className="contact__pills-group">
+                      {INQUIRY_TYPES.map((type) => (
+                        <button
+                          key={type.id}
+                          type="button"
+                          className={`inquiry-pill ${selectedType === type.id ? 'inquiry-pill--active' : ''}`}
+                          onClick={() => handleTypeSelect(type)}
+                        >
+                          {type.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                <div className="contact__form-grid">
-                  <div className="contact__field">
-                    <label htmlFor="name">
-                      Full Name <span className="req">*</span>
-                    </label>
-                    <div className="contact__input-wrap">
-                      <User size={15} className="contact__input-icon" />
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        placeholder="Jane Doe"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                      />
+                  <div className="contact__form-grid">
+                    <div className="contact__field">
+                      <label htmlFor="contact-name">
+                        Full Name <span className="req">*</span>
+                      </label>
+                      <div className="contact__input-wrap">
+                        <User size={14} className="contact__input-icon" />
+                        <input
+                          id="contact-name"
+                          name="name"
+                          type="text"
+                          placeholder="Jane Doe"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                          autoComplete="name"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="contact__field">
+                      <label htmlFor="contact-email">
+                        Work Email <span className="req">*</span>
+                      </label>
+                      <div className="contact__input-wrap">
+                        <Mail size={14} className="contact__input-icon" />
+                        <input
+                          id="contact-email"
+                          name="email"
+                          type="email"
+                          placeholder="jane@company.com"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                          autoComplete="email"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="contact__field">
+                      <label htmlFor="contact-company">Company</label>
+                      <div className="contact__input-wrap">
+                        <Building2 size={14} className="contact__input-icon" />
+                        <input
+                          id="contact-company"
+                          name="company"
+                          type="text"
+                          placeholder="Company name"
+                          value={formData.company}
+                          onChange={handleChange}
+                          autoComplete="organization"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="contact__field">
+                      <label htmlFor="contact-phone">Phone</label>
+                      <div className="contact__input-wrap">
+                        <Phone size={14} className="contact__input-icon" />
+                        <input
+                          id="contact-phone"
+                          name="phone"
+                          type="tel"
+                          placeholder="+1 (555) 000-0000"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          autoComplete="tel"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div className="contact__field">
-                    <label htmlFor="email">
-                      Work Email <span className="req">*</span>
-                    </label>
+                    <label htmlFor="contact-message">Requirements / Message</label>
                     <div className="contact__input-wrap">
-                      <Mail size={15} className="contact__input-icon" />
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="jane@company.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="contact__field">
-                    <label htmlFor="company">Company / Organization</label>
-                    <div className="contact__input-wrap">
-                      <Building2 size={15} className="contact__input-icon" />
-                      <input
-                        id="company"
-                        name="company"
-                        type="text"
-                        placeholder="Company Name"
-                        value={formData.company}
+                      <MessageSquare size={14} className="contact__input-icon contact__input-icon--textarea" />
+                      <textarea
+                        id="contact-message"
+                        name="message"
+                        rows="2"
+                        placeholder="Tell us about your physical office spaces or requirements..."
+                        value={formData.message}
                         onChange={handleChange}
                       />
                     </div>
                   </div>
 
-                  <div className="contact__field">
-                    <label htmlFor="phone">Mobile / Phone Number</label>
-                    <div className="contact__input-wrap">
-                      <Phone size={15} className="contact__input-icon" />
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        placeholder="+1 (555) 000-0000"
-                        value={formData.phone}
-                        onChange={handleChange}
-                      />
-                    </div>
+                  <button
+                    type="submit"
+                    className="btn btn--primary btn--full contact__submit-btn"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span>Sending...</span>
+                    ) : (
+                      <>
+                        <Send size={14} />
+                        <span>Send Corporate Inquiry</span>
+                        <ArrowRight size={14} />
+                      </>
+                    )}
+                  </button>
+
+                  <div className="contact__reassurance">
+                    <ShieldCheck size={13} />
+                    <span>256-bit encryption • Non-disclosure protected • Zero spam</span>
                   </div>
-                </div>
-
-                <div className="contact__field contact__field--full">
-                  <label htmlFor="message">How Can We Help?</label>
-                  <div className="contact__input-wrap">
-                    <MessageSquare size={15} className="contact__input-icon contact__input-icon--textarea" />
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows="3"
-                      placeholder="Tell us about your physical office spaces, requirements, or any questions..."
-                      value={formData.message}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <button type="submit" className="btn btn--primary btn--full contact__submit-btn">
-                  <Send size={15} />
-                  <span>Send Inquiry to Our Team</span>
-                </button>
-
-                <div className="contact__reassurance">
-                  <ShieldCheck size={13} />
-                  <span>Your information is protected.</span>
-                </div>
-              </>
-            )}
-          </form>
+                </>
+              )}
+            </form>
+          </div>
         </div>
       </div>
     </section>
