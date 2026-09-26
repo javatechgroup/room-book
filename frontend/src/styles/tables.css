@@ -60,15 +60,7 @@
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-/* Checkbox Column */
-.th-checkbox,
-.td-checkbox {
-  width: 44px;
-  text-align: center;
-  padding: 11px 6px !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-}
+/* (Checkbox Column sizing consolidated below in section 1) */
 
 .th-checkbox input[type="checkbox"],
 .td-checkbox input[type="checkbox"] {
@@ -196,31 +188,7 @@
   text-overflow: ellipsis;
 }
 
-/* Actions Column & Header - Never Truncate / Clip Buttons */
-.td-actions,
-.th-actions {
-  text-align: center;
-  white-space: nowrap;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  padding-left: 6px !important;
-  padding-right: 6px !important;
-}
-
-.td-actions {
-  vertical-align: middle;
-}
-
-.td-actions__group {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: auto;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin: 0 auto;
-}
+/* (Actions Column styles consolidated below in section 2) */
 
 /* ================================================================
    Universal Auto-Alignment & Dynamic Column Architecture
@@ -283,16 +251,15 @@
   white-space: nowrap;
 }
 
-/* 2. Actions Column (Strictly Fixed, Centered, Never Wraps) */
+/* 2. Actions Column (Fixed Width, Centered, Contained) */
 .th-actions,
 .td-actions {
-  width: 170px;
-  min-width: 160px;
+  width: 155px;
   white-space: nowrap;
   text-align: center !important;
-  padding-left: 8px !important;
-  padding-right: 8px !important;
-  overflow: visible !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  overflow: hidden;
   vertical-align: middle !important;
 }
 
